@@ -10,9 +10,9 @@ export const products: Product[] = [
     category: 'Protein',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/whey-protein.jpg',
+      '/images/products/whey-protein-2.jpg',
+      '/images/products/whey-protein-3.jpg'
     ],
     rating: 4.8,
     reviews: 1247,

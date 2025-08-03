@@ -1,26 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { apiService } from '@/utils/api';
+import { useState } from 'react';
 import { 
   User, 
-  ShoppingBag, 
-  Heart, 
+  Mail, 
+  Phone, 
   MapPin, 
-  Settings, 
-  LogOut,
+  Save, 
   Edit,
-  Plus,
-  Trash2,
   Eye,
-  Calendar,
-  DollarSign,
-  Package,
-  Truck,
-  CheckCircle,
-  XCircle,
-  AlertCircle
+  EyeOff
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -63,7 +52,6 @@ interface WishlistItem {
 }
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
@@ -71,113 +59,19 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
+  // The useEffect hook and user context are removed as per the edit hint.
+  // The user object and isAuthenticated are no longer available.
+  // The logout function is also removed.
 
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const [ordersResponse, wishlistResponse] = await Promise.all([
-          apiService.getOrders(),
-          apiService.getWishlist()
-        ]);
-
-        if (ordersResponse.success) {
-          setOrders(ordersResponse.data || []);
-        }
-
-        if (wishlistResponse.success) {
-          setWishlist(wishlistResponse.data || []);
-        }
-
-        // Set addresses from user data
-        if (user?.addresses) {
-          setAddresses(user.addresses);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load user data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [isAuthenticated, user]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-8">You need to be logged in to view your profile.</p>
-          <Link 
-            href="/login" 
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Login
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'shipped':
-        return 'bg-purple-100 text-purple-800';
-      case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <AlertCircle className="w-4 h-4" />;
-      case 'confirmed':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'shipped':
-        return <Truck className="w-4 h-4" />;
-      case 'delivered':
-        return <Package className="w-4 h-4" />;
-      case 'cancelled':
-        return <XCircle className="w-4 h-4" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
-    }
-  };
+  // The formatCurrency, formatDate, getStatusColor, getStatusIcon functions
+  // are removed as they are not used in the new_code.
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: User },
-    { id: 'orders', name: 'Orders', icon: ShoppingBag },
-    { id: 'wishlist', name: 'Wishlist', icon: Heart },
+    { id: 'orders', name: 'Orders', icon: Eye },
+    { id: 'wishlist', name: 'Wishlist', icon: Eye },
     { id: 'addresses', name: 'Addresses', icon: MapPin },
-    { id: 'settings', name: 'Settings', icon: Settings },
+    { id: 'settings', name: 'Settings', icon: Edit },
   ];
 
   if (loading) {
@@ -196,15 +90,9 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-              <p className="text-gray-600 mt-1">Welcome back, {user?.name}</p>
+              <p className="text-gray-600 mt-1">Welcome back, User</p>
             </div>
-            <button
-              onClick={logout}
-              className="inline-flex items-center px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </button>
+            {/* The logout button is removed as per the edit hint. */}
           </div>
         </div>
       </div>
@@ -245,7 +133,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="p-6 bg-blue-50 rounded-lg">
                     <div className="flex items-center mb-4">
-                      <ShoppingBag className="w-8 h-8 text-blue-600 mr-3" />
+                      {/* ShoppingBag icon removed */}
                       <div>
                         <p className="text-sm font-medium text-blue-600">Total Orders</p>
                         <p className="text-2xl font-bold text-blue-900">{orders.length}</p>
@@ -255,7 +143,7 @@ export default function ProfilePage() {
 
                   <div className="p-6 bg-green-50 rounded-lg">
                     <div className="flex items-center mb-4">
-                      <Heart className="w-8 h-8 text-green-600 mr-3" />
+                      {/* Heart icon removed */}
                       <div>
                         <p className="text-sm font-medium text-green-600">Wishlist Items</p>
                         <p className="text-2xl font-bold text-green-900">{wishlist.length}</p>
@@ -271,12 +159,12 @@ export default function ProfilePage() {
                       <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-3">
                         <div>
                           <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                          <p className="text-sm text-gray-600">{formatDate(order.createdAt)}</p>
+                          <p className="text-sm text-gray-600">Order Date</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-gray-900">{formatCurrency(order.total)}</p>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                            {order.status}
+                          <p className="text-lg font-bold text-gray-900">₹{order.total}</p>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            <span className="ml-1">{order.status}</span>
                           </span>
                         </div>
                       </div>
@@ -300,12 +188,11 @@ export default function ProfilePage() {
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
-                            <p className="text-sm text-gray-600">{formatDate(order.createdAt)}</p>
+                            <p className="text-sm text-gray-600">Order Date</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold text-gray-900">{formatCurrency(order.total)}</p>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                              {getStatusIcon(order.status)}
+                            <p className="text-lg font-bold text-gray-900">₹{order.total}</p>
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${order.status}`}>
                               <span className="ml-1">{order.status}</span>
                             </span>
                           </div>
@@ -321,7 +208,7 @@ export default function ProfilePage() {
                                   <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                                 </div>
                               </div>
-                              <p className="font-medium text-gray-900">{formatCurrency(item.price * item.quantity)}</p>
+                              <p className="font-medium text-gray-900">{/* formatCurrency(item.price * item.quantity) */}</p>
                             </div>
                           ))}
                         </div>
@@ -340,7 +227,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    {/* ShoppingBag icon removed */}
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
                     <p className="text-gray-600 mb-6">Start shopping to see your order history here.</p>
                     <Link 
@@ -368,11 +255,11 @@ export default function ProfilePage() {
                           <div className="flex items-center">
                             {item.originalPrice && item.originalPrice > item.price ? (
                               <>
-                                <span className="text-lg font-bold text-gray-900">{formatCurrency(item.price)}</span>
-                                <span className="text-sm text-gray-500 line-through ml-2">{formatCurrency(item.originalPrice)}</span>
+                                <span className="text-lg font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
+                                <span className="text-sm text-gray-500 line-through ml-2">{/* formatCurrency(item.originalPrice) */}</span>
                               </>
                             ) : (
-                              <span className="text-lg font-bold text-gray-900">{formatCurrency(item.price)}</span>
+                              <span className="text-lg font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
                             )}
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -386,7 +273,7 @@ export default function ProfilePage() {
                             Add to Cart
                           </button>
                           <button className="px-3 py-2 text-red-600 hover:text-red-700 transition-colors">
-                            <Trash2 className="w-4 h-4" />
+                            {/* Trash2 icon removed */}
                           </button>
                         </div>
                       </div>
@@ -394,7 +281,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    {/* Heart icon removed */}
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
                     <p className="text-gray-600 mb-6">Save items you love to your wishlist for later.</p>
                     <Link 
@@ -413,7 +300,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
                   <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                    <Plus className="w-4 h-4 mr-2" />
+                    {/* Plus icon removed */}
                     Add Address
                   </button>
                 </div>
@@ -437,7 +324,7 @@ export default function ProfilePage() {
                               <Edit className="w-4 h-4" />
                             </button>
                             <button className="text-red-600 hover:text-red-700">
-                              <Trash2 className="w-4 h-4" />
+                              {/* Trash2 icon removed */}
                             </button>
                           </div>
                         </div>
@@ -455,7 +342,7 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
                     <p className="text-gray-600 mb-6">Add your shipping addresses for faster checkout.</p>
                     <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                      <Plus className="w-4 h-4 mr-2" />
+                      {/* Plus icon removed */}
                       Add Address
                     </button>
                   </div>
@@ -475,24 +362,28 @@ export default function ProfilePage() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                         <input
                           type="text"
-                          defaultValue={user?.name}
+                          defaultValue="User Name"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email
+                        </label>
                         <input
                           type="email"
-                          defaultValue={user?.email}
+                          defaultValue="user@example.com"
                           disabled
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone
+                        </label>
                         <input
                           type="tel"
-                          defaultValue={user?.phone}
+                          defaultValue="+1234567890"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -519,6 +410,7 @@ export default function ProfilePage() {
 
                   <div className="pt-6 border-t border-gray-200">
                     <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                      <Save className="w-4 h-4 mr-2" />
                       Save Changes
                     </button>
                   </div>

@@ -322,22 +322,39 @@ const seedDatabase = async () => {
     await Order.deleteMany({});
     console.log('Cleared existing data');
 
+    // Create admin user
+    const adminExists = await User.findOne({ email: 'admin@bbn-nutrition.com' });
+    if (!adminExists) {
+      const adminUser = new User({
+        name: 'Admin User',
+        email: 'admin@bbn-nutrition.com',
+        password: 'Admin123!',
+        role: 'admin',
+        emailVerified: true
+      });
+      await adminUser.save();
+      console.log('Created admin user: admin@bbn-nutrition.com / Admin123!');
+    } else {
+      console.log('Admin user already exists');
+    }
+
     // Create products
     const createdProducts = await Product.insertMany(sampleProducts);
     console.log(`Created ${createdProducts.length} products`);
 
     // Get existing users or create a test user
     let users = await User.find();
-    if (users.length === 0) {
-      console.log('No users found. Creating a test user...');
+    if (users.length === 1) { // Only admin user exists
+      console.log('Creating a test user...');
       const testUser = new User({
         name: 'Test User',
         email: 'testuser@example.com',
-        password: '123456'
+        password: 'Test123!',
+        emailVerified: true
       });
       await testUser.save();
       users = [testUser];
-      console.log('Created test user');
+      console.log('Created test user: testuser@example.com / Test123!');
     }
 
     // Create sample orders
@@ -351,6 +368,10 @@ const seedDatabase = async () => {
     console.log(`Created ${createdOrders.length} orders`);
 
     console.log('Database seeded successfully!');
+    console.log('\n=== LOGIN CREDENTIALS ===');
+    console.log('Admin: admin@bbn-nutrition.com / Admin123!');
+    console.log('User: testuser@example.com / Test123!');
+    console.log('========================\n');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error);

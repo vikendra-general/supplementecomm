@@ -1,7 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Package, User, Settings, Heart, MapPin, Calendar, DollarSign, Truck, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Package, 
+  ShoppingCart, 
+  DollarSign, 
+  Clock, 
+  CheckCircle, 
+  XCircle,
+  Truck,
+  MapPin,
+  Phone,
+  Mail,
+  AlertCircle,
+  Heart,
+  Settings
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrders } from '@/contexts/OrderContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -67,7 +81,9 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name}!</p>
+          <p className="text-gray-600 mb-6">
+            Welcome back! Here&apos;s an overview of your account and recent orders.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

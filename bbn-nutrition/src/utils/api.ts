@@ -1,10 +1,13 @@
+import { Product, Order, User, Address } from '@/types';
+import { cache, CACHE_KEYS } from './cache';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
-  errors?: any[];
+  errors?: Array<{ msg: string }>;
   pagination?: {
     page: number;
     limit: number;
@@ -17,12 +20,20 @@ class ApiError extends Error {
   constructor(
     public status: number,
     public message: string,
-    public errors?: any[]
+    public errors?: Array<{ msg: string }>
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
+
+interface ApiErrorResponse {
+  message: string;
+  errors?: Array<{ msg: string }>;
+}
+
+export type { ApiResponse, ApiErrorResponse };
+export { ApiError };
 
 class ApiService {
   private async request<T>(
@@ -48,11 +59,7 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new ApiError(
-          response.status,
-          data.message || 'Something went wrong',
-          data.errors
-        );
+        throw new ApiError(response.status, data.message || `HTTP error! status: ${response.status}`, data.errors);
       }
 
       return data;
@@ -60,7 +67,8 @@ class ApiService {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(500, 'Network error');
+      console.error('API request failed:', error);
+      throw new ApiError(500, 'Network error - please check your connection');
     }
   }
 
@@ -98,20 +106,24 @@ class ApiService {
   }
 
   // Product endpoints
-  async getProducts(params?: {
+  async getProducts(params: {
     page?: number;
     limit?: number;
     category?: string;
     brand?: string;
+    search?: string;
+    sort?: string;
     minPrice?: number;
     maxPrice?: number;
-    rating?: number;
-    search?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    featured?: boolean;
     inStock?: boolean;
-  }) {
+  } = {}): Promise<ApiResponse<Product[]>> {
+    // Check cache first
+    const cacheKey = `${CACHE_KEYS.PRODUCTS}_${JSON.stringify(params)}`;
+    const cachedData = cache.get<ApiResponse<Product[]>>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -121,7 +133,12 @@ class ApiService {
       });
     }
     
-    return this.request(`/products?${searchParams.toString()}`);
+    const result = await this.request<Product[]>(`/products?${searchParams.toString()}`);
+    
+    // Cache the response for 5 minutes
+    cache.set(cacheKey, result, 5 * 60 * 1000);
+    
+    return result;
   }
 
   async getProduct(id: string) {
@@ -174,7 +191,23 @@ class ApiService {
   }
 
   // Order endpoints
-  async createOrder(orderData: any) {
+  async createOrder(orderData: {
+    items: Array<{
+      product: string;
+      name: string;
+      price: number;
+      quantity: number;
+      variant?: {
+        id: string;
+        name: string;
+        price: number;
+      };
+    }>;
+    shippingAddress: Address;
+    billingAddress: Address;
+    paymentMethod: string;
+    notes?: string;
+  }): Promise<ApiResponse<Order>> {
     return this.request('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
@@ -276,21 +309,20 @@ class ApiService {
     });
   }
 
-  async addToWishlist(productId: string) {
-    return this.request('/user/wishlist', {
+  async getWishlist(): Promise<ApiResponse<Product[]>> {
+    return this.request('/wishlist');
+  }
+
+  async addToWishlist(productId: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request(`/wishlist/${productId}`, {
       method: 'POST',
-      body: JSON.stringify({ productId }),
     });
   }
 
-  async removeFromWishlist(productId: string) {
-    return this.request(`/user/wishlist/${productId}`, {
+  async removeFromWishlist(productId: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request(`/wishlist/${productId}`, {
       method: 'DELETE',
     });
-  }
-
-  async getWishlist() {
-    return this.request('/user/wishlist');
   }
 
   // Admin endpoints
@@ -319,14 +351,10 @@ class ApiService {
     return this.request(`/admin/orders?${searchParams.toString()}`);
   }
 
-  async updateOrderStatus(orderId: string, statusData: {
-    status: string;
-    trackingNumber?: string;
-    notes?: string;
-  }) {
+  async updateOrderStatus(orderId: string, status: string, note?: string): Promise<ApiResponse<Order>> {
     return this.request(`/admin/orders/${orderId}/status`, {
       method: 'PUT',
-      body: JSON.stringify(statusData),
+      body: JSON.stringify({ status, note }),
     });
   }
 
@@ -368,11 +396,20 @@ class ApiService {
     });
   }
 
+  async addReview(productId: string, reviewData: {
+    rating: number;
+    comment: string;
+  }): Promise<ApiResponse<{ id: string }>> {
+    return this.request(`/products/${productId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.request('/health');
   }
 }
 
-export const apiService = new ApiService();
-export { ApiError }; 
+export const apiService = new ApiService(); 

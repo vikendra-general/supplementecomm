@@ -4,29 +4,33 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { formatPrice, formatINR } from '@/utils/currency';
+import { formatINR } from '@/utils/currency';
 
 export default function CheckoutPage() {
   const { items, getCartTotal } = useCart();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Billing Info
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     phone: '',
-    address: '',
+    street: '',
+    landmark: '',
     city: '',
+    district: '',
     state: '',
-    zipCode: '',
-    country: 'United States',
+    pincode: '',
+    country: 'India',
     
     // Shipping
     sameAsBilling: true,
-    shippingAddress: '',
+    shippingFullName: '',
+    shippingStreet: '',
+    shippingLandmark: '',
     shippingCity: '',
+    shippingDistrict: '',
     shippingState: '',
-    shippingZipCode: '',
+    shippingPincode: '',
     
     // Payment
     cardNumber: '',
@@ -43,13 +47,113 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Process order
-      // TODO: Implement order processing
+      // Process order with notifications
+      try {
+        // Create order data
+        const orderData = {
+          items: items.map(item => ({
+            product: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity
+          })),
+          shippingAddress: {
+            fullName: formData.fullName,
+            street: formData.street,
+            landmark: formData.landmark,
+            city: formData.city,
+            district: formData.district,
+            state: formData.state,
+            pincode: formData.pincode,
+            country: formData.country
+          },
+          billingAddress: formData.sameAsBilling ? {
+            fullName: formData.fullName,
+            street: formData.street,
+            landmark: formData.landmark,
+            city: formData.city,
+            district: formData.district,
+            state: formData.state,
+            pincode: formData.pincode,
+            country: formData.country
+          } : {
+            fullName: formData.shippingFullName,
+            street: formData.shippingStreet,
+            landmark: formData.shippingLandmark,
+            city: formData.shippingCity,
+            district: formData.shippingDistrict,
+            state: formData.shippingState,
+            pincode: formData.shippingPincode,
+            country: formData.country
+          },
+          paymentMethod: formData.paymentMethod,
+          total: total,
+          subtotal: subtotal,
+          shipping: shipping,
+          tax: tax
+        };
+
+        // Send notifications
+        await sendOrderNotifications(orderData);
+        
+        // TODO: Save order to database
+        console.log('Order processed:', orderData);
+        
+        // Redirect to success page or order confirmation
+        window.location.href = '/order-success';
+      } catch (error) {
+        console.error('Error processing order:', error);
+        // Handle error
+      }
+    }
+  };
+
+  const sendOrderNotifications = async (orderData: any) => {
+    try {
+      // Send email to admin
+      await fetch('/api/notifications/admin-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderData,
+          adminEmail: 'admin@boosterboxnutrition.com'
+        })
+      });
+
+      // Send confirmation email to customer
+      await fetch('/api/notifications/customer-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderData,
+          customerEmail: formData.email,
+          customerName: formData.fullName
+        })
+      });
+
+      // Send SMS to customer
+      await fetch('/api/notifications/customer-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderData,
+          customerPhone: formData.phone,
+          customerName: formData.fullName
+        })
+      });
+    } catch (error) {
+      console.error('Error sending notifications:', error);
     }
   };
 
@@ -106,29 +210,17 @@ export default function CheckoutPage() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name *
+                      Full Name *
                     </label>
                     <input
                       type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      required
+                      placeholder="Enter your full name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -142,6 +234,7 @@ export default function CheckoutPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
+                      placeholder="your.email@example.com"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -155,19 +248,34 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={handleChange}
                       required
+                      placeholder="+91 98765 43210"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address *
+                      Street Address *
                     </label>
                     <input
                       type="text"
-                      name="address"
-                      value={formData.address}
+                      name="street"
+                      value={formData.street}
                       onChange={handleChange}
                       required
+                      placeholder="House/Flat number, Street name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Landmark (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="landmark"
+                      value={formData.landmark}
+                      onChange={handleChange}
+                      placeholder="Near hospital, school, etc."
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -181,6 +289,21 @@ export default function CheckoutPage() {
                       value={formData.city}
                       onChange={handleChange}
                       required
+                      placeholder="Mumbai"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      District *
+                    </label>
+                    <input
+                      type="text"
+                      name="district"
+                      value={formData.district}
+                      onChange={handleChange}
+                      required
+                      placeholder="Mumbai"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -188,42 +311,68 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       State *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    >
+                      <option value="">Select State</option>
+                      <option value="Andhra Pradesh">Andhra Pradesh</option>
+                      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                      <option value="Assam">Assam</option>
+                      <option value="Bihar">Bihar</option>
+                      <option value="Chhattisgarh">Chhattisgarh</option>
+                      <option value="Goa">Goa</option>
+                      <option value="Gujarat">Gujarat</option>
+                      <option value="Haryana">Haryana</option>
+                      <option value="Himachal Pradesh">Himachal Pradesh</option>
+                      <option value="Jharkhand">Jharkhand</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="Kerala">Kerala</option>
+                      <option value="Madhya Pradesh">Madhya Pradesh</option>
+                      <option value="Maharashtra">Maharashtra</option>
+                      <option value="Manipur">Manipur</option>
+                      <option value="Meghalaya">Meghalaya</option>
+                      <option value="Mizoram">Mizoram</option>
+                      <option value="Nagaland">Nagaland</option>
+                      <option value="Odisha">Odisha</option>
+                      <option value="Punjab">Punjab</option>
+                      <option value="Rajasthan">Rajasthan</option>
+                      <option value="Sikkim">Sikkim</option>
+                      <option value="Tamil Nadu">Tamil Nadu</option>
+                      <option value="Telangana">Telangana</option>
+                      <option value="Tripura">Tripura</option>
+                      <option value="Uttar Pradesh">Uttar Pradesh</option>
+                      <option value="Uttarakhand">Uttarakhand</option>
+                      <option value="West Bengal">West Bengal</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                      <option value="Ladakh">Ladakh</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
+                      <option value="Daman and Diu">Daman and Diu</option>
+                      <option value="Lakshadweep">Lakshadweep</option>
+                      <option value="Puducherry">Puducherry</option>
+                      <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ZIP Code *
+                      Pincode *
                     </label>
                     <input
                       type="text"
-                      name="zipCode"
-                      value={formData.zipCode}
+                      name="pincode"
+                      value={formData.pincode}
                       onChange={handleChange}
                       required
+                      placeholder="400001"
+                      maxLength={6}
+                      pattern="[0-9]{6}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Country *
-                    </label>
-                    <select
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="United States">United States</option>
-                      <option value="Canada">Canada</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                    </select>
                   </div>
                 </div>
               </div>
@@ -249,14 +398,42 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Shipping Address *
+                        Full Name *
                       </label>
                       <input
                         type="text"
-                        name="shippingAddress"
-                        value={formData.shippingAddress}
+                        name="shippingFullName"
+                        value={formData.shippingFullName}
                         onChange={handleChange}
                         required={!formData.sameAsBilling}
+                        placeholder="Enter recipient's full name"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Street Address *
+                      </label>
+                      <input
+                        type="text"
+                        name="shippingStreet"
+                        value={formData.shippingStreet}
+                        onChange={handleChange}
+                        required={!formData.sameAsBilling}
+                        placeholder="House/Flat number, Street name"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Landmark (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        name="shippingLandmark"
+                        value={formData.shippingLandmark}
+                        onChange={handleChange}
+                        placeholder="Near hospital, school, etc."
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -270,6 +447,21 @@ export default function CheckoutPage() {
                         value={formData.shippingCity}
                         onChange={handleChange}
                         required={!formData.sameAsBilling}
+                        placeholder="Mumbai"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        District *
+                      </label>
+                      <input
+                        type="text"
+                        name="shippingDistrict"
+                        value={formData.shippingDistrict}
+                        onChange={handleChange}
+                        required={!formData.sameAsBilling}
+                        placeholder="Mumbai"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -277,25 +469,66 @@ export default function CheckoutPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         State *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         name="shippingState"
                         value={formData.shippingState}
                         onChange={handleChange}
                         required={!formData.sameAsBilling}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      >
+                        <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
+                        <option value="Daman and Diu">Daman and Diu</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Puducherry">Puducherry</option>
+                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        ZIP Code *
+                        Pincode *
                       </label>
                       <input
                         type="text"
-                        name="shippingZipCode"
-                        value={formData.shippingZipCode}
+                        name="shippingPincode"
+                        value={formData.shippingPincode}
                         onChange={handleChange}
                         required={!formData.sameAsBilling}
+                        placeholder="400001"
+                        maxLength={6}
+                        pattern="[0-9]{6}"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>

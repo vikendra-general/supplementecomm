@@ -37,6 +37,25 @@ export default function LoginPage() {
     setError(''); // Clear error when user starts typing
   };
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -50,9 +69,12 @@ export default function LoginPage() {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
-        if (formData.password.length < 6) {
-          throw new Error('Password must be at least 6 characters long');
+        
+        const passwordError = validatePassword(formData.password);
+        if (passwordError) {
+          throw new Error(passwordError);
         }
+        
         await register(formData.name, formData.email, formData.password);
         // Redirect will be handled by useEffect
       }
@@ -173,7 +195,7 @@ export default function LoginPage() {
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 placeholder="Enter your password"
                 required
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"
@@ -183,6 +205,11 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {!isLogin && (
+              <div className="mt-2 text-xs text-gray-500">
+                Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
+              </div>
+            )}
           </div>
 
           {!isLogin && (
@@ -201,7 +228,7 @@ export default function LoginPage() {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                   placeholder="Confirm your password"
                   required={!isLogin}
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
             </div>

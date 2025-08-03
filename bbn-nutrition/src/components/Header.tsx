@@ -22,29 +22,29 @@ export default function Header() {
   const cartCount = getCartCount(); // Show cart count for both anonymous and authenticated users
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-dark-card shadow-lg border-b border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">BBN</span>
+            <div className="w-8 h-8 bg-gradient-to-r from-primary to-light-green rounded-lg flex items-center justify-center">
+              <span className="text-dark font-bold text-sm">BBN</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">Booster Box Nutrition</span>
+            <span className="text-xl font-bold text-dark-text">Booster Box Nutrition</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/" className="text-dark-text-secondary hover:text-primary transition-colors">
               Home
             </Link>
-            <Link href="/shop" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/shop" className="text-dark-text-secondary hover:text-primary transition-colors">
               Shop
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/about" className="text-dark-text-secondary hover:text-primary transition-colors">
               About
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/contact" className="text-dark-text-secondary hover:text-primary transition-colors">
               Contact
             </Link>
           </nav>
@@ -54,24 +54,24 @@ export default function Header() {
             {/* Search */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className="p-2 text-dark-text-secondary hover:text-primary transition-colors"
             >
               <Search className="w-5 h-5" />
             </button>
 
             {/* Wishlist */}
-            <Link href="/wishlist" className="p-2 text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/wishlist" className="p-2 text-dark-text-secondary hover:text-primary transition-colors">
               <Heart className="w-5 h-5" />
             </Link>
 
             {/* Cart */}
             <Link 
               href="/cart" 
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors relative"
+              className="p-2 text-dark-text-secondary hover:text-primary transition-colors relative"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-primary text-dark text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {cartCount}
                 </span>
               )}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types';
 import { useAuth } from './AuthContext';
 
@@ -41,10 +41,13 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    if (isInitialized) return;
+    
     try {
       let savedCart: CartItem[] = [];
       
@@ -66,11 +69,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
       setItems([]);
+    } finally {
+      setIsInitialized(true);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id, isInitialized]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
+    if (!isInitialized) return;
+    
     try {
       if (isAuthenticated && user) {
         // Save to user-specific storage
@@ -84,52 +91,54 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error saving cart to localStorage:', error);
     }
-  }, [items, isAuthenticated, user]);
+  }, [items, isAuthenticated, user?.id, isInitialized]);
 
   // Merge anonymous cart with user cart when user logs in
   useEffect(() => {
-    if (isAuthenticated && user) {
-      try {
-        const anonymousCart = localStorage.getItem('cart_anonymous');
-        if (anonymousCart) {
-          const anonymousItems: CartItem[] = JSON.parse(anonymousCart);
-          const userCart = localStorage.getItem(`cart_${user.id}`);
-          let userItems: CartItem[] = [];
-          
-          if (userCart) {
-            userItems = JSON.parse(userCart);
-          }
-          
-          // Merge anonymous cart with user cart
-          const mergedItems = [...userItems];
-          
-          anonymousItems.forEach(anonymousItem => {
-            const existingIndex = mergedItems.findIndex(
-              item => item.product.id === anonymousItem.product.id && 
-              (!anonymousItem.variant || item.variant?.id === anonymousItem.variant.id)
-            );
-            
-            if (existingIndex > -1) {
-              // Add quantities if same product
-              mergedItems[existingIndex].quantity += anonymousItem.quantity;
-            } else {
-              // Add new item
-              mergedItems.push(anonymousItem);
-            }
-          });
-          
-          setItems(mergedItems);
-          // Clear anonymous cart after merging
-          localStorage.removeItem('cart_anonymous');
+    if (!isInitialized || !isAuthenticated || !user) return;
+    
+    try {
+      const anonymousCart = localStorage.getItem('cart_anonymous');
+      if (anonymousCart) {
+        const anonymousItems: CartItem[] = JSON.parse(anonymousCart);
+        const userCart = localStorage.getItem(`cart_${user.id}`);
+        let userItems: CartItem[] = [];
+        
+        if (userCart) {
+          userItems = JSON.parse(userCart);
         }
-      } catch (error) {
-        console.error('Error merging anonymous cart:', error);
+        
+        // Merge anonymous cart with user cart
+        const mergedItems = [...userItems];
+        
+        anonymousItems.forEach(anonymousItem => {
+          const existingIndex = mergedItems.findIndex(
+            item => item.product.id === anonymousItem.product.id && 
+            (!anonymousItem.variant || item.variant?.id === anonymousItem.variant.id)
+          );
+          
+          if (existingIndex > -1) {
+            // Add quantities if same product
+            mergedItems[existingIndex].quantity += anonymousItem.quantity;
+          } else {
+            // Add new item
+            mergedItems.push(anonymousItem);
+          }
+        });
+        
+        setItems(mergedItems);
+        // Clear anonymous cart after merging
+        localStorage.removeItem('cart_anonymous');
       }
+    } catch (error) {
+      console.error('Error merging anonymous cart:', error);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id, isInitialized]);
 
   // Clear cart when user logs out
   useEffect(() => {
+    if (!isInitialized) return;
+    
     if (!isAuthenticated) {
       // Don't clear anonymous cart when logging out
       // Only clear user-specific carts
@@ -146,9 +155,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         console.error('Error clearing user cart data from localStorage:', error);
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isInitialized]);
 
-  const addToCart = (product: Product, quantity: number = 1, variant?: CartItem['variant']) => {
+  const addToCart = useCallback((product: Product, quantity: number = 1, variant?: CartItem['variant']) => {
     setItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(
         item => item.product.id === product.id && 
@@ -165,13 +174,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         return [...prevItems, { product, quantity, variant }];
       }
     });
-  };
+  }, []);
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = useCallback((productId: string) => {
     setItems(prevItems => prevItems.filter(item => item.product.id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity < 1) {
       removeFromCart(productId);
       return;
@@ -184,9 +193,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           : item
       )
     );
-  };
+  }, [removeFromCart]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
     // Clear from localStorage
     try {
@@ -198,24 +207,24 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error clearing cart from localStorage:', error);
     }
-  };
+  }, [isAuthenticated, user]);
 
-  const getCartCount = () => {
+  const getCartCount = useCallback(() => {
     return items.reduce((total, item) => total + item.quantity, 0);
-  };
+  }, [items]);
 
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
     return items.reduce((total, item) => {
       const price = item.variant?.price || item.product.price;
       // Convert USD price to INR for cart total
       const inrPrice = price * 83; // USD to INR conversion
       return total + (inrPrice * item.quantity);
     }, 0);
-  };
+  }, [items]);
 
-  const isInCart = (productId: string) => {
+  const isInCart = useCallback((productId: string) => {
     return items.some(item => item.product.id === productId);
-  };
+  }, [items]);
 
   const value: CartContextType = {
     items,

@@ -1,34 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Star } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Star, Shield, Truck, Clock } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
+    <section className="relative bg-dark-bg overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-black opacity-20"></div>
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+      <div className="absolute inset-0 bg-primary opacity-5"></div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%2300ff00%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
-          <div className="text-white space-y-8">
+          <div className="text-dark-text space-y-8">
             <div className="space-y-4">
-              <div className="inline-flex items-center space-x-2 bg-blue-600 bg-opacity-20 px-4 py-2 rounded-full">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm font-medium">Premium Quality Supplements</span>
+              <div className="inline-flex items-center space-x-2 bg-primary bg-opacity-20 px-4 py-2 rounded-full">
+                <Star className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-dark-text">Premium Quality Supplements</span>
               </div>
               
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                 Fuel Your
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-light-green">
                   Performance
                 </span>
               </h1>
               
-              <p className="text-xl text-gray-300 leading-relaxed">
+              <p className="text-xl text-dark-text-secondary leading-relaxed">
                 Discover premium supplements designed for athletes and fitness enthusiasts. 
                 Quality ingredients, proven results, and unbeatable performance.
               </p>
@@ -37,16 +36,16 @@ export default function Hero() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 py-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">10K+</div>
-                <div className="text-sm text-gray-400">Happy Customers</div>
+                <div className="text-2xl font-bold text-primary">10K+</div>
+                <div className="text-sm text-dark-text-secondary">Happy Customers</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">50+</div>
-                <div className="text-sm text-gray-400">Premium Products</div>
+                <div className="text-2xl font-bold text-primary">50+</div>
+                <div className="text-sm text-dark-text-secondary">Premium Products</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">4.9★</div>
-                <div className="text-sm text-gray-400">Average Rating</div>
+                <div className="text-2xl font-bold text-primary">4.9★</div>
+                <div className="text-sm text-dark-text-secondary">Average Rating</div>
               </div>
             </div>
 
@@ -54,7 +53,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
                 href="/shop" 
-                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-primary to-light-green text-dark font-semibold rounded-lg hover:from-dark-green hover:to-primary transition-all duration-300 transform hover:scale-105"
               >
                 Shop Now
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -62,7 +61,7 @@ export default function Hero() {
               
               <Link 
                 href="/about" 
-                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-dark transition-all duration-300"
               >
                 Learn More
               </Link>

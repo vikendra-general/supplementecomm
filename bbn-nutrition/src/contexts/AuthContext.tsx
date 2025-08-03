@@ -67,6 +67,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedToken = localStorage.getItem('token');
         if (storedToken) {
           setToken(storedToken);
+          // Set a timeout to prevent infinite loading
+          const timeoutId = setTimeout(() => {
+            setIsLoading(false);
+          }, 1000);
+
           try {
             const response = await fetch(`${API_BASE_URL}/auth/me`, {
               headers: {
@@ -93,24 +98,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error('Auth initialization error:', error);
             localStorage.removeItem('token');
             setToken(null);
+          } finally {
+            clearTimeout(timeoutId);
+            setIsLoading(false);
           }
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-      } finally {
         setIsLoading(false);
       }
     };
 
-    // Set a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    initAuth().finally(() => {
-      clearTimeout(timeoutId);
-      setIsLoading(false);
-    });
+    initAuth();
   }, [API_BASE_URL]);
 
   const login = async (email: string, password: string) => {
@@ -128,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!response.ok) {
         // Handle validation errors specifically
         if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map((error: any) => error.msg).join(', ');
+          const errorMessages = data.errors.map((error: { msg: string }) => error.msg).join(', ');
           throw new Error(errorMessages);
         }
         throw new Error(data.message || 'Login failed');
@@ -162,7 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!response.ok) {
         // Handle validation errors specifically
         if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map((error: any) => error.msg).join(', ');
+          const errorMessages = data.errors.map((error: { msg: string }) => error.msg).join(', ');
           throw new Error(errorMessages);
         }
         throw new Error(data.message || 'Registration failed');

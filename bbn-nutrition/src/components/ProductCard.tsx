@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Star, ShoppingCart, Heart, LogIn } from 'lucide-react';
+import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, isInCart } = useCart();
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -39,8 +41,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleWishlist = () => {
     if (!isAuthenticated) {
-      // Redirect to login for wishlist functionality
-      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+      // Use Next.js router for navigation
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
     setIsWishlisted(!isWishlisted);

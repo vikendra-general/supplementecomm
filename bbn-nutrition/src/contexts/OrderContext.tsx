@@ -12,7 +12,12 @@ interface OrderContextType {
   getOrder: (orderId: string) => Promise<Order | null>;
   cancelOrder: (orderId: string) => Promise<void>;
   requestReturn: (orderId: string, reason: string, items: string[]) => Promise<void>;
-  getOrderTracking: (orderId: string) => Promise<any>;
+  getOrderTracking: (orderId: string) => Promise<{
+    status: string;
+    location?: string;
+    timestamp: string;
+    description: string;
+  } | null>;
   clearError: () => void;
 }
 
@@ -34,7 +39,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { token, isAuthenticated } = useAuth();
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
@@ -70,8 +75,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       }
 
       setOrders(data.orders);
-    } catch (error) {
-      console.error('Get orders error:', error);
+    } catch (error: unknown) {
+      console.error('Error fetching orders:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch orders');
     } finally {
       setIsLoading(false);
@@ -174,7 +179,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     }
   };
 
-  const getOrderTracking = async (orderId: string) => {
+  const getOrderTracking = async (orderId: string): Promise<{
+    status: string;
+    location?: string;
+    timestamp: string;
+    description: string;
+  } | null> => {
     if (!token) return null;
 
     try {
@@ -188,13 +198,13 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch tracking');
+        throw new Error(data.message || 'Failed to fetch tracking info');
       }
 
       return data.tracking;
     } catch (error) {
       console.error('Get tracking error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch tracking');
+      setError(error instanceof Error ? error.message : 'Failed to fetch tracking info');
       return null;
     }
   };
@@ -205,10 +215,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   // Load orders when token is available
   useEffect(() => {
-    if (token) {
+    if (isAuthenticated) {
       getOrders();
     }
-  }, [token]);
+  }, [isAuthenticated, getOrders]);
 
   const value: OrderContextType = {
     orders,

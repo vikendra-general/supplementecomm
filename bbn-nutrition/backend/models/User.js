@@ -23,7 +23,15 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [8, 'Password must be at least 8 characters'],
+    validate: {
+      validator: function(password) {
+        // Check for at least one uppercase letter, one lowercase letter, one number, and one special character
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return passwordRegex.test(password);
+      },
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    },
     select: false
   },
   role: {
@@ -153,7 +161,7 @@ userSchema.pre('save', async function(next) {
     next();
   }
   
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(12); // Increased salt rounds for better security
   this.password = await bcrypt.hash(this.password, salt);
 });
 
