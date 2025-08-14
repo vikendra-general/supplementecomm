@@ -9,7 +9,8 @@ import {
   Save, 
   Edit,
   Eye,
-  EyeOff
+  EyeOff,
+  Truck
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -18,6 +19,7 @@ interface Order {
   orderNumber: string;
   total: number;
   status: string;
+  trackingNumber?: string;
   paymentStatus: string;
   createdAt: string;
   items: Array<{
@@ -213,7 +215,7 @@ export default function ProfilePage() {
                           ))}
                         </div>
                         
-                        <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
                           <Link 
                             href={`/orders/${order._id}`}
                             className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
@@ -221,6 +223,16 @@ export default function ProfilePage() {
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </Link>
+                          
+                          {order.trackingNumber && (
+                            <Link 
+                              href={`/track-order/${order._id}`}
+                              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
+                            >
+                              <Truck className="w-4 h-4 mr-2" />
+                              Track Order
+                            </Link>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -422,4 +434,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-} 
+}

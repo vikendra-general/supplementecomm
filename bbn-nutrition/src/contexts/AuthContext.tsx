@@ -187,12 +187,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     localStorage.removeItem('token');
     
-    // Clear all user-specific data from localStorage
+    // Clear only user-specific data from localStorage, preserve anonymous cart
     try {
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('cart_') || key.startsWith('user_'))) {
+        if (key && ((key.startsWith('cart_') && key !== 'cart_anonymous') || key.startsWith('user_'))) {
           keysToRemove.push(key);
         }
       }
@@ -263,4 +263,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}; 
+};

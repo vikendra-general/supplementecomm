@@ -235,7 +235,11 @@ app.use('*', (req, res) => {
 // Connect to MongoDB with retry logic
 const connectWithRetry = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
+    });
     console.log('✅ Connected to MongoDB');
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
@@ -271,4 +275,4 @@ process.on('SIGINT', () => {
   });
 });
 
-module.exports = app; 
+module.exports = app;

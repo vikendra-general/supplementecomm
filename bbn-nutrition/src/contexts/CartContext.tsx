@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types';
 import { useAuth } from './AuthContext';
+import { convertToINR } from '@/utils/currency';
 
 interface CartItem {
   product: Product;
@@ -216,8 +217,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const getCartTotal = useCallback(() => {
     return items.reduce((total, item) => {
       const price = item.variant?.price || item.product.price;
-      // Convert USD price to INR for cart total
-      const inrPrice = price * 83; // USD to INR conversion
+      // Convert USD price to INR for cart total using the utility function
+      const inrPrice = convertToINR(price);
       return total + (inrPrice * item.quantity);
     }, 0);
   }, [items]);
@@ -238,4 +239,4 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-}; 
+};

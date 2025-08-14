@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotification } from '@/components/ui/Notification';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, register, isLoading, isAuthenticated } = useAuth();
+  const { showNotification } = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,12 +22,28 @@ export default function LoginPage() {
     name: '',
     confirmPassword: ''
   });
+  
+  // Pre-fill admin credentials for demo purposes
+  useEffect(() => {
+    const isAdminLogin = searchParams.get('admin') === 'true';
+    if (isAdminLogin && isLogin) {
+      setFormData(prev => ({
+        ...prev,
+        email: 'admin@bbn-nutrition.com',
+        password: 'Admin123!'
+      }));
+      showNotification('info', 'Admin credentials pre-filled for demo purposes');
+    }
+  }, [searchParams, isLogin, showNotification]);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       const redirectTo = searchParams.get('redirect') || '/';
       router.push(redirectTo);
+      
+      // Log authentication success
+      console.log('Authentication successful, redirecting to:', redirectTo);
     }
   }, [isAuthenticated, isLoading, router, searchParams]);
 
@@ -64,6 +82,12 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
+        // Show success notification
+        showNotification('success', 'Login successful!');
+        // Check if user is admin
+        if (formData.email === 'admin@bbn-nutrition.com') {
+          showNotification('info', 'Welcome to the admin dashboard');
+        }
         // Redirect will be handled by useEffect
       } else {
         if (formData.password !== formData.confirmPassword) {
@@ -76,10 +100,13 @@ export default function LoginPage() {
         }
         
         await register(formData.name, formData.email, formData.password);
+        showNotification('success', 'Registration successful! You are now logged in.');
         // Redirect will be handled by useEffect
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      setError(errorMessage);
+      showNotification('error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -278,4 +305,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

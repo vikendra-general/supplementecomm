@@ -12,9 +12,10 @@ const sampleProducts = [
     originalPrice: 79.99,
     category: 'protein',
     brand: 'BBN',
-    images: ['/images/products/whey-protein-1.jpg', '/images/products/whey-protein-2.jpg'],
+    images: ['/src/assets/protien.jpg'],
     rating: 4.8,
-    reviews: 1247,
+    reviewCount: 1247,
+    reviews: [],
     inStock: true,
     stockQuantity: 150,
     nutritionFacts: {
@@ -46,9 +47,10 @@ const sampleProducts = [
     originalPrice: 54.99,
     category: 'pre-workout',
     brand: 'BBN',
-    images: ['/images/products/pre-workout-1.jpg', '/images/products/pre-workout-2.jpg'],
+    images: ['/src/assets/creatine.jpg'],
     rating: 4.6,
-    reviews: 892,
+    reviewCount: 892,
+    reviews: [],
     inStock: true,
     stockQuantity: 75,
     nutritionFacts: {
@@ -79,9 +81,10 @@ const sampleProducts = [
     originalPrice: 29.99,
     category: 'creatine',
     brand: 'BBN',
-    images: ['/images/products/creatine-1.jpg'],
+    images: ['/src/assets/creatine.jpg'],
     rating: 4.7,
-    reviews: 634,
+    reviewCount: 634,
+    reviews: [],
     inStock: true,
     stockQuantity: 200,
     nutritionFacts: {
@@ -111,9 +114,10 @@ const sampleProducts = [
     originalPrice: 39.99,
     category: 'amino acids',
     brand: 'BBN',
-    images: ['/images/products/bcaa-1.jpg'],
+    images: ['/src/assets/aminoacids.jpg'],
     rating: 4.5,
-    reviews: 456,
+    reviewCount: 456,
+    reviews: [],
     inStock: true,
     stockQuantity: 120,
     nutritionFacts: {
@@ -142,9 +146,10 @@ const sampleProducts = [
     originalPrice: 34.99,
     category: 'vitamins',
     brand: 'BBN',
-    images: ['/images/products/multivitamin-1.jpg'],
+    images: ['/src/assets/vitamins.jpg'],
     rating: 4.4,
-    reviews: 789,
+    reviewCount: 789,
+    reviews: [],
     inStock: true,
     stockQuantity: 180,
     nutritionFacts: {
@@ -379,4 +384,4 @@ const seedDatabase = async () => {
   }
 };
 
-seedDatabase(); 
+seedDatabase();

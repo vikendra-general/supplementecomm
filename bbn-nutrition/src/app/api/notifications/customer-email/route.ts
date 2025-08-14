@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
           </p>
           
           <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h4 style="color: #1e40af; margin-top: 0;">What's Next?</h4>
+            <h4 style="color: #1e40af; margin-top: 0;">What&apos;s Next?</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
               <li>We'll process your order within 24 hours</li>
               <li>You'll receive a tracking number once shipped</li>
@@ -104,4 +104,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

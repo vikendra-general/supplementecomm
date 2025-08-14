@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrders } from '@/contexts/OrderContext';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardPage() {
@@ -215,6 +216,15 @@ export default function DashboardPage() {
                               <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
                                 View Details
                               </button>
+                              {order.trackingNumber && (
+                                <Link 
+                                  href={`/track-order/${order._id}`}
+                                  className="text-green-600 hover:text-green-700 font-medium text-sm flex items-center"
+                                >
+                                  <Truck className="w-3 h-3 mr-1" />
+                                  Track Order
+                                </Link>
+                              )}
                               {order.status === 'pending' || order.status === 'confirmed' || order.status === 'processing' ? (
                                 <button 
                                   onClick={() => handleCancelOrder(order._id)}
@@ -375,4 +385,4 @@ export default function DashboardPage() {
       </div>
     </ProtectedRoute>
   );
-} 
+}

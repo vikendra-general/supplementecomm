@@ -10,9 +10,7 @@ export const products: Product[] = [
     category: 'Protein',
     brand: 'BBN',
     images: [
-      '/images/products/whey-protein.jpg',
-      '/images/products/whey-protein-2.jpg',
-      '/images/products/whey-protein-3.jpg'
+      '/images/products/protien.jpg'
     ],
     rating: 4.8,
     reviews: 1247,
@@ -44,8 +42,7 @@ export const products: Product[] = [
     category: 'Pre-Workout',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/creatine.jpg'
     ],
     rating: 4.6,
     reviews: 892,
@@ -71,8 +68,7 @@ export const products: Product[] = [
     category: 'Creatine',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/creatine.jpg'
     ],
     rating: 4.7,
     reviews: 1563,
@@ -98,8 +94,7 @@ export const products: Product[] = [
     category: 'Amino Acids',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/aminoacids.jpg'
     ],
     rating: 4.5,
     reviews: 734,
@@ -124,8 +119,7 @@ export const products: Product[] = [
     category: 'Vitamins',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/vitamins.jpg'
     ],
     rating: 4.4,
     reviews: 456,
@@ -151,8 +145,7 @@ export const products: Product[] = [
     category: 'Omega-3',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/images/products/fishoil.jpg'
     ],
     rating: 4.6,
     reviews: 623,
@@ -178,8 +171,7 @@ export const products: Product[] = [
     category: 'Mass Gainer',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/src/assets/protien.jpg'
     ],
     rating: 4.3,
     reviews: 387,
@@ -204,8 +196,7 @@ export const products: Product[] = [
     category: 'Fat Burners',
     brand: 'BBN',
     images: [
-      '/images/products/placeholder.svg',
-      '/images/products/placeholder.svg'
+      '/src/assets/fatburner.jpg'
     ],
     rating: 4.2,
     reviews: 298,
@@ -222,4 +213,4 @@ export const products: Product[] = [
       ingredients: ['L-Carnitine L-Tartrate']
     }
   }
-]; 
+];

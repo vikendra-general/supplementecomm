@@ -1,7 +1,7 @@
 import { Product, Order, User, Address } from '@/types';
 import { cache, CACHE_KEYS } from './cache';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -412,4 +412,4 @@ class ApiService {
   }
 }
 
-export const apiService = new ApiService(); 
+export const apiService = new ApiService();

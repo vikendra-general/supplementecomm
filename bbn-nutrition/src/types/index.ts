@@ -10,6 +10,7 @@ export interface Product {
   rating: number;
   reviews: number;
   inStock: boolean;
+  stockQuantity?: number;
   nutritionFacts?: NutritionFacts;
   variants?: ProductVariant[];
   tags: string[];
@@ -143,4 +144,4 @@ export interface FilterOptions {
 export interface SortOption {
   value: string;
   label: string;
-} 
+}

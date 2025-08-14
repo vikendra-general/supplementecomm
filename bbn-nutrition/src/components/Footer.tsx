@@ -94,6 +94,11 @@ export default function Footer() {
                   Size Guide
                 </Link>
               </li>
+              <li>
+                <Link href="/login?admin=true" className="text-gray-400 hover:text-white transition-colors">
+                  Admin Login
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -142,4 +147,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-} 
+}
