@@ -91,7 +91,18 @@ class ApiService {
     return this.request('/auth/me');
   }
 
-  async updateProfile(profileData: any) {
+  async updateProfile(profileData: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+      country?: string;
+    };
+  }) {
     return this.request('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData),
@@ -237,7 +248,13 @@ class ApiService {
     return this.request(`/orders/${id}`);
   }
 
-  async updateOrder(id: string, orderData: any) {
+  async updateOrder(id: string, orderData: {
+    status?: string;
+    paymentStatus?: string;
+    shippingStatus?: string;
+    trackingNumber?: string;
+    notes?: string;
+  }) {
     return this.request(`/orders/${id}`, {
       method: 'PUT',
       body: JSON.stringify(orderData),
@@ -289,14 +306,28 @@ class ApiService {
   }
 
   // User endpoints
-  async updateUserAddress(addressData: any) {
+  async updateUserAddress(addressData: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+    isDefault?: boolean;
+  }) {
     return this.request('/user/addresses', {
       method: 'POST',
       body: JSON.stringify(addressData),
     });
   }
 
-  async updateUserAddressById(addressId: string, addressData: any) {
+  async updateUserAddressById(addressId: string, addressData: {
+    street?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    country?: string;
+    isDefault?: boolean;
+  }) {
     return this.request(`/user/addresses/${addressId}`, {
       method: 'PUT',
       body: JSON.stringify(addressData),

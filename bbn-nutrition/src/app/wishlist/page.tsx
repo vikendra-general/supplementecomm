@@ -7,9 +7,21 @@ import ProductCard from '@/components/ProductCard';
 import { products } from '@/data/products';
 import { useCart } from '@/contexts/CartContext';
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+  rating?: number;
+  reviews?: number;
+  stock?: number;
+}
+
 interface WishlistItem {
   id: string;
-  product: any;
+  product: Product;
   addedAt: string;
 }
 
@@ -39,7 +51,7 @@ export default function WishlistPage() {
     localStorage.setItem(`wishlist_${user?.id || 'anonymous'}`, JSON.stringify(updatedWishlist));
   };
 
-  const moveToCart = (product: any) => {
+  const moveToCart = (product: Product) => {
     addToCart(product, 1);
     removeFromWishlist(product.id);
   };
@@ -108,4 +120,4 @@ export default function WishlistPage() {
       </div>
     </div>
   );
-} 
+}

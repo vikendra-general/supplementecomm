@@ -1,6 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
@@ -470,4 +472,206 @@ router.put('/products/bulk-stock', [
   }
 });
 
-module.exports = router; 
+const adminProductController = require('../controllers/adminProductController');
+const adminBulkController = require('../controllers/adminBulkController');
+const categoryController = require('../controllers/categoryController');
+
+// @desc    Bulk update product featured status
+// @route   PUT /api/admin/products/bulk-featured
+// @access  Private/Admin
+router.put('/products/bulk-featured', [
+  body('updates')
+    .isArray()
+    .withMessage('Updates must be an array'),
+  body('updates.*.productId')
+    .isMongoId()
+    .withMessage('Invalid product ID'),
+  body('updates.*.featured')
+    .isBoolean()
+    .withMessage('Featured must be a boolean value')
+], adminProductController.bulkUpdateFeatured);
+
+// @desc    Product routes (admin)
+// @route   /api/admin/products
+// @access  Private/Admin
+
+// Get all products
+router.get('/products', adminProductController.getProducts);
+
+// Get single product
+router.get('/products/:id', adminProductController.getProduct);
+
+// Create new product
+router.post('/products', upload.array('images', 5), [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Product name must be between 2 and 100 characters'),
+  body('description')
+    .trim()
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Description must be between 10 and 1000 characters'),
+  body('price')
+    .isFloat({ min: 0 })
+    .withMessage('Price must be a positive number'),
+  body('category')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid category'),
+  body('brand')
+    .trim()
+    .notEmpty()
+    .withMessage('Brand is required'),
+  body('stockQuantity')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Stock quantity must be a non-negative integer'),
+  body('featured')
+    .optional()
+    .isBoolean()
+    .withMessage('Featured must be a boolean'),
+  body('bestSeller')
+    .optional()
+    .isBoolean()
+    .withMessage('Best seller must be a boolean'),
+  body('newArrival')
+    .optional()
+    .isBoolean()
+    .withMessage('New arrival must be a boolean'),
+  body('discount')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Discount must be between 0 and 100')
+], adminProductController.createProduct);
+
+// Update product
+router.put('/products/:id', upload.array('images', 5), [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Product name must be between 2 and 100 characters'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Description must be between 10 and 1000 characters'),
+  body('price')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Price must be a positive number'),
+  body('stockQuantity')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Stock quantity must be a non-negative integer'),
+  body('featured')
+    .optional()
+    .isBoolean()
+    .withMessage('Featured must be a boolean'),
+  body('bestSeller')
+    .optional()
+    .isBoolean()
+    .withMessage('Best seller must be a boolean'),
+  body('newArrival')
+    .optional()
+    .isBoolean()
+    .withMessage('New arrival must be a boolean'),
+  body('discount')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Discount must be between 0 and 100')
+], adminProductController.updateProduct);
+
+// Delete product
+router.delete('/products/:id', adminProductController.deleteProduct);
+
+// Bulk operations
+
+// @desc    Bulk update product stock
+// @route   PUT /api/admin/products/bulk-stock
+// @access  Private/Admin
+router.put('/products/bulk-stock', [
+  body('updates')
+    .isArray()
+    .withMessage('Updates must be an array'),
+  body('updates.*.productId')
+    .isMongoId()
+    .withMessage('Invalid product ID'),
+  body('updates.*.stockQuantity')
+    .isInt({ min: 0 })
+    .withMessage('Stock quantity must be a non-negative integer')
+], adminBulkController.bulkUpdateStock);
+
+// @desc    Bulk update product featured status
+// @route   PUT /api/admin/products/bulk-featured
+// @access  Private/Admin
+router.put('/products/bulk-featured', [
+  body('updates')
+    .isArray()
+    .withMessage('Updates must be an array'),
+  body('updates.*.productId')
+    .isMongoId()
+    .withMessage('Invalid product ID'),
+  body('updates.*.featured')
+    .isBoolean()
+    .withMessage('Featured must be a boolean')
+], adminBulkController.bulkUpdateFeatured);
+
+// @desc    Bulk delete products
+// @route   DELETE /api/admin/products/bulk
+// @access  Private/Admin
+router.delete('/products/bulk', [
+  body('productIds')
+    .isArray()
+    .withMessage('Product IDs must be an array'),
+  body('productIds.*')
+    .isMongoId()
+    .withMessage('Invalid product ID')
+], adminBulkController.bulkDeleteProducts);
+
+// @desc    Category routes (admin)
+// @route   /api/admin/categories
+// @access  Private/Admin
+
+// Create category
+router.post('/categories', [
+  body('name')
+    .notEmpty()
+    .withMessage('Category name is required')
+    .isLength({ max: 50 })
+    .withMessage('Category name cannot be more than 50 characters'),
+  body('description')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Description cannot be more than 500 characters'),
+  body('parentId')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid parent category ID')
+], categoryController.createCategory);
+
+// Update category
+router.put('/categories/:id', [
+  body('name')
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage('Category name cannot be more than 50 characters'),
+  body('description')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Description cannot be more than 500 characters'),
+  body('parentId')
+    .optional()
+    .custom((value) => {
+      if (value === null) return true; // Allow null to remove parent
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new Error('Invalid parent category ID');
+      }
+      return true;
+    })
+], categoryController.updateCategory);
+
+// Delete category
+router.delete('/categories/:id', categoryController.deleteCategory);
+
+module.exports = router;

@@ -45,9 +45,9 @@ const productSchema = new mongoose.Schema({
     min: [0, 'Original price cannot be negative']
   },
   category: {
-    type: String,
-    required: [true, 'Please provide a product category'],
-    enum: ['protein', 'pre-workout', 'creatine', 'amino acids', 'vitamins', 'omega-3', 'mass gainer', 'fat burners']
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: [true, 'Please provide a product category']
   },
   brand: {
     type: String,
@@ -181,9 +181,10 @@ const productSchema = new mongoose.Schema({
 // Generate SKU if not provided
 productSchema.pre('save', function(next) {
   if (!this.sku) {
-    const categoryCode = this.category.substring(0, 3).toUpperCase();
+    // Generate a random 3-letter code instead of using category
+    const brandCode = this.brand.substring(0, 3).toUpperCase();
     const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.sku = `${categoryCode}-${randomNum}`;
+    this.sku = `${brandCode}-${randomNum}`;
   }
   
   if (!this.seoUrl) {
@@ -239,4 +240,4 @@ productSchema.index({ category: 1, inStock: 1 });
 productSchema.index({ featured: 1, createdAt: -1 });
 productSchema.index({ rating: -1, reviewCount: -1 });
 
-module.exports = mongoose.model('Product', productSchema); 
+module.exports = mongoose.model('Product', productSchema);

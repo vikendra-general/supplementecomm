@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { formatINR } from '@/utils/currency';
+import { formatINR, USD_TO_INR_RATE } from '@/utils/currency';
 
 export default function CheckoutPage() {
   const { items, getCartTotal } = useCart();
@@ -47,10 +47,43 @@ export default function CheckoutPage() {
     }));
   };
 
+  // Validate Indian phone number (10 digits, optionally with +91 prefix)
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // Validate Indian PIN code (6 digits)
+  const validatePincode = (pincode: string) => {
+    const pincodeRegex = /^[1-9][0-9]{5}$/;
+    return pincodeRegex.test(pincode);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3) {
-      setStep(step + 1);
+    
+    // Validate form data based on current step
+    if (step === 1) {
+      // Validate phone and pincode for billing address
+      if (!validatePhone(formData.phone)) {
+        alert('Please enter a valid Indian phone number');
+        return;
+      }
+      
+      if (!validatePincode(formData.pincode)) {
+        alert('Please enter a valid 6-digit PIN code');
+        return;
+      }
+      
+      setStep(2);
+    } else if (step === 2) {
+      // Validate shipping address pincode if different from billing
+      if (!formData.sameAsBilling && !validatePincode(formData.shippingPincode)) {
+        alert('Please enter a valid 6-digit PIN code for shipping address');
+        return;
+      }
+      
+      setStep(3);
     } else {
       // Process order with notifications
       try {
@@ -113,7 +146,43 @@ export default function CheckoutPage() {
     }
   };
 
-  const sendOrderNotifications = async (orderData: any) => {
+  interface OrderData {
+    items: Array<{
+      product: string;
+      name: string;
+      price: number;
+      quantity: number;
+    }>;
+    shippingAddress: {
+      fullName: string;
+      street: string;
+      landmark: string;
+      city: string;
+      district: string;
+      state: string;
+      pincode: string;
+      country: string;
+      email?: string;
+      phone?: string;
+    };
+    billingAddress: {
+      fullName: string;
+      street: string;
+      landmark: string;
+      city: string;
+      district: string;
+      state: string;
+      pincode: string;
+      country: string;
+    };
+    paymentMethod: string;
+    total: number;
+    subtotal: number;
+    shipping: number;
+    tax: number;
+  }
+
+  const sendOrderNotifications = async (orderData: OrderData) => {
     try {
       // Send email to admin
       await fetch('/api/notifications/admin-email', {
@@ -160,7 +229,7 @@ export default function CheckoutPage() {
   // Use actual cart data
   const subtotal = getCartTotal();
   const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
-  const tax = subtotal * 0.18; // 18% GST
+  const tax = Math.round(subtotal * 0.18); // 18% GST rounded to nearest integer
   const total = subtotal + shipping + tax;
 
   return (
@@ -242,15 +311,23 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number *
                     </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      placeholder="+91 98765 43210"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <span className="text-gray-500">+91</span>
+                      </div>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        placeholder="9876543210"
+                        pattern="[6789][0-9]{9}"
+                        maxLength={10}
+                        className="w-full pl-12 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Enter 10-digit mobile number without country code</p>
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -347,15 +424,14 @@ export default function CheckoutPage() {
                       <option value="Uttar Pradesh">Uttar Pradesh</option>
                       <option value="Uttarakhand">Uttarakhand</option>
                       <option value="West Bengal">West Bengal</option>
+                      <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                      <option value="Chandigarh">Chandigarh</option>
+                      <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
                       <option value="Delhi">Delhi</option>
                       <option value="Jammu and Kashmir">Jammu and Kashmir</option>
                       <option value="Ladakh">Ladakh</option>
-                      <option value="Chandigarh">Chandigarh</option>
-                      <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
-                      <option value="Daman and Diu">Daman and Diu</option>
                       <option value="Lakshadweep">Lakshadweep</option>
                       <option value="Puducherry">Puducherry</option>
-                      <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                     </select>
                   </div>
                   <div>
@@ -370,9 +446,10 @@ export default function CheckoutPage() {
                       required
                       placeholder="400001"
                       maxLength={6}
-                      pattern="[0-9]{6}"
+                      pattern="[1-9][0-9]{5}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                    <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
                   </div>
                 </div>
               </div>
@@ -505,33 +582,33 @@ export default function CheckoutPage() {
                         <option value="Uttar Pradesh">Uttar Pradesh</option>
                         <option value="Uttarakhand">Uttarakhand</option>
                         <option value="West Bengal">West Bengal</option>
+                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
                         <option value="Delhi">Delhi</option>
                         <option value="Jammu and Kashmir">Jammu and Kashmir</option>
                         <option value="Ladakh">Ladakh</option>
-                        <option value="Chandigarh">Chandigarh</option>
-                        <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
-                        <option value="Daman and Diu">Daman and Diu</option>
                         <option value="Lakshadweep">Lakshadweep</option>
                         <option value="Puducherry">Puducherry</option>
-                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Pincode *
-                      </label>
-                      <input
-                        type="text"
-                        name="shippingPincode"
-                        value={formData.shippingPincode}
-                        onChange={handleChange}
-                        required={!formData.sameAsBilling}
-                        placeholder="400001"
-                        maxLength={6}
-                        pattern="[0-9]{6}"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Pincode *
+                        </label>
+                        <input
+                          type="text"
+                          name="shippingPincode"
+                          value={formData.shippingPincode}
+                          onChange={handleChange}
+                          required={!formData.sameAsBilling}
+                          placeholder="400001"
+                          maxLength={6}
+                          pattern="[1-9][0-9]{5}"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
+                      </div>
                   </div>
                 )}
               </div>
@@ -674,7 +751,7 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <span className="font-medium text-gray-900">
-                    {formatINR((item.variant?.price || item.product.price) * 83 * item.quantity)}
+                    {formatINR((item.variant?.price || item.product.price) * USD_TO_INR_RATE * item.quantity)}
                   </span>
                 </div>
               ))}
@@ -726,4 +803,4 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
-} 
+}

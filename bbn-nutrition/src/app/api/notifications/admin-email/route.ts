@@ -1,12 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+interface OrderItem {
+  product: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface Address {
+  fullName: string;
+  street: string;
+  landmark: string;
+  city: string;
+  district: string;
+  state: string;
+  pincode: string;
+  country: string;
+  email?: string;
+  phone?: string;
+}
+
+interface OrderData {
+  items: OrderItem[];
+  shippingAddress: Address;
+  billingAddress: Address;
+  paymentMethod: string;
+  total: number;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { orderData, adminEmail } = await request.json();
-
-    // Create transporter (configure with your email service)
-    const transporter = nodemailer.createTransporter({
+    const { orderData } = await request.json() as { orderData: OrderData };
+    
+    // Get admin email from environment variable or use a default
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@boosterboxnutrition.com';
+    
+    // Configure nodemailer
+    const transporter = nodemailer.createTransport({
       service: 'gmail', // or your email service
       auth: {
         user: process.env.EMAIL_USER,
@@ -61,7 +95,7 @@ export async function POST(request: NextRequest) {
               </tr>
             </thead>
             <tbody>
-              ${orderData.items.map((item: any) => `
+              ${orderData.items.map((item) => `
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
                   <td style="padding: 8px; border: 1px solid #ddd;">${item.quantity}</td>
@@ -89,4 +123,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

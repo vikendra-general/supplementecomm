@@ -62,14 +62,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is authenticated on mount
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+    
     const initAuth = async () => {
       try {
         const storedToken = localStorage.getItem('token');
-        if (storedToken) {
+        if (storedToken && isMounted) {
           setToken(storedToken);
           // Set a timeout to prevent infinite loading
-          const timeoutId = setTimeout(() => {
-            setIsLoading(false);
+          timeoutId = setTimeout(() => {
+            if (isMounted) {
+              setIsLoading(false);
+            }
           }, 1000);
 
           try {
@@ -80,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               },
             });
 
-            if (response.ok) {
+            if (response.ok && isMounted) {
               const data = await response.json();
               if (data.success && data.user) {
                 setUser(data.user);
@@ -89,17 +94,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 localStorage.removeItem('token');
                 setToken(null);
               }
-            } else {
+            } else if (isMounted) {
               // Token is invalid, remove it
               localStorage.removeItem('token');
               setToken(null);
             }
           } catch (error) {
             console.error('Auth initialization error:', error);
-            localStorage.removeItem('token');
-            setToken(null);
+            if (isMounted) {
+              localStorage.removeItem('token');
+              setToken(null);
+            }
           } finally {
-            clearTimeout(timeoutId);
+            if (isMounted) {
+              clearTimeout(timeoutId);
+            }
             setIsLoading(false);
           }
         } else {
@@ -112,6 +121,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initAuth();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [API_BASE_URL]);
 
   const login = async (email: string, password: string) => {

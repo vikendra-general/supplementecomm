@@ -20,6 +20,7 @@ const orderRoutes = require('./routes/orders');
 const productRoutes = require('./routes/products');
 const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
+const categoryRoutes = require('./routes/categories');
 
 const app = express();
 
@@ -106,6 +107,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -139,6 +141,10 @@ app.get('/api/docs', (req, res) => {
         'DELETE /api/products/:id': 'Delete product (admin)',
         'POST /api/products/:id/reviews': 'Add product review'
       },
+      categories: {
+        'GET /api/categories': 'Get all categories',
+        'GET /api/categories/:id': 'Get single category'
+      },
       orders: {
         'GET /api/orders': 'Get user orders',
         'POST /api/orders': 'Create order',
@@ -155,7 +161,17 @@ app.get('/api/docs', (req, res) => {
         'GET /api/admin/orders': 'Get all orders (admin)',
         'PUT /api/admin/orders/:id/status': 'Update order status',
         'GET /api/admin/users': 'Get all users (admin)',
-        'PUT /api/admin/users/:id/role': 'Update user role'
+        'PUT /api/admin/users/:id/role': 'Update user role',
+        'GET /api/admin/products': 'Get all products (admin)',
+        'POST /api/admin/products': 'Create product (admin)',
+        'PUT /api/admin/products/:id': 'Update product (admin)',
+        'DELETE /api/admin/products/:id': 'Delete product (admin)',
+        'PUT /api/admin/products/bulk-stock': 'Bulk update product stock',
+        'PUT /api/admin/products/bulk-featured': 'Bulk update product featured status',
+        'DELETE /api/admin/products/bulk': 'Bulk delete products',
+        'POST /api/admin/categories': 'Create category (admin)',
+        'PUT /api/admin/categories/:id': 'Update category (admin)',
+        'DELETE /api/admin/categories/:id': 'Delete category (admin)'
       }
     }
   });

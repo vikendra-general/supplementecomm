@@ -5,7 +5,7 @@ interface CacheItem<T> {
 }
 
 class Cache {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new Map<string, CacheItem<unknown>>();
 
   set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void {
     this.cache.set(key, {
@@ -46,4 +46,4 @@ export const CACHE_KEYS = {
   CATEGORIES: 'categories',
   USER_PROFILE: 'user_profile',
   CART: 'cart'
-} as const; 
+} as const;

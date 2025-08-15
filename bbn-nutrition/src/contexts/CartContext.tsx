@@ -159,10 +159,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [isAuthenticated, isInitialized]);
 
   const addToCart = useCallback((product: Product, quantity: number = 1, variant?: CartItem['variant']) => {
+    if (!product || !product.id) {
+      console.error('Invalid product data:', product);
+      return;
+    }
+    
     setItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(
         item => item.product.id === product.id && 
-        (!variant || item.variant?.id === variant.id)
+        (!variant || !item.variant || item.variant?.id === variant.id)
       );
 
       if (existingItemIndex > -1) {

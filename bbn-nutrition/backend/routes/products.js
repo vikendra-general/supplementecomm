@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
     const filter = {};
 
     if (category) {
-      filter.category = { $regex: category, $options: 'i' };
+      filter.category = category;
     }
 
     if (brand) {
@@ -146,7 +146,7 @@ router.post('/', protect, authorize('admin'), upload.array('images', 5), [
     .isFloat({ min: 0 })
     .withMessage('Price must be a positive number'),
   body('category')
-    .isIn(['protein', 'pre-workout', 'creatine', 'amino acids', 'vitamins', 'omega-3', 'mass gainer', 'fat burners'])
+    .isMongoId()
     .withMessage('Invalid category'),
   body('brand')
     .trim()
@@ -431,4 +431,4 @@ router.get('/brands', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

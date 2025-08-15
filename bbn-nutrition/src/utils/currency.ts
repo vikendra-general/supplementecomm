@@ -1,8 +1,11 @@
 // Currency conversion utility
 // 1 USD = ~83 INR (approximate rate, you can update this as needed)
-const USD_TO_INR_RATE = 83;
+export const USD_TO_INR_RATE = 83;
 
-export const convertToINR = (usdPrice: number): number => {
+export const convertToINR = (usdPrice: number | null | undefined): number => {
+  if (usdPrice === null || usdPrice === undefined) {
+    return 0;
+  }
   return usdPrice * USD_TO_INR_RATE;
 };
 
@@ -28,4 +31,4 @@ export const formatINRWithDecimals = (amount: number): string => {
 export const formatPrice = (usdPrice: number, withDecimals: boolean = false): string => {
   const inrPrice = convertToINR(usdPrice);
   return withDecimals ? formatINRWithDecimals(inrPrice) : formatINR(inrPrice);
-}; 
+};

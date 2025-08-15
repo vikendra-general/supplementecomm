@@ -24,9 +24,12 @@ const config: Config = {
         'dark-text': '#ffffff',
         'dark-text-secondary': '#cccccc',
       },
+      borderColor: {
+        'dark-border': '#333333',
+      },
     },
   },
   plugins: [],
 };
 
-export default config; 
+export default config;
