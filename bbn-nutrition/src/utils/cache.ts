@@ -25,7 +25,7 @@ class Cache {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
   clear(): void {

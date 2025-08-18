@@ -6,6 +6,9 @@ const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
+const adminProductController = require('../controllers/adminProductController');
+const adminBulkController = require('../controllers/adminBulkController');
+const categoryController = require('../controllers/categoryController');
 
 const router = express.Router();
 
@@ -347,6 +350,225 @@ router.put('/users/:id/role', [
   }
 });
 
+// @desc    Get comprehensive analytics
+// @route   GET /api/admin/analytics
+// @access  Private/Admin
+router.get('/analytics', async (req, res) => {
+  try {
+    const { timeRange = '12months' } = req.query;
+    
+    // Calculate date range
+    let startDate = new Date();
+    switch (timeRange) {
+      case '7days':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30days':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '3months':
+        startDate.setMonth(startDate.getMonth() - 3);
+        break;
+      case '6months':
+        startDate.setMonth(startDate.getMonth() - 6);
+        break;
+      case '12months':
+      default:
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+    }
+
+    // Get basic stats
+    const totalProducts = await Product.countDocuments();
+    const totalOrders = await Order.countDocuments({ createdAt: { $gte: startDate } });
+    const totalUsers = await User.countDocuments({ role: 'user', createdAt: { $gte: startDate } });
+    
+    // Get revenue data
+    const revenueData = await Order.aggregate([
+      { $match: { paymentStatus: 'paid', createdAt: { $gte: startDate } } },
+      { $group: { _id: null, total: { $sum: '$total' }, count: { $sum: 1 } } }
+    ]);
+    
+    const totalRevenue = revenueData[0]?.total || 0;
+    const averageOrderValue = revenueData[0]?.count > 0 ? totalRevenue / revenueData[0].count : 0;
+
+    // Get growth data (compare with previous period)
+    const previousPeriodStart = new Date(startDate);
+    const periodDiff = new Date() - startDate;
+    previousPeriodStart.setTime(previousPeriodStart.getTime() - periodDiff);
+    
+    const previousRevenue = await Order.aggregate([
+      { $match: { paymentStatus: 'paid', createdAt: { $gte: previousPeriodStart, $lt: startDate } } },
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ]);
+    
+    const previousOrders = await Order.countDocuments({ 
+      createdAt: { $gte: previousPeriodStart, $lt: startDate } 
+    });
+    
+    const previousUsers = await User.countDocuments({ 
+      role: 'user', 
+      createdAt: { $gte: previousPeriodStart, $lt: startDate } 
+    });
+
+    // Calculate growth percentages
+    const revenueGrowth = previousRevenue[0]?.total > 0 
+      ? ((totalRevenue - previousRevenue[0].total) / previousRevenue[0].total) * 100 
+      : 0;
+    const ordersGrowth = previousOrders > 0 
+      ? ((totalOrders - previousOrders) / previousOrders) * 100 
+      : 0;
+    const usersGrowth = previousUsers > 0 
+      ? ((totalUsers - previousUsers) / previousUsers) * 100 
+      : 0;
+
+    // Get monthly revenue trend
+    const monthlyRevenue = await Order.aggregate([
+      { $match: { paymentStatus: 'paid', createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { 
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          revenue: { $sum: '$total' },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ]);
+
+    // Get top selling products
+    const topSellingProducts = await Order.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.product',
+          totalSold: { $sum: '$items.quantity' },
+          totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      { $unwind: '$product' }
+    ]);
+
+    // Get order status distribution
+    const ordersByStatus = await Order.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Calculate percentages for order status
+    const totalOrdersForStatus = ordersByStatus.reduce((sum, item) => sum + item.count, 0);
+    const orderStatusWithPercentage = ordersByStatus.map(item => ({
+      status: item._id,
+      count: item.count,
+      percentage: totalOrdersForStatus > 0 ? (item.count / totalOrdersForStatus) * 100 : 0
+    }));
+
+    // Get top categories
+    const topCategories = await Order.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      { $unwind: '$items' },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'items.product',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      { $unwind: '$product' },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'product.category',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      { $unwind: '$category' },
+      {
+        $group: {
+          _id: '$category.name',
+          sales: { $sum: '$items.quantity' },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // Get low stock alerts
+    const lowStockProducts = await Product.find({
+      stockQuantity: { $lt: 10, $gt: 0 }
+    }).select('name stockQuantity').limit(10);
+
+    const outOfStockProducts = await Product.find({
+      $or: [{ inStock: false }, { stockQuantity: 0 }]
+    }).select('name').limit(10);
+
+    // Calculate conversion rate (assuming we track website visits)
+    const conversionRate = totalUsers > 0 ? (totalOrders / totalUsers) * 100 : 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalRevenue,
+        revenueGrowth,
+        totalOrders,
+        ordersGrowth,
+        totalCustomers: totalUsers,
+        customersGrowth: usersGrowth,
+        totalProducts,
+        productsGrowth: 0, // Products don't have historical growth in this timeframe
+        averageOrderValue,
+        conversionRate,
+        topSellingProducts: topSellingProducts.map(item => ({
+          id: item._id,
+          name: item.product.name,
+          sales: item.totalSold,
+          revenue: item.totalRevenue
+        })),
+        revenueByMonth: monthlyRevenue.map(item => ({
+          month: new Date(item._id.year, item._id.month - 1).toLocaleDateString('en-US', { month: 'short' }),
+          revenue: item.revenue,
+          orders: item.orders
+        })),
+        ordersByStatus: orderStatusWithPercentage,
+        topCategories: topCategories.map(item => ({
+          category: item._id,
+          sales: item.sales,
+          revenue: item.revenue
+        })),
+        lowStockProducts,
+        outOfStockProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get analytics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // @desc    Get product analytics
 // @route   GET /api/admin/products/analytics
 // @access  Private/Admin
@@ -472,10 +694,6 @@ router.put('/products/bulk-stock', [
   }
 });
 
-const adminProductController = require('../controllers/adminProductController');
-const adminBulkController = require('../controllers/adminBulkController');
-const categoryController = require('../controllers/categoryController');
-
 // @desc    Bulk update product featured status
 // @route   PUT /api/admin/products/bulk-featured
 // @access  Private/Admin
@@ -489,7 +707,7 @@ router.put('/products/bulk-featured', [
   body('updates.*.featured')
     .isBoolean()
     .withMessage('Featured must be a boolean value')
-], adminProductController.bulkUpdateFeatured);
+], adminBulkController.bulkUpdateFeatured);
 
 // @desc    Product routes (admin)
 // @route   /api/admin/products

@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
               </tr>
             </thead>
             <tbody>
-              ${orderData.items.map((item) => `
+              ${orderData.items.map((item: OrderItem) => `
                 <tr>
                   <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
                   <td style="padding: 8px; border: 1px solid #ddd;">${item.quantity}</td>

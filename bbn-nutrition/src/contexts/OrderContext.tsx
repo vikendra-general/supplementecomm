@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Order } from '@/types';
 import { useAuth } from './AuthContext';
 
@@ -43,7 +43,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
-  const getOrders = async (page = 1, limit = 10, status?: string) => {
+  const getOrders = useCallback(async (page = 1, limit = 10, status?: string) => {
     if (!token) return;
 
     setIsLoading(true);
@@ -81,7 +81,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, API_BASE_URL]);
 
   const getOrder = async (orderId: string): Promise<Order | null> => {
     if (!token) return null;
@@ -233,4 +233,4 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   };
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
-}; 
+};

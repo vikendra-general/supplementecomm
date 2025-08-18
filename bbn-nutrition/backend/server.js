@@ -91,7 +91,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [process.env.FRONTEND_URL] 
-    : ['http://localhost:3000', 'http://localhost:3002'],
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -108,6 +108,28 @@ app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+
+// Base API route
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'BBN Nutrition API',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV,
+    endpoints: {
+      auth: '/api/auth',
+      users: '/api/user',
+      products: '/api/products',
+      orders: '/api/orders',
+      payments: '/api/payments',
+      admin: '/api/admin',
+      categories: '/api/categories',
+      health: '/api/health',
+      docs: '/api/docs'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -141,10 +163,6 @@ app.get('/api/docs', (req, res) => {
         'DELETE /api/products/:id': 'Delete product (admin)',
         'POST /api/products/:id/reviews': 'Add product review'
       },
-      categories: {
-        'GET /api/categories': 'Get all categories',
-        'GET /api/categories/:id': 'Get single category'
-      },
       orders: {
         'GET /api/orders': 'Get user orders',
         'POST /api/orders': 'Create order',
@@ -161,17 +179,7 @@ app.get('/api/docs', (req, res) => {
         'GET /api/admin/orders': 'Get all orders (admin)',
         'PUT /api/admin/orders/:id/status': 'Update order status',
         'GET /api/admin/users': 'Get all users (admin)',
-        'PUT /api/admin/users/:id/role': 'Update user role',
-        'GET /api/admin/products': 'Get all products (admin)',
-        'POST /api/admin/products': 'Create product (admin)',
-        'PUT /api/admin/products/:id': 'Update product (admin)',
-        'DELETE /api/admin/products/:id': 'Delete product (admin)',
-        'PUT /api/admin/products/bulk-stock': 'Bulk update product stock',
-        'PUT /api/admin/products/bulk-featured': 'Bulk update product featured status',
-        'DELETE /api/admin/products/bulk': 'Bulk delete products',
-        'POST /api/admin/categories': 'Create category (admin)',
-        'PUT /api/admin/categories/:id': 'Update category (admin)',
-        'DELETE /api/admin/categories/:id': 'Delete category (admin)'
+        'PUT /api/admin/users/:id/role': 'Update user role'
       }
     }
   });
@@ -252,8 +260,6 @@ app.use('*', (req, res) => {
 const connectWithRetry = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
     });
     console.log('✅ Connected to MongoDB');
@@ -275,20 +281,28 @@ const connectWithRetry = async () => {
 connectWithRetry();
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('👋 SIGTERM received, shutting down gracefully');
-  mongoose.connection.close(() => {
+  try {
+    await mongoose.connection.close();
     console.log('✅ MongoDB connection closed');
     process.exit(0);
-  });
+  } catch (error) {
+    console.error('❌ Error closing MongoDB connection:', error);
+    process.exit(1);
+  }
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('👋 SIGINT received, shutting down gracefully');
-  mongoose.connection.close(() => {
+  try {
+    await mongoose.connection.close();
     console.log('✅ MongoDB connection closed');
     process.exit(0);
-  });
+  } catch (error) {
+    console.error('❌ Error closing MongoDB connection:', error);
+    process.exit(1);
+  }
 });
 
 module.exports = app;

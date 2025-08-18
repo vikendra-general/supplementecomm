@@ -10,7 +10,7 @@ import { useNotification } from '@/components/ui/Notification';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, register, isLoading, isAuthenticated } = useAuth();
+  const { login, register, isLoading, isAuthenticated, user } = useAuth();
   const { showNotification } = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -38,14 +38,24 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      const redirectTo = searchParams.get('redirect') || '/';
-      router.push(redirectTo);
+    if (isAuthenticated && !isLoading && user) {
+      const redirectTo = searchParams.get('redirect');
+      
+      // Check if user is admin and redirect accordingly
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (user.role === 'admin') {
+        // Redirect admin users to admin dashboard
+        router.push('/admin/dashboard');
+      } else {
+        // Default redirect for regular users
+        router.push('/');
+      }
       
       // Log authentication success
-      console.log('Authentication successful, redirecting to:', redirectTo);
+      console.log('Authentication successful, redirecting based on role:', user.role);
     }
-  }, [isAuthenticated, isLoading, router, searchParams]);
+  }, [isAuthenticated, isLoading, user, router, searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({

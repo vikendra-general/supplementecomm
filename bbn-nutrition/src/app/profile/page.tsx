@@ -3,13 +3,10 @@
 import { useState } from 'react';
 import { 
   User, 
-  Mail, 
-  Phone, 
   MapPin, 
   Save, 
   Edit,
   Eye,
-  EyeOff,
   Truck
 } from 'lucide-react';
 import Link from 'next/link';
@@ -55,11 +52,11 @@ interface WishlistItem {
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [orders] = useState<Order[]>([]);
+  const [wishlist] = useState<WishlistItem[]>([]);
+  const [addresses] = useState<Address[]>([]);
+  const [loading] = useState(true);
+  const [error] = useState<string | null>(null);
 
   // The useEffect hook and user context are removed as per the edit hint.
   // The user object and isAuthenticated are no longer available.

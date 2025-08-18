@@ -17,17 +17,19 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary-green: #10b981;
-  --primary-green-dark: #059669;
-  --primary-green-light: #34d399;
-  --accent-green: #6ee7b7;
-  --dark-green: #047857;
-  --black: #000000;
+  /* BBN-Nutrition Bold & Energetic Color Palette */
+  --background: #121212;
+  --foreground: #EAEAEA;
+  --primary-green: #00FF73;
+  --primary-green-dark: #00CC5A;
+  --primary-green-light: #33FF8F;
+  --accent-orange: #FF6B35;
+  --accent-cyan: #00D4FF;
+  --secondary-black: #0B0B0B;
   --dark-gray: #1f2937;
-  --light-gray: #f3f4f6;
+  --light-gray: #EAEAEA;
   --white: #ffffff;
+  --neutral-light: #EAEAEA;
 }
 
 @theme inline {
@@ -36,12 +38,13 @@
   --color-primary: var(--primary-green);
   --color-primary-dark: var(--primary-green-dark);
   --color-primary-light: var(--primary-green-light);
-  --color-accent: var(--accent-green);
-  --color-dark-green: var(--dark-green);
-  --color-black: var(--black);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-secondary-black: var(--secondary-black);
   --color-dark-gray: var(--dark-gray);
   --color-light-gray: var(--light-gray);
   --color-white: var(--white);
+  --color-neutral-light: var(--neutral-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -50,6 +53,35 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Inter', Arial, Helvetica, sans-serif;
+}
+
+/* BBN-Nutrition Energetic Theme Styles */
+.energetic-cta {
+  background: linear-gradient(135deg, var(--accent-orange), #FF8A5B) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.energetic-cta:hover {
+  background: linear-gradient(135deg, #FF8A5B, var(--accent-orange)) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6) !important;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary-green), #33FF8F) !important;
+  color: var(--secondary-black) !important;
+  font-weight: 600 !important;
+}
+
+.secondary-btn {
+  background: var(--accent-blue) !important;
+  color: white !important;
+  font-weight: 600 !important;
 }
 
 /* Custom scrollbar */
@@ -70,24 +102,54 @@ body {
   background: var(--primary-green-dark);
 }
 
-/* Ensure form inputs are always visible */
+/* Ensure form inputs are always visible with energetic theme */
 input, textarea, select {
-  color: var(--black) !important;
-  background-color: var(--white) !important;
-  border: 1px solid #d1d5db !important;
+  color: var(--secondary-black) !important;
+  background-color: var(--neutral-light) !important;
+  border: 2px solid #333333 !important;
+  border-radius: 8px !important;
 }
 
 input:focus, textarea:focus, select:focus {
   border-color: var(--primary-green) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(0, 255, 115, 0.2) !important;
+  background-color: var(--white) !important;
 }
 
-/* Override any dark mode styles */
+/* Override any dark mode styles and ensure visibility with energetic theme */
 @media (prefers-color-scheme: dark) {
   input, textarea, select {
-    color: var(--black) !important;
-    background-color: var(--white) !important;
+    color: var(--secondary-black) !important;
+    background-color: var(--neutral-light) !important;
   }
+  
+  body {
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+  }
+}
+
+/* Force light theme for admin pages */
+[data-theme="admin"], .admin-layout {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+[data-theme="admin"] *, .admin-layout * {
+  color: inherit !important;
+}
+
+[data-theme="admin"] .bg-dark, .admin-layout .bg-dark {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+[data-theme="admin"] .text-dark-text, .admin-layout .text-dark-text {
+  color: #111827 !important;
+}
+
+[data-theme="admin"] .text-dark-text-secondary, .admin-layout .text-dark-text-secondary {
+  color: #6b7280 !important;
 }
 
 /* Custom button styles */

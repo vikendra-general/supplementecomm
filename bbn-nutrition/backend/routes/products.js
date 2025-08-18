@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
     const filter = {};
 
     if (category) {
-      filter.category = category;
+      filter.category = { $regex: category, $options: 'i' };
     }
 
     if (brand) {

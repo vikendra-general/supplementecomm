@@ -1,7 +1,7 @@
-import { Product, Order, User, Address } from '@/types';
+import { Product, Order, Address } from '@/types';
 import { cache, CACHE_KEYS } from './cache';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -320,14 +320,7 @@ class ApiService {
     });
   }
 
-  async updateUserAddressById(addressId: string, addressData: {
-    street?: string;
-    city?: string;
-    state?: string;
-    pincode?: string;
-    country?: string;
-    isDefault?: boolean;
-  }) {
+  async updateUserAddressById(addressId: string, addressData: Partial<Address>) {
     return this.request(`/user/addresses/${addressId}`, {
       method: 'PUT',
       body: JSON.stringify(addressData),
@@ -418,6 +411,10 @@ class ApiService {
 
   async getProductAnalytics() {
     return this.request('/admin/products/analytics');
+  }
+
+  async getAnalytics(timeRange: string = '12months') {
+    return this.request(`/admin/analytics?timeRange=${timeRange}`);
   }
 
   async bulkUpdateStock(updates: Array<{ productId: string; stockQuantity: number }>) {

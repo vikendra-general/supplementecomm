@@ -73,7 +73,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } finally {
       setIsInitialized(true);
     }
-  }, [isAuthenticated, user?.id, isInitialized]);
+  }, [isAuthenticated, user, isInitialized]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -92,7 +92,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error saving cart to localStorage:', error);
     }
-  }, [items, isAuthenticated, user?.id, isInitialized]);
+  }, [items, isAuthenticated, user, isInitialized]);
 
   // Merge anonymous cart with user cart when user logs in
   useEffect(() => {
@@ -134,7 +134,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error merging anonymous cart:', error);
     }
-  }, [isAuthenticated, user?.id, isInitialized]);
+  }, [isAuthenticated, user, isInitialized]);
 
   // Clear cart when user logs out
   useEffect(() => {
@@ -159,15 +159,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [isAuthenticated, isInitialized]);
 
   const addToCart = useCallback((product: Product, quantity: number = 1, variant?: CartItem['variant']) => {
-    if (!product || !product.id) {
-      console.error('Invalid product data:', product);
-      return;
-    }
-    
     setItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(
         item => item.product.id === product.id && 
-        (!variant || !item.variant || item.variant?.id === variant.id)
+        (!variant || item.variant?.id === variant.id)
       );
 
       if (existingItemIndex > -1) {

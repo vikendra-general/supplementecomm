@@ -2,6 +2,7 @@ const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
 
 // @desc    Bulk update product stock
+// @route   PUT /api/admin/products/bulk-stock
 // @access  Private/Admin
 exports.bulkUpdateStock = async (req, res) => {
   try {
@@ -48,6 +49,7 @@ exports.bulkUpdateStock = async (req, res) => {
 };
 
 // @desc    Bulk update product featured status
+// @route   PUT /api/admin/products/bulk-featured
 // @access  Private/Admin
 exports.bulkUpdateFeatured = async (req, res) => {
   try {
@@ -93,6 +95,7 @@ exports.bulkUpdateFeatured = async (req, res) => {
 };
 
 // @desc    Bulk delete products
+// @route   DELETE /api/admin/products/bulk
 // @access  Private/Admin
 exports.bulkDeleteProducts = async (req, res) => {
   try {
@@ -108,7 +111,9 @@ exports.bulkDeleteProducts = async (req, res) => {
 
     const { productIds } = req.body;
 
-    const result = await Product.deleteMany({ _id: { $in: productIds } });
+    const result = await Product.deleteMany({
+      _id: { $in: productIds }
+    });
 
     res.json({
       success: true,

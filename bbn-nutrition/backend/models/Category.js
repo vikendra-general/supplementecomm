@@ -4,18 +4,17 @@ const categorySchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Category name is required'],
+    unique: true,
     trim: true,
     maxlength: [50, 'Category name cannot be more than 50 characters']
   },
   slug: {
     type: String,
     unique: true,
-    lowercase: true,
-    index: true
+    lowercase: true
   },
   description: {
     type: String,
-    trim: true,
     maxlength: [500, 'Description cannot be more than 500 characters']
   },
   parent: {
@@ -25,25 +24,19 @@ const categorySchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default: null
+    default: ''
   },
-  active: {
+  isActive: {
     type: Boolean,
     default: true
   },
-  order: {
+  sortOrder: {
     type: Number,
     default: 0
   },
-  metaTitle: {
-    type: String,
-    trim: true,
-    maxlength: [100, 'Meta title cannot be more than 100 characters']
-  },
-  metaDescription: {
-    type: String,
-    trim: true,
-    maxlength: [200, 'Meta description cannot be more than 200 characters']
+  productCount: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true,
@@ -51,23 +44,43 @@ const categorySchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Virtual for getting child categories
-categorySchema.virtual('children', {
+// Virtual for subcategories
+categorySchema.virtual('subcategories', {
   ref: 'Category',
   localField: '_id',
   foreignField: 'parent'
 });
 
-// Pre-save hook to ensure slug is created
+// Pre-save middleware to generate slug
 categorySchema.pre('save', function(next) {
-  if (!this.slug && this.name) {
+  if (this.isModified('name')) {
     this.slug = this.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
   }
   next();
 });
 
-// Indexes for better performance
-categorySchema.index({ name: 1 });
-categorySchema.index({ parent: 1 });
+// Static method to get category tree
+categorySchema.statics.getCategoryTree = async function() {
+  const categories = await this.find({ isActive: true })
+    .populate('subcategories')
+    .sort({ sortOrder: 1, name: 1 });
+  
+  return categories.filter(cat => !cat.parent);
+};
+
+// Instance method to get full path
+categorySchema.methods.getFullPath = async function() {
+  let path = [this.name];
+  let current = this;
+  
+  while (current.parent) {
+    current = await this.constructor.findById(current.parent);
+    if (current) {
+      path.unshift(current.name);
+    }
+  }
+  
+  return path.join(' > ');
+};
 
 module.exports = mongoose.model('Category', categorySchema);

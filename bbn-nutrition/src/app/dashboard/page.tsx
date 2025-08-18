@@ -1,17 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Package, 
-  ShoppingCart, 
-  DollarSign, 
   Clock, 
   CheckCircle, 
   XCircle,
   Truck,
   MapPin,
-  Phone,
-  Mail,
   AlertCircle,
   Heart,
   Settings
@@ -163,7 +159,7 @@ export default function DashboardPage() {
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
                     <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-                    <p className="text-gray-600 mb-4">You haven't placed any orders yet.</p>
+                    <p className="text-gray-600 mb-4">You haven&apos;t placed any orders yet.</p>
                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                       Start Shopping
                     </button>

@@ -4,20 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
 import { useCart } from '@/contexts/CartContext';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-  category: string;
-  rating?: number;
-  reviews?: number;
-  stock?: number;
-}
+import { Product } from '@/types';
 
 interface WishlistItem {
   id: string;
@@ -26,7 +14,7 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const { addToCart } = useCart();
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);

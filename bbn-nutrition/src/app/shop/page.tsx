@@ -3,35 +3,87 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { apiService } from '@/utils/api';
+import { Product } from '@/types';
 import { categories } from '@/data/categories';
 import { Filter, Grid, List, Search } from 'lucide-react';
 
 export default function ShopPage() {
   const searchParams = useSearchParams();
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+
   const [filters, setFilters] = useState({
     category: '',
     brand: '',
     minPrice: '',
     maxPrice: '',
     inStock: false,
-    rating: ''
+    rating: '',
+    searchQuery: ''
   });
 
   useEffect(() => {
+    // Handle URL search parameters
     const category = searchParams.get('category');
-    if (category) {
-      setFilters(prev => ({ ...prev, category }));
-    }
+    const brand = searchParams.get('brand');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const inStock = searchParams.get('inStock');
+    // const featured = searchParams.get('featured');
+    // const bestSeller = searchParams.get('bestSeller');
+    const searchQuery = searchParams.get('q');
+    
+    setFilters(prev => ({
+      ...prev,
+      category: category || '',
+      brand: brand || '',
+      minPrice: minPrice || '',
+      maxPrice: maxPrice || '',
+      inStock: inStock === 'true',
+      searchQuery: searchQuery || ''
+    }));
   }, [searchParams]);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.getProducts({ limit: 100 });
+        if (response.success && response.data) {
+          setAllProducts(response.data);
+          setFilteredProducts(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     // Use requestAnimationFrame to debounce filtering
     const timeoutId = setTimeout(() => {
-      let filtered = [...products];
+      let filtered = [...allProducts];
+
+      // Apply search query filter
+      if (filters.searchQuery) {
+        const searchTerm = filters.searchQuery.toLowerCase();
+        filtered = filtered.filter(product =>
+          product.name.toLowerCase().includes(searchTerm) ||
+          product.description.toLowerCase().includes(searchTerm) ||
+          product.category.toLowerCase().includes(searchTerm) ||
+          product.brand.toLowerCase().includes(searchTerm) ||
+          (product.tags && product.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+        );
+      }
 
       // Apply category filter
       if (filters.category) {
@@ -69,7 +121,7 @@ export default function ShopPage() {
     }, 100); // 100ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filters]);
+  }, [filters, allProducts]);
 
   const clearFilters = () => {
     setFilters({
@@ -78,21 +130,35 @@ export default function ShopPage() {
       minPrice: '',
       maxPrice: '',
       inStock: false,
-      rating: ''
+      rating: '',
+      searchQuery: ''
     });
   };
 
-  const brands = [...new Set(products.map(product => product.brand))];
+  const brands = [...new Set(allProducts.map((product: Product) => product.brand))];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
-          <p className="text-gray-600">
-            Find the perfect supplements for your fitness goals
-          </p>
+          {filters.searchQuery ? (
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Search Results for &ldquo;{filters.searchQuery}&rdquo;
+              </h1>
+              <p className="text-gray-600">
+                {filteredProducts.length} products found
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
+              <p className="text-gray-600">
+                Find the perfect supplements for your fitness goals
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Filters and Controls */}
@@ -101,7 +167,7 @@ export default function ShopPage() {
           <div className="lg:hidden">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200"
+              className="flex items-center space-x-2 bg-white text-gray-700 px-4 py-2 rounded-lg border border-gray-300 shadow-sm hover:bg-gray-50"
             >
               <Filter className="w-5 h-5" />
               <span>Filters</span>
@@ -114,8 +180,8 @@ export default function ShopPage() {
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg ${
                 viewMode === 'grid' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-600 border border-gray-200'
+                  ? 'bg-primary text-white' 
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               <Grid className="w-5 h-5" />
@@ -124,8 +190,8 @@ export default function ShopPage() {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg ${
                 viewMode === 'list' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-600 border border-gray-200'
+                  ? 'bg-primary text-white' 
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               <List className="w-5 h-5" />
@@ -141,7 +207,7 @@ export default function ShopPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-primary hover:text-accent-2"
                 >
                   Clear All
                 </button>
@@ -234,7 +300,13 @@ export default function ShopPage() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Search className="w-8 h-8 text-gray-400" />
@@ -254,7 +326,7 @@ export default function ShopPage() {
                   ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                   : 'grid-cols-1'
               }`}>
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product: Product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -264,4 +336,4 @@ export default function ShopPage() {
       </div>
     </div>
   );
-} 
+}

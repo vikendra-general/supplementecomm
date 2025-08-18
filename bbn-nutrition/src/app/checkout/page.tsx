@@ -6,6 +6,44 @@ import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { formatINR, USD_TO_INR_RATE } from '@/utils/currency';
 
+interface OrderData {
+  items: Array<{
+    product: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }>;
+  shippingAddress: {
+    fullName: string;
+    street: string;
+    landmark: string;
+    city: string;
+    district: string;
+    state: string;
+    pincode: string;
+    country: string;
+    email?: string;
+    phone?: string;
+  };
+  billingAddress: {
+    fullName: string;
+    street: string;
+    landmark: string;
+    city: string;
+    district: string;
+    state: string;
+    pincode: string;
+    country: string;
+    email?: string;
+    phone?: string;
+  };
+  paymentMethod: string;
+  total: number;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+}
+
 export default function CheckoutPage() {
   const { items, getCartTotal } = useCart();
   const [step, setStep] = useState(1);
@@ -145,42 +183,6 @@ export default function CheckoutPage() {
       }
     }
   };
-
-  interface OrderData {
-    items: Array<{
-      product: string;
-      name: string;
-      price: number;
-      quantity: number;
-    }>;
-    shippingAddress: {
-      fullName: string;
-      street: string;
-      landmark: string;
-      city: string;
-      district: string;
-      state: string;
-      pincode: string;
-      country: string;
-      email?: string;
-      phone?: string;
-    };
-    billingAddress: {
-      fullName: string;
-      street: string;
-      landmark: string;
-      city: string;
-      district: string;
-      state: string;
-      pincode: string;
-      country: string;
-    };
-    paymentMethod: string;
-    total: number;
-    subtotal: number;
-    shipping: number;
-    tax: number;
-  }
 
   const sendOrderNotifications = async (orderData: OrderData) => {
     try {

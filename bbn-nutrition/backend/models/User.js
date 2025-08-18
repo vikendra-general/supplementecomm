@@ -299,13 +299,16 @@ userSchema.virtual('fullName').get(function() {
 
 // Virtual for default address
 userSchema.virtual('defaultAddress').get(function() {
+  if (!this.addresses || this.addresses.length === 0) {
+    return null;
+  }
   return this.addresses.find(addr => addr.isDefault) || this.addresses[0];
 });
 
-// Index for performance
-userSchema.index({ email: 1 });
+// Indexes
+// Note: email index is automatically created by unique: true
 userSchema.index({ role: 1 });
 userSchema.index({ 'addresses.isDefault': 1 });
 userSchema.index({ deletedAt: 1 });
 
-module.exports = mongoose.model('User', userSchema); 
+module.exports = mongoose.model('User', userSchema);

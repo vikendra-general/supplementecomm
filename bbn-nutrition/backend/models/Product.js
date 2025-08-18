@@ -181,10 +181,9 @@ const productSchema = new mongoose.Schema({
 // Generate SKU if not provided
 productSchema.pre('save', function(next) {
   if (!this.sku) {
-    // Generate a random 3-letter code instead of using category
-    const brandCode = this.brand.substring(0, 3).toUpperCase();
+    const categoryCode = this.category.substring(0, 3).toUpperCase();
     const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.sku = `${brandCode}-${randomNum}`;
+    this.sku = `${categoryCode}-${randomNum}`;
   }
   
   if (!this.seoUrl) {
@@ -227,7 +226,7 @@ productSchema.virtual('finalPrice').get(function() {
 
 // Get average rating
 productSchema.virtual('averageRating').get(function() {
-  if (this.reviews.length === 0) return 0;
+  if (!this.reviews || this.reviews.length === 0) return 0;
   const totalRating = this.reviews.reduce((sum, review) => sum + review.rating, 0);
   return (totalRating / this.reviews.length).toFixed(1);
 });

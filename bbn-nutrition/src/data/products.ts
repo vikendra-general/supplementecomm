@@ -16,6 +16,7 @@ export const products: Product[] = [
     reviews: 1247,
     inStock: true,
     featured: true,
+    bestSeller: true,
     tags: ['whey', 'protein', 'muscle-building', 'recovery'],
     nutritionFacts: {
       servingSize: '30g',
@@ -48,6 +49,7 @@ export const products: Product[] = [
     reviews: 892,
     inStock: true,
     featured: true,
+    bestSeller: true,
     tags: ['pre-workout', 'energy', 'performance', 'creatine'],
     nutritionFacts: {
       servingSize: '15g',
@@ -73,6 +75,7 @@ export const products: Product[] = [
     rating: 4.7,
     reviews: 1563,
     inStock: true,
+    bestSeller: true,
     tags: ['creatine', 'strength', 'power', 'muscle'],
     nutritionFacts: {
       servingSize: '5g',
@@ -171,7 +174,7 @@ export const products: Product[] = [
     category: 'Mass Gainer',
     brand: 'BBN',
     images: [
-      '/src/assets/protien.jpg'
+      '/images/products/mass-gainer.jpg'
     ],
     rating: 4.3,
     reviews: 387,
@@ -196,7 +199,7 @@ export const products: Product[] = [
     category: 'Fat Burners',
     brand: 'BBN',
     images: [
-      '/src/assets/fatburner.jpg'
+      '/images/products/l-carnitine.jpg'
     ],
     rating: 4.2,
     reviews: 298,

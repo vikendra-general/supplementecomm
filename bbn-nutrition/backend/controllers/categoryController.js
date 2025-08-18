@@ -232,7 +232,7 @@ exports.deleteCategory = async (req, res) => {
     }
     
     // Delete category
-    await Category.deleteOne({ _id: category._id });
+    await category.remove();
     
     res.json({
       success: true,

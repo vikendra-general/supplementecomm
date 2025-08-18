@@ -15,6 +15,7 @@ export interface Product {
   variants?: ProductVariant[];
   tags: string[];
   featured?: boolean;
+  bestSeller?: boolean;
 }
 
 export interface ProductVariant {

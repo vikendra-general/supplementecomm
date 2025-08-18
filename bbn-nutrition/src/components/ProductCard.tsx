@@ -64,11 +64,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-              onError={(e) => {
-                // Fallback to placeholder if image fails to load
-                const target = e.target as HTMLImageElement;
-                target.src = '/images/products/placeholder.svg';
-              }}
             />
           </div>
         </Link>
@@ -152,11 +147,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <button
           onClick={handleAddToCart}
           disabled={!product.inStock || isAddingToCart || isProductInCart}
-          className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2 ${
+          className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
             isProductInCart
-              ? 'bg-green-600 text-white cursor-not-allowed'
+              ? 'bg-primary text-secondary cursor-not-allowed'
               : product.inStock
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'energetic-cta'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >

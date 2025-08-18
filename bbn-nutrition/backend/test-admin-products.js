@@ -100,7 +100,7 @@ async function testCreateProduct() {
         }
       ]),
       tags: JSON.stringify(['protein', 'supplement', 'test']),
-      images: ['https://example.com/image1.jpg'],
+      images: JSON.stringify(['https://example.com/image1.jpg']),
       featured: true,
       bestSeller: false,
       newArrival: true,

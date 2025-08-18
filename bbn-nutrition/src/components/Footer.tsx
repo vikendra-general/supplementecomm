@@ -9,8 +9,8 @@ export default function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BBN</span>
+              <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent-2 rounded-lg flex items-center justify-center">
+                <span className="text-secondary font-bold text-sm">BBN</span>
               </div>
               <span className="text-xl font-bold">Booster Box Nutrition</span>
             </div>

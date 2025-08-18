@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is authenticated on mount
   useEffect(() => {
-    let isMounted = true;
+    const isMounted = true;
     let timeoutId: NodeJS.Timeout;
     
     const initAuth = async () => {
@@ -78,12 +78,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }, 1000);
 
           try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
             const response = await fetch(`${API_BASE_URL}/auth/me`, {
               headers: {
                 'Authorization': `Bearer ${storedToken}`,
                 'Content-Type': 'application/json',
               },
+              signal: controller.signal,
             });
+            
+            clearTimeout(timeoutId);
 
             if (response.ok && isMounted) {
               const data = await response.json();
@@ -100,10 +106,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               setToken(null);
             }
           } catch (error) {
-            console.error('Auth initialization error:', error);
-            if (isMounted) {
-              localStorage.removeItem('token');
-              setToken(null);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const errorName = error instanceof Error ? error.name : '';
+            console.warn('Auth initialization failed (API unavailable):', errorMessage);
+            // Don't remove token on network errors, keep it for when API is available
+            // Only remove on explicit auth failures (401, 403)
+            if (errorName !== 'AbortError' && isMounted) {
+              // Keep the token, just set loading to false
+              // The user can still use the app, auth will retry later
             }
           } finally {
             if (isMounted) {
@@ -121,12 +131,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initAuth();
-    
-    // Cleanup function to prevent memory leaks
-    return () => {
-      isMounted = false;
-      clearTimeout(timeoutId);
-    };
   }, [API_BASE_URL]);
 
   const login = async (email: string, password: string) => {

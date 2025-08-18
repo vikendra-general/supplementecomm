@@ -11,29 +11,22 @@
     "dev:full": "concurrently \"npm run dev\" \"cd backend && npm run dev\""
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.6",
-    "@heroicons/react": "^2.2.0",
-    "@stripe/react-stripe-js": "^2.6.0",
-    "@stripe/stripe-js": "^3.0.0",
-    "@types/nodemailer": "^7.0.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.0",
+    "@types/twilio": "^3.19.2",
     "lucide-react": "^0.534.0",
     "next": "15.4.5",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
+    "puppeteer": "^24.16.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.51.0",
     "react-hot-toast": "^2.4.1",
-    "react-query": "^3.39.3",
-    "tailwind-merge": "^2.2.0",
-    "zustand": "^4.5.0"
+    "twilio": "^5.8.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "concurrently": "^8.2.2",

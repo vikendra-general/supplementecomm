@@ -1,9 +1,12 @@
+'use client';
+
 import dynamic from 'next/dynamic'
-import { products } from '@/data/products'
 import { categories } from '@/data/categories'
-import { Star, ArrowRight, Truck, Shield, Clock } from 'lucide-react'
+import { getTopSellerProducts, getFeaturedProducts } from '@/utils/recommendations'
+import { Star, ArrowRight, Truck, Shield, Clock, TrendingUp, Zap, Award, Users, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
+import { Product } from '@/types'
 
 // Lazy load components for better performance
 const Hero = dynamic(() => import('@/components/Hero'), {
@@ -18,16 +21,17 @@ const ProductCard = dynamic(() => import('@/components/ProductCard'), {
 const CategoryCard = memo(({ category }: { category: { id: string; name: string; description: string; productCount: number } }) => (
   <Link 
     href={`/shop?category=${category.name.toLowerCase()}`}
-    className="group bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center hover:shadow-lg transition-all duration-300"
+    className="group bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center hover:shadow-xl hover:border-green-300 transition-all duration-300 transform hover:-translate-y-2"
   >
-    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mx-auto mb-4 flex items-center justify-center">
-      <span className="text-white font-bold text-lg">{category.name.charAt(0)}</span>
+    <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <span className="text-white font-bold text-2xl">{category.name.charAt(0)}</span>
     </div>
-    <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
-    <p className="text-sm text-gray-500 mb-2">{category.description}</p>
-    <span className="text-xs text-blue-600 font-medium">
-      {category.productCount} products
-    </span>
+    <h3 className="font-bold text-gray-900 mb-3 text-lg">{category.name}</h3>
+    <p className="text-sm text-gray-600 mb-4 leading-relaxed">{category.description}</p>
+    <div className="inline-flex items-center space-x-2 text-green-600 font-medium text-sm">
+      <span>{category.productCount} products</span>
+      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+    </div>
   </Link>
 ))
 
@@ -40,28 +44,33 @@ const FeatureCard = memo(({ icon: Icon, title, description, bgColor, iconColor }
   bgColor: string;
   iconColor: string;
 }) => (
-  <div className="text-center">
-    <div className={`w-16 h-16 ${bgColor} rounded-full mx-auto mb-4 flex items-center justify-center`}>
-      <Icon className={`w-8 h-8 ${iconColor}`} />
+  <div className="text-center group">
+    <div className={`w-20 h-20 ${bgColor} rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+      <Icon className={`w-10 h-10 ${iconColor}`} />
     </div>
-    <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-    <p className="text-gray-600">{description}</p>
+    <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
+    <p className="text-gray-600 leading-relaxed">{description}</p>
   </div>
 ))
 
 FeatureCard.displayName = 'FeatureCard'
 
 const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; role: string; content: string; rating: number } }) => (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <div className="flex items-center mb-4">
+  <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
+    <div className="flex items-center mb-6">
       {[...Array(testimonial.rating)].map((_, i) => (
         <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
       ))}
     </div>
-    <p className="text-gray-600 mb-4">&ldquo;{testimonial.content}&rdquo;</p>
-    <div>
-      <div className="font-semibold text-gray-900">{testimonial.name}</div>
-      <div className="text-sm text-gray-500">{testimonial.role}</div>
+    <p className="text-gray-700 mb-6 text-lg leading-relaxed italic">&ldquo;{testimonial.content}&rdquo;</p>
+    <div className="flex items-center space-x-4">
+      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+        <span className="text-white font-bold text-lg">{testimonial.name.charAt(0)}</span>
+      </div>
+      <div>
+        <div className="font-bold text-gray-900">{testimonial.name}</div>
+        <div className="text-sm text-gray-500">{testimonial.role}</div>
+      </div>
     </div>
   </div>
 ))
@@ -69,7 +78,29 @@ const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; ro
 TestimonialCard.displayName = 'TestimonialCard'
 
 export default function HomePage() {
-  const featuredProducts = products.filter(product => product.featured).slice(0, 4)
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [topSellerProducts, setTopSellerProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const [featured, topSellers] = await Promise.all([
+          getFeaturedProducts(4),
+          getTopSellerProducts(4)
+        ]);
+        setFeaturedProducts(featured);
+        setTopSellerProducts(topSellers);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const testimonials = [
     {
@@ -122,14 +153,18 @@ export default function HomePage() {
       <Hero />
 
       {/* Categories Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
-            <p className="text-lg text-gray-600">Find the perfect supplements for your fitness goals</p>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full mb-6">
+              <Zap className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Product Categories</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Shop by Category</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">Find the perfect supplements for your fitness goals and unlock your potential</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
@@ -138,25 +173,55 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
-              <p className="text-lg text-gray-600">Our most popular and highest-rated supplements</p>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full mb-6">
+              <Star className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Featured Products</span>
             </div>
-            <Link 
-              href="/shop" 
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold"
-            >
-              View All
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Our Best Sellers</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">Discover our most popular and highest-rated supplements trusted by thousands</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Link 
+              href="/shop" 
+              className="inline-flex items-center justify-center px-8 py-4 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              View All Products
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Top Sellers Section */}
+      <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full mb-6">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Trending Now</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Top Sellers</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">Most popular products chosen by our fitness community</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {topSellerProducts.map((product, index) => (
+              <div key={product.id} className="relative">
+                <ProductCard product={product} />
+                <div className="absolute -top-3 -left-3 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  🔥 Best Seller
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -195,13 +260,13 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-16 bg-gradient-to-r from-dark-green to-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Transform Your Performance?</h2>
-          <p className="text-xl text-blue-100 mb-8">Join thousands of athletes who trust BBN for their supplement needs</p>
+          <p className="text-xl text-green-100 mb-8">Join thousands of athletes who trust BBN for their supplement needs</p>
           <Link 
             href="/shop" 
-            className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center px-8 py-4 bg-white text-dark-green font-semibold rounded-lg hover:bg-gray-100 transition-colors"
           >
             Start Shopping
             <ArrowRight className="ml-2 w-5 h-5" />
