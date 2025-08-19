@@ -23,7 +23,9 @@ export default function ShopPage() {
     maxPrice: '',
     inStock: false,
     rating: '',
-    searchQuery: ''
+    searchQuery: '',
+    sortBy: '',
+    sortOrder: 'desc'
   });
 
   useEffect(() => {
@@ -33,8 +35,8 @@ export default function ShopPage() {
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const inStock = searchParams.get('inStock');
-    // const featured = searchParams.get('featured');
-    // const bestSeller = searchParams.get('bestSeller');
+    const sortBy = searchParams.get('sortBy');
+    const sortOrder = searchParams.get('sortOrder');
     const searchQuery = searchParams.get('q');
     
     setFilters(prev => ({
@@ -44,7 +46,9 @@ export default function ShopPage() {
       minPrice: minPrice || '',
       maxPrice: maxPrice || '',
       inStock: inStock === 'true',
-      searchQuery: searchQuery || ''
+      searchQuery: searchQuery || '',
+      sortBy: sortBy || '',
+      sortOrder: sortOrder || 'desc'
     }));
   }, [searchParams]);
 
@@ -77,25 +81,25 @@ export default function ShopPage() {
       if (filters.searchQuery) {
         const searchTerm = filters.searchQuery.toLowerCase();
         filtered = filtered.filter(product =>
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.description.toLowerCase().includes(searchTerm) ||
-          product.category.toLowerCase().includes(searchTerm) ||
-          product.brand.toLowerCase().includes(searchTerm) ||
-          (product.tags && product.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+          (product.name && product.name.toLowerCase().includes(searchTerm)) ||
+          (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+          (product.category && product.category.toLowerCase().includes(searchTerm)) ||
+          (product.brand && product.brand.toLowerCase().includes(searchTerm)) ||
+          (product.tags && product.tags.some(tag => tag && tag.toLowerCase().includes(searchTerm)))
         );
       }
 
       // Apply category filter
       if (filters.category) {
         filtered = filtered.filter(product => 
-          product.category.toLowerCase() === filters.category.toLowerCase()
+          product.category && product.category.toLowerCase() === filters.category.toLowerCase()
         );
       }
 
       // Apply brand filter
       if (filters.brand) {
         filtered = filtered.filter(product => 
-          product.brand.toLowerCase().includes(filters.brand.toLowerCase())
+          product.brand && product.brand.toLowerCase().includes(filters.brand.toLowerCase())
         );
       }
 
@@ -117,6 +121,46 @@ export default function ShopPage() {
         filtered = filtered.filter(product => product.rating >= parseFloat(filters.rating));
       }
 
+      // Apply sorting
+      if (filters.sortBy) {
+        filtered.sort((a, b) => {
+          let aValue, bValue;
+          
+          switch (filters.sortBy) {
+            case 'discount':
+              // Calculate discount percentage
+              aValue = a.originalPrice ? ((a.originalPrice - a.price) / a.originalPrice) * 100 : 0;
+              bValue = b.originalPrice ? ((b.originalPrice - b.price) / b.originalPrice) * 100 : 0;
+              break;
+            case 'sales':
+               // Sort by popularity (reviews count and bestSeller status)
+               aValue = (a.bestSeller ? 1000 : 0) + (a.reviews || 0);
+               bValue = (b.bestSeller ? 1000 : 0) + (b.reviews || 0);
+               break;
+            case 'price':
+              aValue = a.price;
+              bValue = b.price;
+              break;
+            case 'rating':
+              aValue = a.rating || 0;
+              bValue = b.rating || 0;
+              break;
+            case 'name':
+              aValue = a.name.toLowerCase();
+              bValue = b.name.toLowerCase();
+              break;
+            default:
+              return 0;
+          }
+          
+          if (filters.sortOrder === 'asc') {
+            return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+          } else {
+            return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+          }
+        });
+      }
+
       setFilteredProducts(filtered);
     }, 100); // 100ms debounce
 
@@ -131,7 +175,9 @@ export default function ShopPage() {
       maxPrice: '',
       inStock: false,
       rating: '',
-      searchQuery: ''
+      searchQuery: '',
+      sortBy: '',
+      sortOrder: 'desc'
     });
   };
 

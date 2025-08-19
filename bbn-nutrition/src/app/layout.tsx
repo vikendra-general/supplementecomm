@@ -6,6 +6,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { OrderProvider } from '@/contexts/OrderContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from '@/components/ui/Notification';
 
@@ -34,45 +35,47 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ErrorBoundary>
-          <NotificationProvider>
-            <AuthProvider>
-              <CartProvider>
-                <OrderProvider>
-                  <div className="min-h-screen flex flex-col bg-white text-gray-900">
-                    <Header />
-                    <main className="flex-grow">
-                      {children}
-                    </main>
-                    <Footer />
-                  </div>
-                  <Toaster 
-                    position="top-right"
-                    toastOptions={{
-                      duration: 3000,
-                      style: {
-                        background: '#363636',
-                        color: '#fff',
-                      },
-                      success: {
+          <LanguageProvider>
+            <NotificationProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <OrderProvider>
+                    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+                      <Header />
+                      <main className="flex-grow">
+                        {children}
+                      </main>
+                      <Footer />
+                    </div>
+                    <Toaster 
+                      position="top-right"
+                      toastOptions={{
                         duration: 3000,
-                        iconTheme: {
-                          primary: '#10B981',
-                          secondary: '#fff',
+                        style: {
+                          background: '#363636',
+                          color: '#fff',
                         },
-                      },
-                      error: {
-                        duration: 4000,
-                        iconTheme: {
-                          primary: '#EF4444',
-                          secondary: '#fff',
+                        success: {
+                          duration: 3000,
+                          iconTheme: {
+                            primary: '#10B981',
+                            secondary: '#fff',
+                          },
                         },
-                      },
-                    }}
-                  />
-                </OrderProvider>
-              </CartProvider>
-            </AuthProvider>
-          </NotificationProvider>
+                        error: {
+                          duration: 4000,
+                          iconTheme: {
+                            primary: '#EF4444',
+                            secondary: '#fff',
+                          },
+                        },
+                      }}
+                    />
+                  </OrderProvider>
+                </CartProvider>
+              </AuthProvider>
+            </NotificationProvider>
+          </LanguageProvider>
         </ErrorBoundary>
       </body>
     </html>

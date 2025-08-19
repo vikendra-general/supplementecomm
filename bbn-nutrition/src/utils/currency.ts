@@ -1,13 +1,5 @@
-// Currency conversion utility
-// 1 USD = ~83 INR (approximate rate, you can update this as needed)
-export const USD_TO_INR_RATE = 83;
-
-export const convertToINR = (usdPrice: number | null | undefined): number => {
-  if (usdPrice === null || usdPrice === undefined) {
-    return 0;
-  }
-  return usdPrice * USD_TO_INR_RATE;
-};
+// Indian Rupee currency formatting utility
+// All prices are now stored directly in INR in the database
 
 export const formatINR = (amount: number): string => {
   return new Intl.NumberFormat('en-IN', {
@@ -27,8 +19,15 @@ export const formatINRWithDecimals = (amount: number): string => {
   }).format(amount);
 };
 
-// Helper function to convert and format USD prices to INR
-export const formatPrice = (usdPrice: number, withDecimals: boolean = false): string => {
-  const inrPrice = convertToINR(usdPrice);
+// Helper function to format INR prices (no conversion needed)
+export const formatPrice = (inrPrice: number, withDecimals: boolean = false): string => {
+  if (inrPrice === null || inrPrice === undefined) {
+    return '₹0';
+  }
   return withDecimals ? formatINRWithDecimals(inrPrice) : formatINR(inrPrice);
+};
+
+// Legacy function name for backward compatibility
+export const convertToINR = (price: number | null | undefined): number => {
+  return price || 0;
 };

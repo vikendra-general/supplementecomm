@@ -8,6 +8,7 @@ import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/utils/currency';
 import toast from 'react-hot-toast';
 
@@ -18,9 +19,13 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, isInCart } = useCart();
   const { isAuthenticated } = useAuth();
+  const { translateProduct, t } = useLanguage();
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+  // Get translated product data
+  const translatedProduct = translateProduct(product);
 
   const handleAddToCart = () => {
     setIsAddingToCart(true);
@@ -88,7 +93,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Out of Stock Badge */}
         {!product.inStock && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <span className="text-white font-semibold">Out of Stock</span>
+            <span className="text-white font-semibold">{t('common.outOfStock')}</span>
           </div>
         )}
 
@@ -108,7 +113,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Name */}
         <Link href={`/product/${product.id}`}>
           <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors line-clamp-2">
-            {product.name}
+            {translatedProduct.name}
           </h3>
         </Link>
 
@@ -158,17 +163,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           {isAddingToCart ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Adding...</span>
+              <span>{t('common.loading')}</span>
             </>
           ) : (
             <>
               <ShoppingCart className="w-4 h-4" />
               <span>
                 {isProductInCart 
-                  ? 'In Cart' 
+                  ? t('common.inCart') 
                   : product.inStock 
-                    ? 'Add to Cart' 
-                    : 'Out of Stock'
+                    ? t('common.addToCart') 
+                    : t('common.outOfStock')
                 }
               </span>
             </>

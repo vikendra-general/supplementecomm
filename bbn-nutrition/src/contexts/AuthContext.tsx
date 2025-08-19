@@ -143,16 +143,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         // Handle validation errors specifically
-        if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map((error: { msg: string }) => error.msg).join(', ');
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          const errorMessages = errorData.errors.map((error: { msg: string }) => error.msg).join(', ');
           throw new Error(errorMessages);
         }
-        throw new Error(data.message || 'Login failed');
+        throw new Error(errorData.message || 'Login failed');
       }
+
+      const data = await response.json();
 
       if (!data.success) {
         throw new Error(data.message || 'Login failed');
@@ -177,16 +185,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         // Handle validation errors specifically
-        if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map((error: { msg: string }) => error.msg).join(', ');
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          const errorMessages = errorData.errors.map((error: { msg: string }) => error.msg).join(', ');
           throw new Error(errorMessages);
         }
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(errorData.message || 'Registration failed');
       }
+
+      const data = await response.json();
 
       if (!data.success) {
         throw new Error(data.message || 'Registration failed');

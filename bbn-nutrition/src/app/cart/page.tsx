@@ -6,12 +6,14 @@ import Image from 'next/image';
 import { Trash2, Minus, Plus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPrice } from '@/utils/currency';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
@@ -37,9 +39,9 @@ export default function CartPage() {
   };
 
   const subtotal = getCartTotal();
-  const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
-  const tax = subtotal * 0.18; // 18% tax
-  const total = subtotal + shipping + tax;
+  const freeShippingThreshold = 2999; // Free shipping over ₹2999 (more appropriate for Indian market)
+  const shipping = subtotal >= freeShippingThreshold ? 0 : 199; // ₹199 shipping fee
+  const total = subtotal + shipping; // No tax calculation
 
   if (items.length === 0) {
     return (
@@ -48,8 +50,8 @@ export default function CartPage() {
           <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
             <ShoppingBag className="w-12 h-12 text-gray-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
-          <p className="text-gray-600 mb-8">Looks like you haven&apos;t added any products to your cart yet.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('cart.emptyTitle')}</h1>
+          <p className="text-gray-600 mb-8">{t('cart.emptyMessage')}</p>
           <Link
             href="/shop"
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
@@ -66,9 +68,9 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cart.title')}</h1>
           <p className="text-gray-600">
-            {items.length} item{items.length !== 1 ? 's' : ''} in your cart
+            {items.length} {items.length !== 1 ? t('cart.items') : t('cart.item')}
           </p>
         </div>
 
@@ -78,12 +80,12 @@ export default function CartPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">Cart Items</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('cart.cartItems')}</h2>
                   <button
                     onClick={handleClearCart}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
                   >
-                    Clear Cart
+                    {t('cart.clearCart')}
                   </button>
                 </div>
               </div>
@@ -171,22 +173,18 @@ export default function CartPage() {
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-600">{t('cart.subtotal')}</span>
                   <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-600">{t('cart.shipping')}</span>
                   <span className="font-medium">
-                    {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                    {shipping === 0 ? t('cart.free') : formatPrice(shipping)}
                   </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (18%)</span>
-                  <span className="font-medium">{formatPrice(tax)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-900">Total</span>
+                    <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
                     <span className="text-lg font-semibold text-gray-900">{formatPrice(total)}</span>
                   </div>
                 </div>
@@ -195,7 +193,15 @@ export default function CartPage() {
               {shipping > 0 && (
                 <div className="mb-6 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    Add {formatPrice(4000 - subtotal)} more for free shipping!
+                    {t('cart.add')} {formatPrice(freeShippingThreshold - subtotal)} {t('cart.freeShippingMessage')}
+                  </p>
+                </div>
+              )}
+              
+              {shipping === 0 && subtotal >= freeShippingThreshold && (
+                <div className="mb-6 p-3 bg-green-50 rounded-lg">
+                  <p className="text-sm text-green-700">
+                    {t('cart.qualifyFreeShipping')}
                   </p>
                 </div>
               )}
@@ -205,21 +211,21 @@ export default function CartPage() {
                   href="/checkout"
                   className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
-                  Proceed to Checkout
+                  {t('cart.proceedToCheckout')}
                 </Link>
                 
                 <Link
                   href="/shop"
                   className="w-full bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                 >
-                  Continue Shopping
+                  {t('cart.continueShopping')}
                 </Link>
               </div>
 
               {!isAuthenticated && (
                 <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                   <p className="text-sm text-yellow-700">
-                    Sign in to save your cart and track your orders.
+                    {t('header.signIn')}
                   </p>
                 </div>
               )}
@@ -229,4 +235,4 @@ export default function CartPage() {
       </div>
     </div>
   );
-} 
+}

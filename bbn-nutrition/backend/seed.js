@@ -8,8 +8,8 @@ const sampleProducts = [
   {
     name: 'BBN Whey Protein Isolate',
     description: 'Premium whey protein isolate with 25g protein per serving. Perfect for muscle building and recovery.',
-    price: 59.99,
-    originalPrice: 79.99,
+    price: 4999,
+    originalPrice: 6499,
     category: 'protein',
     brand: 'BBN',
     images: ['/src/assets/protien.jpg'],
@@ -29,9 +29,9 @@ const sampleProducts = [
       ingredients: ['Whey Protein Isolate', 'Natural Flavors', 'Sweeteners', 'Emulsifiers']
     },
     variants: [
-      { id: 'whey-chocolate', name: 'Chocolate', price: 59.99, inStock: true, stockQuantity: 50 },
-      { id: 'whey-vanilla', name: 'Vanilla', price: 59.99, inStock: true, stockQuantity: 50 },
-      { id: 'whey-strawberry', name: 'Strawberry', price: 59.99, inStock: false, stockQuantity: 0 }
+      { id: 'whey-chocolate', name: 'Chocolate', price: 4999, inStock: true, stockQuantity: 50 },
+      { id: 'whey-vanilla', name: 'Vanilla', price: 4999, inStock: true, stockQuantity: 50 },
+      { id: 'whey-strawberry', name: 'Strawberry', price: 4999, inStock: false, stockQuantity: 0 }
     ],
     tags: ['whey', 'protein', 'muscle-building', 'recovery'],
     featured: true,
@@ -43,8 +43,8 @@ const sampleProducts = [
   {
     name: 'BBN Pre-Workout Elite',
     description: 'Advanced pre-workout formula with creatine, beta-alanine, and caffeine for maximum performance.',
-    price: 44.99,
-    originalPrice: 54.99,
+    price: 3499,
+    originalPrice: 4299,
     category: 'pre-workout',
     brand: 'BBN',
     images: ['/src/assets/creatine.jpg'],
@@ -64,9 +64,9 @@ const sampleProducts = [
       ingredients: ['Creatine Monohydrate', 'Beta-Alanine', 'Caffeine', 'L-Citrulline', 'BCAAs']
     },
     variants: [
-      { id: 'pre-fruit-punch', name: 'Fruit Punch', price: 44.99, inStock: true, stockQuantity: 25 },
-      { id: 'pre-blue-raspberry', name: 'Blue Raspberry', price: 44.99, inStock: true, stockQuantity: 25 },
-      { id: 'pre-orange', name: 'Orange', price: 44.99, inStock: true, stockQuantity: 25 }
+      { id: 'pre-fruit-punch', name: 'Fruit Punch', price: 3499, inStock: true, stockQuantity: 25 },
+      { id: 'pre-blue-raspberry', name: 'Blue Raspberry', price: 3499, inStock: true, stockQuantity: 25 },
+      { id: 'pre-orange', name: 'Orange', price: 3499, inStock: true, stockQuantity: 25 }
     ],
     tags: ['pre-workout', 'energy', 'performance', 'creatine'],
     featured: true,
@@ -77,8 +77,8 @@ const sampleProducts = [
   {
     name: 'BBN Creatine Monohydrate',
     description: 'Pure creatine monohydrate powder for strength and power gains.',
-    price: 24.99,
-    originalPrice: 29.99,
+    price: 1999,
+    originalPrice: 2499,
     category: 'creatine',
     brand: 'BBN',
     images: ['/src/assets/creatine.jpg'],
@@ -98,8 +98,8 @@ const sampleProducts = [
       ingredients: ['Creatine Monohydrate']
     },
     variants: [
-      { id: 'creatine-unflavored', name: 'Unflavored', price: 24.99, inStock: true, stockQuantity: 100 },
-      { id: 'creatine-citrus', name: 'Citrus', price: 24.99, inStock: true, stockQuantity: 100 }
+      { id: 'creatine-unflavored', name: 'Unflavored', price: 1999, inStock: true, stockQuantity: 100 },
+      { id: 'creatine-citrus', name: 'Citrus', price: 1999, inStock: true, stockQuantity: 100 }
     ],
     tags: ['creatine', 'strength', 'power', 'muscle'],
     bestSeller: true,
@@ -110,8 +110,8 @@ const sampleProducts = [
   {
     name: 'BBN BCAA Amino Acids',
     description: 'Essential branched-chain amino acids for muscle recovery and growth.',
-    price: 34.99,
-    originalPrice: 39.99,
+    price: 2799,
+    originalPrice: 3299,
     category: 'amino acids',
     brand: 'BBN',
     images: ['/src/assets/aminoacids.jpg'],
@@ -131,8 +131,8 @@ const sampleProducts = [
       ingredients: ['L-Leucine', 'L-Isoleucine', 'L-Valine', 'Natural Flavors']
     },
     variants: [
-      { id: 'bcaa-tropical', name: 'Tropical Punch', price: 34.99, inStock: true, stockQuantity: 60 },
-      { id: 'bcaa-watermelon', name: 'Watermelon', price: 34.99, inStock: true, stockQuantity: 60 }
+      { id: 'bcaa-tropical', name: 'Tropical Punch', price: 2799, inStock: true, stockQuantity: 60 },
+      { id: 'bcaa-watermelon', name: 'Watermelon', price: 2799, inStock: true, stockQuantity: 60 }
     ],
     tags: ['bcaa', 'amino acids', 'recovery', 'muscle'],
     weight: 0.8,
@@ -142,8 +142,8 @@ const sampleProducts = [
   {
     name: 'BBN Multivitamin Complete',
     description: 'Comprehensive multivitamin with essential vitamins and minerals for overall health.',
-    price: 29.99,
-    originalPrice: 34.99,
+    price: 2399,
+    originalPrice: 2899,
     category: 'vitamins',
     brand: 'BBN',
     images: ['/src/assets/vitamins.jpg'],
@@ -163,8 +163,8 @@ const sampleProducts = [
       ingredients: ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Vitamin E', 'B Vitamins', 'Minerals']
     },
     variants: [
-      { id: 'multi-men', name: 'Men\'s Formula', price: 29.99, inStock: true, stockQuantity: 90 },
-      { id: 'multi-women', name: 'Women\'s Formula', price: 29.99, inStock: true, stockQuantity: 90 }
+      { id: 'multi-men', name: 'Men\'s Formula', price: 2399, inStock: true, stockQuantity: 90 },
+      { id: 'multi-women', name: 'Women\'s Formula', price: 2399, inStock: true, stockQuantity: 90 }
     ],
     tags: ['multivitamin', 'vitamins', 'health', 'wellness'],
     weight: 0.3,
