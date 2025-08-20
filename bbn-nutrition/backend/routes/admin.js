@@ -730,18 +730,23 @@ router.post('/products', upload.array('images', 5), [
     .isLength({ min: 10, max: 1000 })
     .withMessage('Description must be between 10 and 1000 characters'),
   body('price')
+    .notEmpty()
+    .withMessage('Price is required')
     .isFloat({ min: 0 })
     .withMessage('Price must be a positive number'),
   body('category')
-    .optional()
-    .isMongoId()
-    .withMessage('Invalid category'),
+    .notEmpty()
+    .withMessage('Category is required')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Category must be between 1 and 50 characters'),
   body('brand')
     .trim()
     .notEmpty()
     .withMessage('Brand is required'),
   body('stockQuantity')
-    .optional()
+    .notEmpty()
+    .withMessage('Stock quantity is required')
     .isInt({ min: 0 })
     .withMessage('Stock quantity must be a non-negative integer'),
   body('featured')
@@ -756,6 +761,10 @@ router.post('/products', upload.array('images', 5), [
     .optional()
     .isBoolean()
     .withMessage('New arrival must be a boolean'),
+  body('todaysDeals')
+    .optional()
+    .isBoolean()
+    .withMessage('Todays deals must be a boolean'),
   body('discount')
     .optional()
     .isFloat({ min: 0, max: 100 })
@@ -794,6 +803,10 @@ router.put('/products/:id', upload.array('images', 5), [
     .optional()
     .isBoolean()
     .withMessage('New arrival must be a boolean'),
+  body('todaysDeals')
+    .optional()
+    .isBoolean()
+    .withMessage('Todays deals must be a boolean'),
   body('discount')
     .optional()
     .isFloat({ min: 0, max: 100 })

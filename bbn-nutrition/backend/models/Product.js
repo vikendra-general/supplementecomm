@@ -45,9 +45,9 @@ const productSchema = new mongoose.Schema({
     min: [0, 'Original price cannot be negative']
   },
   category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: [true, 'Please provide a product category']
+    type: String,
+    required: [true, 'Please provide a product category'],
+    trim: true
   },
   brand: {
     type: String,
@@ -125,6 +125,10 @@ const productSchema = new mongoose.Schema({
     default: false
   },
   newArrival: {
+    type: Boolean,
+    default: false
+  },
+  todaysDeals: {
     type: Boolean,
     default: false
   },

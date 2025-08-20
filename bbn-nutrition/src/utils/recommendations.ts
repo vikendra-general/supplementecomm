@@ -9,14 +9,20 @@ export const getTopSellerProducts = async (limit: number = 4): Promise<Product[]
     const response = await apiService.getProducts({ limit: 100 });
     if (response.success && response.data) {
       return response.data
-        .filter(product => product.bestSeller && product.inStock)
+        .filter(product => product.inStock)
         .sort((a, b) => {
-          // Sort by rating first, then by number of reviews
+          // Prioritize manually marked best sellers, then sort by rating and reviews
+          if (a.bestSeller && !b.bestSeller) return -1;
+          if (!a.bestSeller && b.bestSeller) return 1;
+          
+          // Sort by rating first (minimum 4.0 rating to be considered top seller)
           if (b.rating !== a.rating) {
             return b.rating - a.rating;
           }
+          // Then by number of reviews
           return b.reviews - a.reviews;
         })
+        .filter(product => product.bestSeller || product.rating >= 4.0)
         .slice(0, limit);
     }
     return [];

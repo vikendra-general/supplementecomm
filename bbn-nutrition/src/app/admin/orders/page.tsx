@@ -549,7 +549,7 @@ export default function AdminOrdersPage() {
 
       {/* Order Details Modal */}
       {showOrderDetails && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
           <div className="bg-dark-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-700">
             <div className="p-6 border-b border-gray-700 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-dark-text">

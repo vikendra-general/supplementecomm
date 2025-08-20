@@ -51,9 +51,6 @@ export default function LoginPage() {
         // Default redirect for regular users
         router.push('/');
       }
-      
-      // Log authentication success
-      console.log('Authentication successful, redirecting based on role:', user.role);
     }
   }, [isAuthenticated, isLoading, user, router, searchParams]);
 

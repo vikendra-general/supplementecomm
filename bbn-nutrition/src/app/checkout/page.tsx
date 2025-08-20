@@ -1,17 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Truck, Shield } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, Shield, Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { formatINR, USD_TO_INR_RATE } from '@/utils/currency';
+import { useAuth } from '@/contexts/AuthContext';
+import { formatINR } from '@/utils/currency';
 
 interface OrderData {
+  _id: string;
+  user: string;
   items: Array<{
     product: string;
     name: string;
     price: number;
     quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    } | null;
   }>;
   shippingAddress: {
     fullName: string;
@@ -42,10 +51,16 @@ interface OrderData {
   subtotal: number;
   shipping: number;
   tax: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function CheckoutPage() {
-  const { items, getCartTotal } = useCart();
+  const { items, getCartTotal, clearCart } = useCart();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Billing Info
@@ -77,6 +92,48 @@ export default function CheckoutPage() {
     cvv: '',
     paymentMethod: 'credit'
   });
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login?redirect=/checkout');
+    }
+  }, [isAuthenticated, isLoading, router]);
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show authentication required message if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-10 h-10 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+          <p className="text-gray-600 mb-6">
+            Please log in to your account to proceed with checkout.
+          </p>
+          <Link
+            href="/login?redirect=/checkout"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({
@@ -123,14 +180,18 @@ export default function CheckoutPage() {
       
       setStep(3);
     } else {
-      // Process order with notifications
+      // Process order
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Please log in to place an order');
+          return;
+        }
+
         // Create order data
         const orderData = {
           items: items.map(item => ({
             product: item.product.id,
-            name: item.product.name,
-            price: item.product.price,
             quantity: item.quantity
           })),
           shippingAddress: {
@@ -141,7 +202,9 @@ export default function CheckoutPage() {
             district: formData.district,
             state: formData.state,
             pincode: formData.pincode,
-            country: formData.country
+            country: formData.country,
+            email: formData.email,
+            phone: formData.phone
           },
           billingAddress: formData.sameAsBilling ? {
             fullName: formData.fullName,
@@ -151,7 +214,9 @@ export default function CheckoutPage() {
             district: formData.district,
             state: formData.state,
             pincode: formData.pincode,
-            country: formData.country
+            country: formData.country,
+            email: formData.email,
+            phone: formData.phone
           } : {
             fullName: formData.shippingFullName,
             street: formData.shippingStreet,
@@ -162,25 +227,42 @@ export default function CheckoutPage() {
             pincode: formData.shippingPincode,
             country: formData.country
           },
-          paymentMethod: formData.paymentMethod,
-          total: total,
-          subtotal: subtotal,
-          shipping: shipping,
-          tax: tax
+          paymentMethod: formData.paymentMethod
         };
 
-        // Send notifications
-        await sendOrderNotifications(orderData);
-        
-        // TODO: Save order to database
-        console.log('Order processed:', orderData);
-        
-        // Redirect to success page or order confirmation
-        window.location.href = '/order-success';
+        // Create order in backend
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to create order');
+        }
+
+        if (result.success && result.order) {
+          // Send notifications
+          await sendOrderNotifications(result.order);
+          
+          // Clear cart
+           clearCart();
+          
+          // Redirect to success page with order ID
+          router.push(`/order-success?orderId=${result.order._id}`);
+        } else {
+          throw new Error('Order creation failed');
+        }
       } catch (error) {
-        console.error('Error processing order:', error);
-        // Handle error
-      }
+          console.error('Error processing order:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          alert(`Error placing order: ${errorMessage}`);
+        }
     }
   };
 
@@ -753,7 +835,7 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <span className="font-medium text-gray-900">
-                    {formatINR((item.variant?.price || item.product.price) * USD_TO_INR_RATE * item.quantity)}
+                    {formatINR((item.variant?.price || item.product.price) * item.quantity)}
                   </span>
                 </div>
               ))}

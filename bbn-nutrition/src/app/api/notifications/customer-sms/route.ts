@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const sendSMS = async (to: string, message: string) => {
   // Check if Twilio credentials are configured
   if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
-    console.log('Twilio not configured. SMS simulation:', { to, message });
+    // Twilio not configured - SMS simulation
     return { success: true, simulation: true };
   }
 

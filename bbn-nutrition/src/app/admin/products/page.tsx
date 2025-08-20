@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiService } from '@/utils/api';
+import { cache, CACHE_KEYS } from '@/utils/cache';
 import { 
   Plus, 
   Edit, 
@@ -30,11 +31,13 @@ interface ProductFormData {
   category: string;
   brand: string;
   images: string[];
+  imageFiles: File[];
   stockQuantity: string;
   tags: string;
   featured: boolean;
   bestSeller: boolean;
   inStock: boolean;
+  todaysDeals: boolean;
 }
 
 export default function AdminProductsPage() {
@@ -55,11 +58,13 @@ export default function AdminProductsPage() {
     category: '',
     brand: '',
     images: [],
+    imageFiles: [],
     stockQuantity: '',
     tags: '',
     featured: false,
     bestSeller: false,
-    inStock: true
+    inStock: true,
+    todaysDeals: false
   });
 
   // Fetch products from API
@@ -139,36 +144,41 @@ export default function AdminProductsPage() {
       formData.append('featured', productFormData.featured.toString());
       formData.append('bestSeller', productFormData.bestSeller.toString());
       formData.append('inStock', productFormData.inStock.toString());
+      formData.append('todaysDeals', productFormData.todaysDeals.toString());
       
-      // Handle images if any
-      productFormData.images.forEach((image, index) => {
-        if (typeof image === 'string') {
-          formData.append('existingImages', image);
-        } else {
-          formData.append('images', image);
-        }
+      // Handle existing images (for editing)
+      productFormData.images.forEach((image) => {
+        formData.append('existingImages', image);
+      });
+      
+      // Handle new image files
+      productFormData.imageFiles.forEach((file) => {
+        formData.append('images', file);
       });
 
-      let response;
+      let result;
       if (editingProduct) {
         // Update existing product
-        response = await apiService.updateProduct(editingProduct.id, formData);
+        result = await apiService.updateProduct(editingProduct.id, formData);
       } else {
         // Create new product
-        response = await apiService.createProduct(formData);
+        result = await apiService.createProduct(formData);
       }
       
-      if (response && 'success' in response && response.success) {
+      if (result.success) {
+        // Clear product cache to ensure shop page gets fresh data
+        cache.clear();
+        
         // Refresh products list
         await fetchProducts();
         setShowProductForm(false);
         setEditingProduct(null);
         resetForm();
+        
+        // Show success message
+        alert(`Product ${editingProduct ? 'updated' : 'created'} successfully!`);
       } else {
-        const errorMessage = response && 'message' in response && typeof response.message === 'string' 
-          ? response.message 
-          : 'Failed to save product';
-        setError(errorMessage);
+        setError(result.message || 'Failed to save product');
       }
     } catch (error) {
       console.error('Error saving product:', error);
@@ -181,19 +191,21 @@ export default function AdminProductsPage() {
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setProductFormData({
-      name: product.name,
-      description: product.description,
-      price: product.price.toString(),
-      originalPrice: product.originalPrice?.toString() || '',
-      category: product.category,
-      brand: product.brand,
-      images: product.images || [],
-      stockQuantity: product.stockQuantity?.toString() || '0',
-      tags: product.tags?.join(', ') || '',
-      featured: product.featured || false,
-      bestSeller: product.bestSeller || false,
-      inStock: product.inStock
-    });
+        name: product.name,
+        description: product.description,
+        price: product.price.toString(),
+        originalPrice: product.originalPrice?.toString() || '',
+        category: product.category,
+        brand: product.brand,
+        images: product.images || [],
+        imageFiles: [],
+        stockQuantity: product.stockQuantity?.toString() || '0',
+        tags: product.tags?.join(', ') || '',
+        featured: product.featured || false,
+        bestSeller: product.bestSeller || false,
+        inStock: product.inStock,
+        todaysDeals: (product as Product & { todaysDeals?: boolean }).todaysDeals || false
+      });
     setShowProductForm(true);
   };
 
@@ -206,6 +218,9 @@ export default function AdminProductsPage() {
         const response = await apiService.deleteProduct(productId);
         
         if (response.success) {
+          // Clear product cache to ensure shop page gets fresh data
+          cache.clear();
+          
           // Refresh products list
           await fetchProducts();
         } else {
@@ -229,25 +244,35 @@ export default function AdminProductsPage() {
       category: '',
       brand: '',
       images: [],
+      imageFiles: [],
       stockQuantity: '',
       tags: '',
       featured: false,
       bestSeller: false,
-      inStock: true
+      inStock: true,
+      todaysDeals: false
     });
   };
 
-  const handleAddImage = () => {
-    const imageUrl = prompt('Enter image URL:');
-    if (imageUrl) {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
       setProductFormData({
         ...productFormData,
-        images: [...productFormData.images, imageUrl]
+        imageFiles: [...productFormData.imageFiles, ...newFiles]
       });
     }
   };
 
   const handleRemoveImage = (index: number) => {
+    setProductFormData({
+      ...productFormData,
+      imageFiles: productFormData.imageFiles.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleRemoveExistingImage = (index: number) => {
     setProductFormData({
       ...productFormData,
       images: productFormData.images.filter((_, i) => i !== index)
@@ -508,10 +533,10 @@ export default function AdminProductsPage() {
 
       {/* Product Form Modal */}
       {showProductForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-700">
-            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-dark-text">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 my-4">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
               <button
@@ -520,9 +545,9 @@ export default function AdminProductsPage() {
                   setEditingProduct(null);
                   resetForm();
                 }}
-                className="p-2 rounded-full hover:bg-hover-subtle hover:bg-opacity-30 transition-colors"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <X className="w-6 h-6 text-dark-text-secondary" />
+                <X className="w-6 h-6 text-gray-500" />
               </button>
             </div>
             
@@ -530,37 +555,37 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-dark-text mb-4">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Product Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
                     <input
                       type="text"
                       value={productFormData.name}
                       onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter product name"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                     <textarea
                       value={productFormData.description}
                       onChange={(e) => setProductFormData({ ...productFormData, description: e.target.value })}
                       rows={4}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter product description"
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-dark-text mb-2">Category</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                       <select
                         value={productFormData.category}
                         onChange={(e) => setProductFormData({ ...productFormData, category: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option key="select-category" value="">Select Category</option>
                         <option key="protein" value="Protein">Protein</option>
@@ -575,24 +600,24 @@ export default function AdminProductsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-dark-text mb-2">Brand</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
                       <input
                         type="text"
                         value={productFormData.brand}
                         onChange={(e) => setProductFormData({ ...productFormData, brand: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter brand name"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Tags (comma separated)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
                     <input
                       type="text"
                       value={productFormData.tags}
                       onChange={(e) => setProductFormData({ ...productFormData, tags: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="e.g. protein, muscle building, recovery"
                     />
                   </div>
@@ -600,81 +625,118 @@ export default function AdminProductsPage() {
                 
                 {/* Pricing and Inventory */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-dark-text mb-4">Pricing & Inventory</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Inventory</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-dark-text mb-2">Price (₹)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
                       <input
                         type="number"
                         value={productFormData.price}
                         onChange={(e) => setProductFormData({ ...productFormData, price: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-dark-text mb-2">Original Price (₹)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (₹)</label>
                       <input
                         type="number"
                         value={productFormData.originalPrice}
                         onChange={(e) => setProductFormData({ ...productFormData, originalPrice: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00 (optional)"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Stock Quantity</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
                     <input
                       type="number"
                       value={productFormData.stockQuantity}
                       onChange={(e) => setProductFormData({ ...productFormData, stockQuantity: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
                     />
                   </div>
                   
                   {/* Product Images */}
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Product Images</label>
-                    <div className="space-y-2">
-                      {productFormData.images.map((image, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <input
-                            type="text"
-                            value={image}
-                            onChange={(e) => {
-                              const newImages = [...productFormData.images];
-                              newImages[index] = e.target.value;
-                              setProductFormData({ ...productFormData, images: newImages });
-                            }}
-                            className="flex-1 px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                            placeholder="Image URL"
-                          />
-                          <button
-                            onClick={() => handleRemoveImage(index)}
-                            className="p-2 text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+                    
+                    {/* Existing Images (for editing) */}
+                    {productFormData.images.length > 0 && (
+                      <div className="mb-4">
+                        <h5 className="text-sm text-gray-600 mb-2">Current Images:</h5>
+                        <div className="space-y-2">
+                          {productFormData.images.map((image, index) => (
+                            <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                              <img src={image} alt={`Product ${index + 1}`} className="w-12 h-12 object-cover rounded" />
+                              <span className="flex-1 text-sm text-gray-900 truncate">{image}</span>
+                              <button
+                                onClick={() => handleRemoveExistingImage(index)}
+                                className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      <button
-                        onClick={handleAddImage}
-                        className="w-full px-4 py-2 border-2 border-dashed border-gray-600 rounded-lg text-dark-text-secondary hover:border-primary hover:text-primary transition-colors flex items-center justify-center space-x-2"
+                      </div>
+                    )}
+                    
+                    {/* New Image Files */}
+                    {productFormData.imageFiles.length > 0 && (
+                      <div className="mb-4">
+                        <h5 className="text-sm text-gray-600 mb-2">New Images to Upload:</h5>
+                        <div className="space-y-2">
+                          {productFormData.imageFiles.map((file, index) => (
+                            <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                              <img 
+                                src={URL.createObjectURL(file)} 
+                                alt={`New ${index + 1}`} 
+                                className="w-12 h-12 object-cover rounded" 
+                              />
+                              <span className="flex-1 text-sm text-gray-900 truncate">{file.name}</span>
+                              <span className="text-xs text-gray-600">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                              <button
+                                onClick={() => handleRemoveImage(index)}
+                                className="p-1 text-red-500 hover:text-red-700 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* File Upload Input */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+                      <input
+                        type="file"
+                        id="image-upload"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center space-y-2"
                       >
-                        <Upload className="w-4 h-4" />
-                        <span>Add Image URL</span>
-                      </button>
+                        <Upload className="w-8 h-8 text-gray-500" />
+                        <span className="text-gray-700">Click to upload images</span>
+                        <span className="text-xs text-gray-500">PNG, JPG, JPEG up to 5MB each (max 5 files)</span>
+                      </label>
                     </div>
                   </div>
                   
                   {/* Product Flags */}
                   <div className="space-y-3">
-                    <h4 className="text-md font-medium text-dark-text">Product Flags</h4>
+                    <h4 className="text-md font-medium text-gray-900">Product Flags</h4>
                     
                     <div className="flex items-center space-x-3">
                       <input
@@ -682,9 +744,9 @@ export default function AdminProductsPage() {
                         id="inStock"
                         checked={productFormData.inStock}
                         onChange={(e) => setProductFormData({ ...productFormData, inStock: e.target.checked })}
-                        className="w-4 h-4 text-primary bg-dark-gray border-gray-600 rounded focus:ring-primary focus:ring-2"
+                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label htmlFor="inStock" className="text-sm text-dark-text">In Stock</label>
+                      <label htmlFor="inStock" className="text-sm text-gray-900">In Stock</label>
                     </div>
                     
                     <div className="flex items-center space-x-3">
@@ -693,9 +755,9 @@ export default function AdminProductsPage() {
                         id="featured"
                         checked={productFormData.featured}
                         onChange={(e) => setProductFormData({ ...productFormData, featured: e.target.checked })}
-                        className="w-4 h-4 text-primary bg-dark-gray border-gray-600 rounded focus:ring-primary focus:ring-2"
+                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label htmlFor="featured" className="text-sm text-dark-text">Featured Product</label>
+                      <label htmlFor="featured" className="text-sm text-gray-900">Featured Product</label>
                     </div>
                     
                     <div className="flex items-center space-x-3">
@@ -704,30 +766,41 @@ export default function AdminProductsPage() {
                         id="bestSeller"
                         checked={productFormData.bestSeller}
                         onChange={(e) => setProductFormData({ ...productFormData, bestSeller: e.target.checked })}
-                        className="w-4 h-4 text-primary bg-dark-gray border-gray-600 rounded focus:ring-primary focus:ring-2"
+                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
-                      <label htmlFor="bestSeller" className="text-sm text-dark-text">Best Seller</label>
+                      <label htmlFor="bestSeller" className="text-sm text-gray-900">Best Seller</label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="todaysDeals"
+                        checked={productFormData.todaysDeals}
+                        onChange={(e) => setProductFormData({ ...productFormData, todaysDeals: e.target.checked })}
+                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label htmlFor="todaysDeals" className="text-sm text-gray-900">Today&apos;s Deals</label>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="p-6 border-t border-gray-700 flex justify-end space-x-4">
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-4">
               <button
                 onClick={() => {
                   setShowProductForm(false);
                   setEditingProduct(null);
                   resetForm();
                 }}
-                className="px-6 py-2 border border-gray-600 text-dark-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors"
+                className="px-6 py-2 border border-gray-300 text-gray-700 hover:text-gray-900 hover:border-gray-400 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveProduct}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-2 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Saving...' : 'Save Product'}</span>

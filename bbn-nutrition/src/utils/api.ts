@@ -156,32 +156,48 @@ class ApiService {
     return this.request(`/products/${id}`);
   }
 
-  async createProduct(productData: FormData) {
+  async createProduct(productData: FormData): Promise<ApiResponse<Product>> {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
-    return fetch(`${API_BASE_URL}/products`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: productData,
     });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new ApiError(response.status, data.message || `HTTP error! status: ${response.status}`, data.errors);
+    }
+    
+    return data;
   }
 
-  async updateProduct(id: string, productData: FormData) {
+  async updateProduct(id: string, productData: FormData): Promise<ApiResponse<Product>> {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
-    return fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: productData,
     });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new ApiError(response.status, data.message || `HTTP error! status: ${response.status}`, data.errors);
+    }
+    
+    return data;
   }
 
   async deleteProduct(id: string) {
-    return this.request(`/products/${id}`, {
+    return this.request(`/admin/products/${id}`, {
       method: 'DELETE',
     });
   }
