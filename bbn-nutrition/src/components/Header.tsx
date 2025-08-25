@@ -7,7 +7,7 @@ import { ShoppingCart, Search, User, Menu, X, Heart, LogOut, MapPin, ChevronDown
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import EnhancedSearchBar from './EnhancedSearchBar';
+import AmazonStyleSearch from './AmazonStyleSearch';
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -15,11 +15,9 @@ export default function Header() {
   const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(t('category.allCategories'));
-  const [searchQuery, setSearchQuery] = useState('');
+
 
   const handleLogout = () => {
     logout();
@@ -27,19 +25,7 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (searchQuery.trim()) {
-      const categoryParam = selectedCategory !== 'All Categories' ? `&category=${encodeURIComponent(selectedCategory)}` : '';
-      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}${categoryParam}`);
-    }
-  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
 
 
 
@@ -48,25 +34,14 @@ export default function Header() {
   const handleLanguageChange = (lang: 'en' | 'hi') => {
     setLanguage(lang);
     setIsLanguageMenuOpen(false);
-    // Update selected category to translated version
-    setSelectedCategory(t('category.allCategories'));
   };
 
-  const categories = [
-    t('category.allCategories'),
-    t('category.proteinSupplements'),
-    t('category.preWorkout'),
-    t('category.postWorkout'),
-    t('category.vitaminsAndMinerals'),
-    t('category.weightManagement'),
-    t('category.creatine'),
-    t('category.aminoAcids')
-  ];
+
 
   return (
-    <header className="bg-gray-900 shadow-lg sticky top-0 z-50">
+    <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
       {/* Top Bar */}
-      <div className="bg-gray-800 text-white text-sm">
+      <div className="bg-primary text-white text-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-8">
             <div className="flex items-center space-x-4">
@@ -85,19 +60,19 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <div className="bg-gray-900">
+      <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 space-x-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary to-light-green rounded-lg flex items-center justify-center">
-                <span className="text-dark font-bold text-lg">BBN</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">BBN</span>
               </div>
               <div className="hidden lg:block">
-                <div className="text-white font-bold text-lg leading-tight">
+                <div className="text-text-primary font-bold text-lg leading-tight">
                   Booster Box
                 </div>
-                <div className="text-orange-400 text-xs font-medium">
+                <div className="text-accent-orange text-xs font-medium">
                   Nutrition
                 </div>
               </div>
@@ -105,9 +80,9 @@ export default function Header() {
 
             {/* Location Selector - Only show when user is logged in */}
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-              <div className="hidden md:flex items-center text-white text-sm">
+              <div className="hidden md:flex items-center text-text-primary text-sm">
                 <div className="flex flex-col">
-                  <span className="text-gray-300 text-xs">Deliver to</span>
+                  <span className="text-text-secondary text-xs">Deliver to</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
@@ -118,41 +93,9 @@ export default function Header() {
               </div>
             )}
 
-            {/* Search Bar - Amazon Style */}
-            <div className="flex-1 max-w-3xl">
-              <div className="flex">
-                {/* Category Dropdown */}
-                <div className="relative">
-                  <select 
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="h-10 px-3 bg-gray-200 text-gray-900 text-sm border-r border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none pr-8"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-3 w-4 h-4 text-gray-600 pointer-events-none" />
-                </div>
-                
-                {/* Search Input */}
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={t('header.searchPlaceholder')}
-                  className="flex-1 h-10 px-4 text-gray-900 border-t border-b border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-                
-                {/* Search Button */}
-                <button 
-                  onClick={handleSearch}
-                  className="h-10 px-4 bg-orange-400 hover:bg-orange-500 rounded-r-md transition-colors"
-                >
-                  <Search className="w-5 h-5 text-gray-900" />
-                </button>
-              </div>
+            {/* Amazon Style Search Bar */}
+            <div className="flex-1 max-w-4xl">
+              <AmazonStyleSearch />
             </div>
 
             {/* Right Side Actions */}
@@ -163,7 +106,7 @@ export default function Header() {
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex flex-col items-start text-white hover:text-orange-400 transition-colors"
+                    className="flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
                   >
                     <span className="text-xs">Hello, {user?.name?.split(' ')[0]}</span>
                     <div className="flex items-center space-x-1">
@@ -174,7 +117,7 @@ export default function Header() {
                 ) : (
                   <Link
                     href="/login"
-                    className="flex flex-col items-start text-white hover:text-orange-400 transition-colors"
+                    className="flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
                   >
                     <span className="text-xs">Hello, sign in</span>
                     <div className="flex items-center space-x-1">
@@ -199,20 +142,6 @@ export default function Header() {
                       >
                         Your Account
                       </Link>
-                      <Link
-                        href="/orders"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        Your Orders
-                      </Link>
-                      <Link
-                        href="/wishlist"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        Your Wish List
-                      </Link>
                       <div className="border-t border-gray-200 mt-2 pt-2">
                         <button
                           onClick={handleLogout}
@@ -229,7 +158,7 @@ export default function Header() {
               {/* Returns & Orders */}
               <Link
                 href="/orders"
-                className="hidden lg:flex flex-col items-start text-white hover:text-orange-400 transition-colors"
+                className="hidden lg:flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
               >
                 <span className="text-xs">Returns</span>
                 <span className="text-sm font-medium">& Orders</span>
@@ -238,7 +167,7 @@ export default function Header() {
               {/* Cart */}
               <Link 
                 href="/cart" 
-                className="flex items-center space-x-2 text-white hover:text-orange-400 transition-colors relative"
+                className="flex items-center space-x-2 text-text-primary hover:text-accent-orange transition-colors relative"
               >
                 <div className="relative">
                   <ShoppingCart className="w-8 h-8" />
@@ -259,13 +188,13 @@ export default function Header() {
       </div>
 
       {/* Navigation Bar */}
-      <div className="bg-gray-800">
+      <div className="bg-gray-50 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-10 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex items-center space-x-1 text-white hover:text-orange-400 transition-colors"
+              className="lg:hidden flex items-center space-x-1 text-text-primary hover:text-accent-orange transition-colors"
             >
               <Menu className="w-5 h-5" />
               <span className="text-sm font-medium">All</span>
@@ -273,25 +202,28 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-6">
-              <Link href="/shop?sortBy=discount&sortOrder=desc&q=deals" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/shop" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+                Shop All
+              </Link>
+              <Link href="/deals" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.todaysDeals')}
               </Link>
-              <Link href="/shop?sortBy=sales&sortOrder=desc&q=bestseller" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/best-sellers" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.bestSellers')}
               </Link>
-              <Link href="/shop?q=protein whey muscle gainer" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/protein-supplements" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.proteinSupplements')}
               </Link>
-              <Link href="/shop?q=pre-workout energy pump" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/pre-workout" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.preWorkout')}
               </Link>
-              <Link href="/shop?q=vitamin multivitamin mineral" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/vitamins" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.vitamins')}
               </Link>
-              <Link href="/about" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/about" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.aboutBBN')}
               </Link>
-              <Link href="/contact" className="text-white hover:text-orange-400 transition-colors text-sm font-medium">
+              <Link href="/contact" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
                 {t('header.customerService')}
               </Link>
               
@@ -299,7 +231,7 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                  className="flex items-center space-x-1 text-white hover:text-orange-400 transition-colors text-sm font-medium"
+                  className="flex items-center space-x-1 text-text-primary hover:text-accent-orange transition-colors text-sm font-medium"
                 >
                   <img 
                     src={language === 'hi' ? '/images/flags/in.svg' : '/images/flags/us.svg'} 
@@ -366,56 +298,48 @@ export default function Header() {
           <div className="max-w-7xl mx-auto px-4 py-4">
             {/* Mobile Search */}
             <div className="mb-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={t('header.searchPlaceholder')}
-                  className="flex-1 h-10 px-4 text-gray-900 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-                <button 
-                  onClick={handleSearch}
-                  className="h-10 px-4 bg-orange-400 hover:bg-orange-500 rounded-r-md transition-colors"
-                >
-                  <Search className="w-5 h-5 text-gray-900" />
-                </button>
-              </div>
+              <AmazonStyleSearch />
             </div>
             
             {/* Mobile Navigation Links */}
             <nav className="space-y-3">
               <Link 
-                href="/shop?sortBy=discount&sortOrder=desc&q=deals" 
+                href="/shop" 
+                className="block text-gray-900 hover:text-orange-600 font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Shop All
+              </Link>
+              <Link 
+                href="/deals" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('header.todaysDeals')}
               </Link>
               <Link 
-                href="/shop?sortBy=sales&sortOrder=desc&q=bestseller" 
+                href="/best-sellers" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('header.bestSellers')}
               </Link>
               <Link 
-                href="/shop?q=protein whey muscle gainer" 
+                href="/protein-supplements" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('header.proteinSupplements')}
               </Link>
               <Link 
-                href="/shop?q=pre-workout energy pump" 
+                href="/pre-workout" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('header.preWorkout')}
               </Link>
               <Link 
-                href="/shop?q=vitamin multivitamin mineral" 
+                href="/vitamins" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >

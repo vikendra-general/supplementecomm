@@ -5,9 +5,11 @@ import Image from 'next/image';
 import { Star, ShoppingCart, Heart, Truck, Shield, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/utils/currency';
 import { apiService } from '@/utils/api';
 import { Product } from '@/types';
+import toast from 'react-hot-toast';
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -18,6 +20,7 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = use(params);
   const { addToCart, isInCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +54,29 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
   }, [id]);
 
+  // Check if product is in wishlist when product loads
+  useEffect(() => {
+    if (isAuthenticated && product) {
+      try {
+        const userId = user?.id || 'anonymous';
+        const wishlistKey = `wishlist_${userId}`;
+        const existingWishlist = localStorage.getItem(wishlistKey);
+        if (existingWishlist) {
+          const wishlistItems = JSON.parse(existingWishlist);
+          interface WishlistItem {
+             id: string;
+             product: Product;
+             addedAt: string;
+           }
+           const productExists = wishlistItems.find((item: WishlistItem) => item.product.id === product.id);
+          setIsWishlisted(!!productExists);
+        }
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
+      }
+    }
+  }, [isAuthenticated, product, user]);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,7 +109,50 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   };
 
   const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+    if (!isAuthenticated) {
+      // Redirect to login if not authenticated
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    
+    if (!product) return;
+    
+    try {
+      const userId = user?.id || 'anonymous';
+      const wishlistKey = `wishlist_${userId}`;
+      const existingWishlist = localStorage.getItem(wishlistKey);
+      let wishlistItems = existingWishlist ? JSON.parse(existingWishlist) : [];
+      
+      interface WishlistItem {
+         id: string;
+         product: Product;
+         addedAt: string;
+       }
+       
+       const productExists = wishlistItems.find((item: WishlistItem) => item.product.id === product.id);
+       
+       if (productExists) {
+         // Remove from wishlist
+         wishlistItems = wishlistItems.filter((item: WishlistItem) => item.product.id !== product.id);
+        setIsWishlisted(false);
+        toast.success('Removed from wishlist');
+      } else {
+        // Add to wishlist
+        const wishlistItem = {
+          id: `wishlist_${product.id}_${Date.now()}`,
+          product: product,
+          addedAt: new Date().toISOString()
+        };
+        wishlistItems.push(wishlistItem);
+        setIsWishlisted(true);
+        toast.success('Added to wishlist');
+      }
+      
+      localStorage.setItem(wishlistKey, JSON.stringify(wishlistItems));
+    } catch (error) {
+      console.error('Error managing wishlist:', error);
+      toast.error('Failed to update wishlist');
+    }
   };
 
   const nextImage = () => {

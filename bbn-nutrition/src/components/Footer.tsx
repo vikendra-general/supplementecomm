@@ -1,7 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -35,31 +39,31 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Quick Links</h3>
+            <h3 className="text-lg font-semibold">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/shop" className="text-gray-400 hover:text-white transition-colors">
-                  Shop All
+                  {t('footer.shopAll')}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?category=protein" className="text-gray-400 hover:text-white transition-colors">
-                  Protein
+                  {t('footer.protein')}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?category=pre-workout" className="text-gray-400 hover:text-white transition-colors">
-                  Pre-Workout
+                  {t('footer.preWorkout')}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?category=vitamins" className="text-gray-400 hover:text-white transition-colors">
-                  Vitamins
+                  {t('footer.vitamins')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
-                  About Us
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
             </ul>
@@ -67,36 +71,36 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Customer Service</h3>
+            <h3 className="text-lg font-semibold">{t('footer.customerService')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                  Contact Us
+                  {t('footer.contactUs')}
                 </Link>
               </li>
               <li>
                 <Link href="/shipping" className="text-gray-400 hover:text-white transition-colors">
-                  Shipping Info
+                  {t('footer.shippingInfo')}
                 </Link>
               </li>
               <li>
                 <Link href="/returns" className="text-gray-400 hover:text-white transition-colors">
-                  Returns & Exchanges
+                  {t('footer.returns')}
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
-                  FAQ
+                  {t('footer.faq')}
                 </Link>
               </li>
               <li>
                 <Link href="/size-guide" className="text-gray-400 hover:text-white transition-colors">
-                  Size Guide
+                  {t('footer.sizeGuide')}
                 </Link>
               </li>
               <li>
                 <Link href="/login?admin=true" className="text-gray-400 hover:text-white transition-colors">
-                  Admin Login
+                  {t('footer.adminLogin')}
                 </Link>
               </li>
             </ul>
@@ -104,7 +108,7 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Info</h3>
+            <h3 className="text-lg font-semibold">{t('footer.contactInfo')}</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-gray-400" />

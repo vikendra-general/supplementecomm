@@ -1,12 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic'
-import { categories } from '@/data/categories'
+import { getCategoriesWithDynamicCounts } from '@/utils/categoryUtils'
 import { getTopSellerProducts, getFeaturedProducts } from '@/utils/recommendations'
 import { Star, ArrowRight, Truck, Shield, Clock, TrendingUp, Zap, Award, Users, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { memo, useState, useEffect } from 'react'
-import { Product } from '@/types'
+import { Product, Category } from '@/types'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // Lazy load components for better performance
 const Hero = dynamic(() => import('@/components/Hero'), {
@@ -18,7 +19,7 @@ const ProductCard = dynamic(() => import('@/components/ProductCard'), {
 })
 
 // Memoized components for better performance
-const CategoryCard = memo(({ category }: { category: { id: string; name: string; description: string; productCount: number } }) => (
+const CategoryCard = memo(({ category, t }: { category: { id: string; name: string; description: string; productCount: number }, t: (key: string) => string }) => (
   <Link 
     href={`/shop?category=${category.name.toLowerCase()}`}
     className="group bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center hover:shadow-xl hover:border-green-300 transition-all duration-300 transform hover:-translate-y-2"
@@ -29,7 +30,7 @@ const CategoryCard = memo(({ category }: { category: { id: string; name: string;
     <h3 className="font-bold text-gray-900 mb-3 text-lg">{category.name}</h3>
     <p className="text-sm text-gray-600 mb-4 leading-relaxed">{category.description}</p>
     <div className="inline-flex items-center space-x-2 text-green-600 font-medium text-sm">
-      <span>{category.productCount} products</span>
+      <span>{category.productCount} {t('home.products')}</span>
       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
     </div>
   </Link>
@@ -78,8 +79,10 @@ const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; ro
 TestimonialCard.displayName = 'TestimonialCard'
 
 export default function HomePage() {
+  const { t } = useLanguage();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [topSellerProducts, setTopSellerProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -92,6 +95,10 @@ export default function HomePage() {
         ]);
         setFeaturedProducts(featured);
         setTopSellerProducts(topSellers);
+        
+        // Get categories with dynamic product counts
+        const dynamicCategories = getCategoriesWithDynamicCounts();
+        setCategories(dynamicCategories);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -158,15 +165,15 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full mb-6">
               <Zap className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Product Categories</span>
+              <span className="text-sm font-medium text-green-800">{t('home.categoriesTitle')}</span>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Shop by Category</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">Find the perfect supplements for your fitness goals and unlock your potential</p>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">{t('home.categoriesTitle')}</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">{t('home.categoriesSubtitle')}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
+              <CategoryCard key={category.id} category={category} t={t} />
             ))}
           </div>
         </div>
@@ -178,10 +185,10 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full mb-6">
               <Star className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">Featured Products</span>
+              <span className="text-sm font-medium text-blue-800">{t('home.featuredTitle')}</span>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Our Best Sellers</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">Discover our most popular and highest-rated supplements trusted by thousands</p>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">{t('home.featuredTitle')}</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">{t('home.featuredSubtitle')}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

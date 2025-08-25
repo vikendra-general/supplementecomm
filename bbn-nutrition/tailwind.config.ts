@@ -9,36 +9,58 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // BBN-Nutrition Bold & Energetic Palette
-        primary: '#00FF73',           // Energetic Green (main brand)
-        secondary: '#0B0B0B',         // Deep Black (strength & boldness)
-        'accent-1': '#FF6B35',        // Electric Orange (CTAs)
-        'accent-2': '#00D4FF',        // Bright Cyan (modern vibe)
-        'background-dark': '#121212', // Dark background
-        'neutral-light': '#EAEAEA',   // Light gray for text/cards
+        // iHerb-Inspired Clean & Professional Health Palette
+        primary: '#38a169',           // Natural Green (main brand)
+        'primary-dark': '#2f855a',    // Darker Green (hover states)
+        'primary-light': '#68d391',   // Light Green (accents)
+        secondary: '#f7fafc',         // Light Gray (backgrounds)
+        'accent-orange': '#ed8936',   // Warm Orange (CTAs)
+        'accent-blue': '#3182ce',     // Trust Blue (links)
+        'success-green': '#48bb78',   // Success states
+        'warning-orange': '#ed8936',  // Warning states
+        'info-blue': '#4299e1',       // Info states
         
-        // Legacy colors for compatibility
-        dark: '#0B0B0B',
-        'dark-gray': '#1a1a1a',
-        'dark-green': '#00cc00',
-        'light-green': '#00FF73',
-        'hover-light': '#2a2a2a',
-        'hover-lighter': '#3a3a3a',
-        'admin-hover': '#2d3748',
-        'hover-subtle': '#374151',
-        'hover-accent': '#1f2937',
+        // Text colors
+        'text-primary': '#2d3748',    // Main text
+        'text-secondary': '#718096',  // Secondary text
+        
+        // Background colors
+        'bg-light': '#f7fafc',        // Light backgrounds
+        'bg-white': '#ffffff',        // Pure white
+        'bg-gray': '#e2e8f0',         // Gray backgrounds
+        
+        // Border and shadow
+        'border-light': '#e2e8f0',    // Light borders
+        'shadow-light': 'rgba(0, 0, 0, 0.1)', // Light shadows
+        
+        // Legacy colors for compatibility (updated to match new theme)
+        dark: '#2d3748',
+        'dark-gray': '#4a5568',
+        'dark-green': '#2f855a',
+        'light-green': '#68d391',
+        'hover-light': '#e2e8f0',
+        'hover-lighter': '#f7fafc',
+        'admin-hover': '#e2e8f0',
+        'hover-subtle': '#edf2f7',
+        'hover-accent': '#e2e8f0',
       },
       backgroundColor: {
-        'dark-bg': '#000000',
-        'dark-gray-bg': '#1a1a1a',
-        'dark-card': '#111111',
-        'hover-bg': '#2a2a2a',
-        'admin-hover-bg': '#2d3748',
+        'light-bg': '#ffffff',
+        'light-gray-bg': '#f7fafc',
+        'light-card': '#ffffff',
+        'hover-bg': '#e2e8f0',
+        'admin-hover-bg': '#e2e8f0',
+        'success-bg': '#f0fff4',
+        'warning-bg': '#fffaf0',
+        'info-bg': '#ebf8ff',
       },
       textColor: {
-        'dark-text': '#ffffff',
-        'dark-text-secondary': '#cccccc',
-        'hover-text': '#e2e8f0',
+        'light-text': '#2d3748',
+        'light-text-secondary': '#718096',
+        'hover-text': '#2d3748',
+        'success-text': '#2f855a',
+        'warning-text': '#c05621',
+        'info-text': '#2b6cb0',
       },
     },
   },

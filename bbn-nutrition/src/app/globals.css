@@ -17,19 +17,26 @@
 }
 
 :root {
-  /* BBN-Nutrition Bold & Energetic Color Palette */
-  --background: #121212;
-  --foreground: #EAEAEA;
-  --primary-green: #00FF73;
-  --primary-green-dark: #00CC5A;
-  --primary-green-light: #33FF8F;
-  --accent-orange: #FF6B35;
-  --accent-cyan: #00D4FF;
-  --secondary-black: #0B0B0B;
-  --dark-gray: #1f2937;
-  --light-gray: #EAEAEA;
+  /* iHerb-Inspired Clean & Professional Health Color Palette */
+  --background: #ffffff;
+  --foreground: #2d3748;
+  --primary-green: #38a169;
+  --primary-green-dark: #2f855a;
+  --primary-green-light: #68d391;
+  --accent-orange: #ed8936;
+  --accent-blue: #3182ce;
+  --secondary-gray: #f7fafc;
+  --dark-gray: #4a5568;
+  --light-gray: #e2e8f0;
   --white: #ffffff;
-  --neutral-light: #EAEAEA;
+  --neutral-light: #f7fafc;
+  --success-green: #48bb78;
+  --warning-orange: #ed8936;
+  --info-blue: #4299e1;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --border-light: #e2e8f0;
+  --shadow-light: rgba(0, 0, 0, 0.1);
 }
 
 @theme inline {
@@ -39,12 +46,18 @@
   --color-primary-dark: var(--primary-green-dark);
   --color-primary-light: var(--primary-green-light);
   --color-accent-orange: var(--accent-orange);
-  --color-accent-cyan: var(--accent-cyan);
-  --color-secondary-black: var(--secondary-black);
+  --color-accent-blue: var(--accent-blue);
+  --color-secondary-gray: var(--secondary-gray);
   --color-dark-gray: var(--dark-gray);
   --color-light-gray: var(--light-gray);
   --color-white: var(--white);
   --color-neutral-light: var(--neutral-light);
+  --color-success-green: var(--success-green);
+  --color-warning-orange: var(--warning-orange);
+  --color-info-blue: var(--info-blue);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-light: var(--border-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

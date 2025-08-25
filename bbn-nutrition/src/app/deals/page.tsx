@@ -16,14 +16,21 @@ export default function DealsPage() {
       try {
         setLoading(true);
         setError(null);
-        // Fetch products that are marked as today's deals
+        // Fetch products that are marked as today's deals by admin
         const response = await apiService.getProducts({ limit: 100 });
         if (response.success && response.data) {
-          // Filter products that have todaysDeals flag or have discount > 0
+          // Filter products that have todaysDeals flag set to true by admin
           const deals = response.data.filter((product: Product & { todaysDeals?: boolean }) => 
-            product.todaysDeals || 
-            (product.originalPrice && product.originalPrice > product.price)
-          );
+            product.inStock && product.todaysDeals === true
+          ).sort((a: Product, b: Product) => {
+            // Sort by discount percentage (highest first), then by rating
+            const aDiscount = a.originalPrice ? ((a.originalPrice - a.price) / a.originalPrice) * 100 : 0;
+            const bDiscount = b.originalPrice ? ((b.originalPrice - b.price) / b.originalPrice) * 100 : 0;
+            if (bDiscount !== aDiscount) {
+              return bDiscount - aDiscount;
+            }
+            return b.rating - a.rating;
+          });
           setDealsProducts(deals);
         }
       } catch (error) {

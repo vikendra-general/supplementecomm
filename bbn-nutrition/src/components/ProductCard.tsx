@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -18,7 +18,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, isInCart } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { translateProduct, t } = useLanguage();
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -26,6 +26,30 @@ export default function ProductCard({ product }: ProductCardProps) {
   
   // Get translated product data
   const translatedProduct = translateProduct(product);
+  
+  // Check if product is in wishlist on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      try {
+        // Get user from auth context or use anonymous for consistency
+        const userId = user?.id || 'anonymous';
+        const wishlistKey = `wishlist_${userId}`;
+        const existingWishlist = localStorage.getItem(wishlistKey);
+        if (existingWishlist) {
+          const wishlistItems = JSON.parse(existingWishlist);
+          interface WishlistItem {
+             id: string;
+             product: Product;
+             addedAt: string;
+           }
+           const productExists = wishlistItems.find((item: WishlistItem) => item.product.id === product.id);
+          setIsWishlisted(!!productExists);
+        }
+      } catch (error) {
+        console.error('Error checking wishlist status:', error);
+      }
+    }
+  }, [isAuthenticated, product.id]);
 
   const handleAddToCart = () => {
     setIsAddingToCart(true);
@@ -50,15 +74,50 @@ export default function ProductCard({ product }: ProductCardProps) {
       router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
-    setIsWishlisted(!isWishlisted);
-    toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
-    // Wishlist logic here
+    
+    try {
+      // Get user from auth context or use anonymous for consistency
+      const userId = user?.id || 'anonymous';
+      const wishlistKey = `wishlist_${userId}`;
+      const existingWishlist = localStorage.getItem(wishlistKey);
+      let wishlistItems = existingWishlist ? JSON.parse(existingWishlist) : [];
+      
+      interface WishlistItem {
+         id: string;
+         product: Product;
+         addedAt: string;
+       }
+       
+       const productExists = wishlistItems.find((item: WishlistItem) => item.product.id === product.id);
+       
+       if (productExists) {
+         // Remove from wishlist
+         wishlistItems = wishlistItems.filter((item: WishlistItem) => item.product.id !== product.id);
+        setIsWishlisted(false);
+        toast.success('Removed from wishlist');
+      } else {
+        // Add to wishlist
+        const wishlistItem = {
+          id: `wishlist_${product.id}_${Date.now()}`,
+          product: product,
+          addedAt: new Date().toISOString()
+        };
+        wishlistItems.push(wishlistItem);
+        setIsWishlisted(true);
+        toast.success('Added to wishlist');
+      }
+      
+      localStorage.setItem(wishlistKey, JSON.stringify(wishlistItems));
+    } catch (error) {
+      console.error('Error managing wishlist:', error);
+      toast.error('Failed to update wishlist');
+    }
   };
 
   const isProductInCart = isInCart(product.id);
 
   return (
-    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden">
         <Link href={`/product/${product.id}`}>
@@ -84,7 +143,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
 
         {/* Sale Badge */}
-        {product.originalPrice && (
+        {product.originalPrice && product.originalPrice > product.price && (
           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
             SALE
           </div>
@@ -106,13 +165,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-grow">
         {/* Brand */}
         <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
         
         {/* Product Name */}
         <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2">
             {translatedProduct.name}
           </h3>
         </Link>
@@ -141,7 +200,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-lg font-bold text-gray-900">
             {formatPrice(product.price)}
           </span>
-          {product.originalPrice && (
+          {product.originalPrice && product.originalPrice > product.price && (
             <span className="text-sm text-gray-500 line-through ml-2">
               {formatPrice(product.originalPrice)}
             </span>
@@ -149,6 +208,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Add to Cart Button */}
+        <div className="mt-auto">
         <button
           onClick={handleAddToCart}
           disabled={!product.inStock || isAddingToCart || isProductInCart}
@@ -186,6 +246,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             Sign in to save your cart
           </p>
         )}
+        </div>
       </div>
     </div>
   );
