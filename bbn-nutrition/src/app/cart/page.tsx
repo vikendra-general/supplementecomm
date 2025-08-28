@@ -11,7 +11,7 @@ import { formatPrice } from '@/utils/currency';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity, getCartTotal, clearCart, getAvailableStock } = useCart();
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export default function CartPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cart.title')}</h1>
           <p className="text-gray-600">
-            {items.length} {items.length !== 1 ? t('cart.items') : t('cart.item')}
+            {items.length} {items.length !== 1 ? 'products' : 'product'}
           </p>
         </div>
 
@@ -96,23 +96,27 @@ export default function CartPage() {
                     <div className="flex items-center space-x-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
-                        <div className="w-20 h-20 relative rounded-lg overflow-hidden">
-                          <Image
-                            src={item.product.images[0] || '/images/products/placeholder.svg'}
-                            alt={item.product.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
+                        <Link href={`/product/${item.product.id}`}>
+                          <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                            <Image
+                              src={item.product.images[0] || '/images/products/placeholder.svg'}
+                              alt={item.product.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </Link>
                       </div>
 
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {item.product.name}
-                            </h3>
+                            <Link href={`/product/${item.product.id}`}>
+                              <h3 className="text-lg font-semibold text-gray-900 hover:text-primary transition-colors cursor-pointer">
+                                {item.product.name}
+                              </h3>
+                            </Link>
                             {item.variant && (
                               <p className="text-sm text-gray-500">
                                 Variant: {item.variant.name}
@@ -132,24 +136,32 @@ export default function CartPage() {
 
                         {/* Quantity Controls */}
                         <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                              disabled={isUpdating === item.product.id || item.quantity <= 1}
-                              className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="w-12 text-center font-medium">
-                              {isUpdating === item.product.id ? '...' : item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                              disabled={isUpdating === item.product.id}
-                              className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                                disabled={isUpdating === item.product.id || item.quantity <= 1}
+                                className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="w-12 text-center font-medium">
+                                {isUpdating === item.product.id ? '...' : item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                                disabled={isUpdating === item.product.id || item.quantity >= getAvailableStock(item.product, item.variant)}
+                                className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={item.quantity >= getAvailableStock(item.product, item.variant) ? 'Maximum stock reached' : 'Increase quantity'}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                            {getAvailableStock(item.product, item.variant) <= 10 && (
+                              <span className="text-xs text-gray-500">
+                                {getAvailableStock(item.product, item.variant)} available
+                              </span>
+                            )}
                           </div>
                           <button
                             onClick={() => handleRemoveItem(item.product.id)}

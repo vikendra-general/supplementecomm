@@ -28,10 +28,11 @@ export const products: Product[] = [
       sodium: 140,
       ingredients: ['Whey Protein Isolate', 'Natural Flavors', 'Sweeteners', 'Emulsifiers']
     },
+    stockQuantity: 50,
     variants: [
-      { id: '1-1', name: 'Chocolate', price: 59.99, inStock: true },
-      { id: '1-2', name: 'Vanilla', price: 59.99, inStock: true },
-      { id: '1-3', name: 'Strawberry', price: 59.99, inStock: false }
+      { id: '1-1', name: 'Chocolate', price: 59.99, inStock: true, stockQuantity: 15 },
+      { id: '1-2', name: 'Vanilla', price: 59.99, inStock: true, stockQuantity: 8 },
+      { id: '1-3', name: 'Strawberry', price: 59.99, inStock: false, stockQuantity: 0 }
     ]
   },
   {

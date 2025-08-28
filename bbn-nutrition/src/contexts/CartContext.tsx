@@ -11,6 +11,8 @@ interface CartItem {
     id: string;
     name: string;
     price: number;
+    inStock?: boolean;
+    stockQuantity?: number;
   };
 }
 
@@ -23,6 +25,8 @@ interface CartContextType {
   getCartCount: () => number;
   getCartTotal: () => number;
   isInCart: (productId: string) => boolean;
+  getAvailableStock: (product: Product, variant?: CartItem['variant']) => number;
+  getMaxQuantityCanAdd: (product: Product, variant?: CartItem['variant']) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -164,13 +168,50 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         (!variant || item.variant?.id === variant.id)
       );
 
+      // Get available stock (variant stock takes priority if variant is selected)
+      const availableStock = variant?.stockQuantity ?? product.stockQuantity ?? 0;
+      
       if (existingItemIndex > -1) {
         // Update existing item
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += quantity;
+        const currentQuantity = updatedItems[existingItemIndex].quantity;
+        const newQuantity = currentQuantity + quantity;
+        
+        if (newQuantity > availableStock) {
+          // Calculate how many we can actually add
+          const maxCanAdd = availableStock - currentQuantity;
+          if (maxCanAdd > 0) {
+            updatedItems[existingItemIndex].quantity = availableStock;
+            // Import toast dynamically to avoid SSR issues
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error(`Only ${maxCanAdd} more item(s) available. Added maximum possible quantity.`);
+            });
+          } else {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error(`Maximum quantity (${availableStock}) already in cart.`);
+            });
+          }
+          return updatedItems;
+        }
+        
+        updatedItems[existingItemIndex].quantity = newQuantity;
         return updatedItems;
       } else {
         // Add new item
+        if (quantity > availableStock) {
+          if (availableStock > 0) {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error(`Only ${availableStock} item(s) available. Added maximum possible quantity.`);
+            });
+            return [...prevItems, { product, quantity: availableStock, variant }];
+          } else {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error('This item is out of stock.');
+            });
+            return prevItems;
+          }
+        }
+        
         return [...prevItems, { product, quantity, variant }];
       }
     });
@@ -187,11 +228,22 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
 
     setItems(prevItems =>
-      prevItems.map(item =>
-        item.product.id === productId
-          ? { ...item, quantity }
-          : item
-      )
+      prevItems.map(item => {
+        if (item.product.id === productId) {
+          // Get available stock (variant stock takes priority if variant is selected)
+          const availableStock = item.variant?.stockQuantity ?? item.product.stockQuantity ?? 0;
+          
+          if (quantity > availableStock) {
+            import('react-hot-toast').then(({ default: toast }) => {
+              toast.error(`Maximum ${availableStock} item(s) available for this product.`);
+            });
+            return { ...item, quantity: availableStock };
+          }
+          
+          return { ...item, quantity };
+        }
+        return item;
+      })
     );
   }, [removeFromCart]);
 
@@ -210,7 +262,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [isAuthenticated, user]);
 
   const getCartCount = useCallback(() => {
-    return items.reduce((total, item) => total + item.quantity, 0);
+    return items.length;
   }, [items]);
 
   const getCartTotal = useCallback(() => {
@@ -225,6 +277,20 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return items.some(item => item.product.id === productId);
   }, [items]);
 
+  const getAvailableStock = useCallback((product: Product, variant?: CartItem['variant']) => {
+    return variant?.stockQuantity ?? product.stockQuantity ?? 0;
+  }, []);
+
+  const getMaxQuantityCanAdd = useCallback((product: Product, variant?: CartItem['variant']) => {
+    const availableStock = variant?.stockQuantity ?? product.stockQuantity ?? 0;
+    const currentQuantityInCart = items.find(
+      item => item.product.id === product.id && 
+      (!variant || item.variant?.id === variant.id)
+    )?.quantity ?? 0;
+    
+    return Math.max(0, availableStock - currentQuantityInCart);
+  }, [items]);
+
   const value: CartContextType = {
     items,
     addToCart,
@@ -234,6 +300,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     getCartCount,
     getCartTotal,
     isInCart,
+    getAvailableStock,
+    getMaxQuantityCanAdd,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

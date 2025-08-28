@@ -23,6 +23,7 @@ export interface ProductVariant {
   name: string;
   price: number;
   inStock: boolean;
+  stockQuantity?: number;
 }
 
 export interface NutritionFacts {

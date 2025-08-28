@@ -7,6 +7,7 @@ import { ArrowLeft, CreditCard, Truck, Shield, Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatINR } from '@/utils/currency';
+import { Address } from '@/types';
 
 interface OrderData {
   _id: string;
@@ -62,6 +63,11 @@ export default function CheckoutPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedShippingAddress, setSelectedShippingAddress] = useState<Address | null>(null);
+  const [selectedBillingAddress, setSelectedBillingAddress] = useState<Address | null>(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressFormType, setAddressFormType] = useState('shipping'); // 'shipping' or 'billing'
   const [formData, setFormData] = useState({
     // Billing Info
     fullName: '',
@@ -99,6 +105,62 @@ export default function CheckoutPage() {
       router.push('/login?redirect=/checkout');
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // Load user data and addresses
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Pre-fill form with user data
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      }));
+
+      // Load user addresses
+      const loadAddresses = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            console.log('No token found, skipping address loading');
+            return;
+          }
+
+          console.log('Loading addresses for user:', user?.email);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/user/addresses`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('Address API response:', result);
+            if (result.success && result.addresses) {
+              console.log('Found addresses:', result.addresses.length);
+              setAddresses(result.addresses);
+              
+              // Auto-select default address if available
+               const defaultAddress = result.addresses.find((addr: Address) => addr.isDefault);
+              if (defaultAddress) {
+                console.log('Auto-selecting default address:', defaultAddress);
+                setSelectedShippingAddress(defaultAddress);
+                setSelectedBillingAddress(defaultAddress);
+              }
+            } else {
+              console.log('No addresses found or API response structure unexpected');
+            }
+          } else {
+            console.error('Failed to load addresses:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Error loading addresses:', error);
+        }
+      };
+
+      loadAddresses();
+    }
+  }, [isAuthenticated, user]);
   
   // Show loading state while checking authentication
   if (isLoading) {
@@ -362,7 +424,85 @@ export default function CheckoutPage() {
             {step === 1 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Address Selection */}
+                {addresses.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Billing Address</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {addresses.map((address) => (
+                        <div
+                          key={address._id}
+                          onClick={() => {
+                            setSelectedBillingAddress(address);
+                            setFormData(prev => ({
+                              ...prev,
+                              street: address.address,
+                              city: address.city,
+                              state: address.state,
+                              pincode: address.zipCode,
+                              country: address.country
+                            }));
+                          }}
+                          className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                            selectedBillingAddress?._id === address._id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium text-gray-900">{address.type.charAt(0).toUpperCase() + address.type.slice(1)}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {address.address}<br/>
+                                {address.city}, {address.state} {address.zipCode}<br/>
+                                {address.country}
+                              </p>
+                              {address.isDefault && (
+                                <span className="inline-block mt-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <input
+                              type="radio"
+                              checked={selectedBillingAddress?._id === address._id}
+                              onChange={() => {}}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressForm(true);
+                        setAddressFormType('billing');
+                      }}
+                      className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    >
+                      + Add New Address
+                    </button>
+                  </div>
+                )}
+                
+                {/* Manual Address Form */}
+                {(addresses.length === 0 || showAddressForm) && (
+                  <div>
+                    {addresses.length > 0 && (
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Add New Address</h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddressForm(false)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name *
@@ -536,6 +676,8 @@ export default function CheckoutPage() {
                     <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
                   </div>
                 </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -543,20 +685,101 @@ export default function CheckoutPage() {
             {step === 2 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
+                
+                {/* Same as Billing Option */}
                 <div className="mb-6">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.sameAsBilling}
-                      onChange={(e) => setFormData(prev => ({ ...prev, sameAsBilling: e.target.checked }))}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, sameAsBilling: e.target.checked }));
+                        if (e.target.checked && selectedBillingAddress) {
+                          setSelectedShippingAddress(selectedBillingAddress);
+                        }
+                      }}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Same as billing address</span>
                   </label>
                 </div>
                 
-                {!formData.sameAsBilling && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Address Selection for Shipping */}
+                {!formData.sameAsBilling && addresses.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Shipping Address</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {addresses.map((address) => (
+                        <div
+                          key={address._id}
+                          onClick={() => {
+                            setSelectedShippingAddress(address);
+                            setFormData(prev => ({
+                              ...prev,
+                              shippingStreet: address.address,
+                              shippingCity: address.city,
+                              shippingState: address.state,
+                              shippingPincode: address.zipCode
+                            }));
+                          }}
+                          className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                            selectedShippingAddress?._id === address._id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium text-gray-900">{address.type.charAt(0).toUpperCase() + address.type.slice(1)}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {address.address}<br/>
+                                {address.city}, {address.state} {address.zipCode}<br/>
+                                {address.country}
+                              </p>
+                              {address.isDefault && (
+                                <span className="inline-block mt-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <input
+                              type="radio"
+                              checked={selectedShippingAddress?._id === address._id}
+                              onChange={() => {}}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressForm(true);
+                        setAddressFormType('shipping');
+                      }}
+                      className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    >
+                      + Add New Shipping Address
+                    </button>
+                  </div>
+                )}
+                
+                {!formData.sameAsBilling && (addresses.length === 0 || (showAddressForm && addressFormType === 'shipping')) && (
+                   <div>
+                     {addresses.length > 0 && (
+                       <div className="flex items-center justify-between mb-4">
+                         <h3 className="text-lg font-semibold text-gray-900">Add New Shipping Address</h3>
+                         <button
+                           type="button"
+                           onClick={() => setShowAddressForm(false)}
+                           className="text-gray-500 hover:text-gray-700"
+                         >
+                           Cancel
+                         </button>
+                       </div>
+                     )}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Full Name *
@@ -693,10 +916,11 @@ export default function CheckoutPage() {
                         />
                         <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
                       </div>
-                  </div>
-                )}
-              </div>
-            )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
             {/* Step 3: Payment Information */}
             {step === 3 && (

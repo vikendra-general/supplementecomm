@@ -17,12 +17,17 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, isInCart } = useCart();
+  const { addToCart, isInCart, getAvailableStock, getMaxQuantityCanAdd } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { translateProduct, t } = useLanguage();
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+  const availableStock = getAvailableStock(product);
+  const maxCanAdd = getMaxQuantityCanAdd(product);
+  const isOutOfStock = availableStock === 0;
+  const isLowStock = availableStock > 0 && availableStock <= 5;
   
   // Get translated product data
   const translatedProduct = translateProduct(product);
@@ -52,6 +57,21 @@ export default function ProductCard({ product }: ProductCardProps) {
   }, [isAuthenticated, product.id]);
 
   const handleAddToCart = () => {
+    // If product is already in cart, redirect to cart page
+    if (isProductInCart) {
+      router.push('/cart');
+      return;
+    }
+    
+    if (maxCanAdd === 0) {
+      if (isOutOfStock) {
+        toast.error('This item is out of stock.');
+      } else {
+        toast.error('Maximum quantity already in cart.');
+      }
+      return;
+    }
+    
     setIsAddingToCart(true);
     
     // Simulate API call
@@ -207,17 +227,26 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
+        {/* Stock Information */}
+        {isLowStock && !isOutOfStock && (
+          <div className="mb-2">
+            <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded">
+              Only {availableStock} left!
+            </span>
+          </div>
+        )}
+        
         {/* Add to Cart Button */}
         <div className="mt-auto">
         <button
           onClick={handleAddToCart}
-          disabled={!product.inStock || isAddingToCart || isProductInCart}
+          disabled={isOutOfStock || isAddingToCart || maxCanAdd === 0}
           className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
             isProductInCart
-              ? 'bg-primary text-secondary cursor-not-allowed'
-              : product.inStock
-              ? 'energetic-cta'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
+              : isOutOfStock || maxCanAdd === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'energetic-cta'
           }`}
         >
           {isAddingToCart ? (
@@ -230,10 +259,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               <ShoppingCart className="w-4 h-4" />
               <span>
                 {isProductInCart 
-                  ? t('common.inCart') 
-                  : product.inStock 
-                    ? t('common.addToCart') 
-                    : t('common.outOfStock')
+                  ? 'Go to Cart' 
+                  : isOutOfStock
+                  ? t('common.outOfStock')
+                  : maxCanAdd === 0
+                  ? 'Max in Cart'
+                  : t('common.addToCart')
                 }
               </span>
             </>

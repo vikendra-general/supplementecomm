@@ -19,7 +19,7 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = use(params);
-  const { addToCart, isInCart } = useCart();
+  const { addToCart, isInCart, getAvailableStock, getMaxQuantityCanAdd } = useCart();
   const { isAuthenticated, user } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         }
       } catch (error) {
         console.error('Error fetching product:', error);
-        setError('Failed to load product');
+        // Fall back to static data
+        const { products } = await import('@/data/products');
+        const staticProduct = products.find(p => p.id === id);
+        if (staticProduct) {
+          setProduct(staticProduct);
+          setError(null);
+        } else {
+          setError('Product not found');
+        }
       } finally {
         setLoading(false);
       }
@@ -77,6 +85,22 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
   }, [isAuthenticated, product, user]);
 
+  // Reset quantity when variant changes
+  useEffect(() => {
+    if (product && selectedVariant) {
+      const variant = product.variants?.find(v => v.id === selectedVariant);
+      const availableStock = getAvailableStock(product, variant);
+      
+      // Reset quantity to 1 when variant changes
+      setQuantity(1);
+      
+      // If current quantity exceeds variant stock, adjust it
+      if (quantity > availableStock) {
+        setQuantity(Math.min(quantity, availableStock));
+      }
+    }
+  }, [selectedVariant, product, getAvailableStock]);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -99,13 +123,49 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   }
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
+    const variant = product.variants?.find(v => v.id === selectedVariant);
+    const availableStock = getAvailableStock(product, variant);
+    const maxCanAdd = getMaxQuantityCanAdd(product, variant);
+    
+    if (quantity > maxCanAdd) {
+      if (maxCanAdd === 0) {
+        if (availableStock === 0) {
+          toast.error('This item is out of stock.');
+        } else {
+          toast.error('Maximum quantity already in cart.');
+        }
+      } else {
+        toast.error(`Only ${maxCanAdd} more item(s) can be added to cart.`);
+        setQuantity(maxCanAdd);
+      }
+      return;
+    }
+    
     setIsAddingToCart(true);
     // Simulate API call
     setTimeout(() => {
-      const variant = product.variants?.find(v => v.id === selectedVariant);
       addToCart(product, quantity, variant);
       setIsAddingToCart(false);
     }, 1000);
+  };
+  
+  const handleQuantityChange = (newQuantity: number) => {
+    if (!product) return;
+    
+    const variant = product.variants?.find(v => v.id === selectedVariant);
+    const availableStock = getAvailableStock(product, variant);
+    const maxCanAdd = getMaxQuantityCanAdd(product, variant);
+    
+    if (newQuantity < 1) {
+      setQuantity(1);
+    } else if (newQuantity > availableStock) {
+      setQuantity(availableStock);
+      toast.error(`Maximum ${availableStock} item(s) available.`);
+    } else {
+      setQuantity(newQuantity);
+    }
   };
 
   const handleWishlist = () => {
@@ -302,57 +362,124 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           {/* Quantity */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Quantity</h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center border border-gray-300 rounded-lg">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 hover:bg-gray-50"
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-2 hover:bg-gray-50"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            {(() => {
+              const variant = product.variants?.find(v => v.id === selectedVariant);
+              const availableStock = getAvailableStock(product, variant);
+              const maxCanAdd = getMaxQuantityCanAdd(product, variant);
+              const isProductInCart = isInCart(product.id);
+              
+              return (
+                <div className="space-y-3">
+                  {/* Stock Information */}
+                  <div className="flex items-center space-x-4 text-sm">
+                    <span className={`font-medium ${
+                      availableStock === 0 
+                        ? 'text-red-600' 
+                        : availableStock <= 5 
+                        ? 'text-orange-600' 
+                        : 'text-green-600'
+                    }`}>
+                      {availableStock === 0 
+                        ? 'Out of Stock' 
+                        : availableStock <= 5 
+                        ? `Only ${availableStock} left!` 
+                        : `${availableStock} available`
+                      }
+                    </span>
+                    {isProductInCart && maxCanAdd < availableStock && (
+                      <span className="text-gray-500">
+                        ({maxCanAdd} more can be added)
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Quantity Controls */}
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button
+                        onClick={() => handleQuantityChange(quantity - 1)}
+                        disabled={quantity <= 1}
+                        className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                        min="1"
+                        max={availableStock}
+                        className="w-16 px-2 py-2 text-center border-x border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={() => handleQuantityChange(quantity + 1)}
+                        disabled={quantity >= availableStock}
+                        className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={quantity >= availableStock ? 'Maximum stock reached' : 'Increase quantity'}
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    {isProductInCart && (
+                      <span className="text-sm text-gray-600">
+                        Update quantity in cart
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Action Buttons */}
           <div className="flex space-x-4">
-            <button
-              onClick={handleAddToCart}
-              disabled={!product.inStock || isAddingToCart || isProductInCart}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-lg font-semibold transition-colors ${
-                isProductInCart
-                  ? 'bg-green-600 text-white cursor-not-allowed'
-                  : product.inStock
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {isAddingToCart ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Adding...</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="w-5 h-5" />
-                  <span>
-                    {isProductInCart 
-                      ? 'In Cart' 
-                      : product.inStock 
-                        ? 'Add to Cart' 
-                        : 'Out of Stock'
-                    }
-                  </span>
-                </>
-              )}
-            </button>
+            {(() => {
+              const variant = product.variants?.find(v => v.id === selectedVariant);
+              const availableStock = getAvailableStock(product, variant);
+              const maxCanAdd = getMaxQuantityCanAdd(product, variant);
+              const isProductInCart = isInCart(product.id);
+              const isOutOfStock = availableStock === 0;
+              const canAddMore = maxCanAdd > 0;
+              
+              return (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock || isAddingToCart || (!canAddMore && isProductInCart)}
+                  className={`flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-lg font-semibold transition-colors ${
+                    isOutOfStock
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : (!canAddMore && isProductInCart)
+                      ? 'bg-orange-500 text-white cursor-not-allowed'
+                      : isProductInCart
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {isAddingToCart ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-5 h-5" />
+                      <span>
+                        {isOutOfStock
+                          ? 'Out of Stock'
+                          : (!canAddMore && isProductInCart)
+                          ? 'Max Quantity in Cart'
+                          : isProductInCart
+                          ? `Add ${quantity} More to Cart`
+                          : `Add ${quantity} to Cart`
+                        }
+                      </span>
+                    </>
+                  )}
+                </button>
+              );
+            })()}
+            
 
             <button
               onClick={handleWishlist}
