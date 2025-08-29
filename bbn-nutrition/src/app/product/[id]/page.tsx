@@ -166,10 +166,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const isProductInCart = isInCart(product.id);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Product Images */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           {/* Main Image */}
           <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
             <Image
@@ -201,12 +201,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           {/* Thumbnail Images */}
           {product.images.length > 1 && (
-            <div className="flex space-x-2">
+            <div className="flex space-x-1">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                  className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 ${
                     selectedImage === index ? 'border-blue-500' : 'border-gray-200'
                   }`}
                 >
@@ -224,15 +224,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         </div>
 
         {/* Product Info */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Brand and Name */}
           <div>
             <p className="text-sm text-gray-500 mb-2">{product.brand}</p>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
           </div>
 
           {/* Rating */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -251,8 +251,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
 
           {/* Price */}
-          <div className="flex items-center space-x-4">
-            <span className="text-3xl font-bold text-gray-900">
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl font-bold text-gray-900">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
@@ -269,21 +269,21 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           {/* Description */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Description</h3>
             <p className="text-gray-600 leading-relaxed">{product.description}</p>
           </div>
 
           {/* Variants */}
           {product.variants && product.variants.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Flavor</h3>
-              <div className="flex space-x-2">
+              <h3 className="text-base font-semibold text-gray-900 mb-1">Flavor</h3>
+              <div className="flex space-x-1">
                 {product.variants.map((variant) => (
                   <button
                     key={variant.id}
                     onClick={() => setSelectedVariant(variant.id)}
                     disabled={!variant.inStock}
-                    className={`px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
+                    className={`px-3 py-1 rounded-lg border-2 font-medium transition-colors text-sm ${
                       selectedVariant === variant.id
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : variant.inStock
@@ -301,19 +301,19 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           {/* Quantity */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Quantity</h3>
-            <div className="flex items-center space-x-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Quantity</h3>
+            <div className="flex items-center space-x-2">
               <div className="flex items-center border border-gray-300 rounded-lg">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 hover:bg-gray-50"
+                  className="px-2 py-1 hover:bg-gray-50"
                 >
                   -
                 </button>
-                <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                <span className="px-3 py-1 border-x border-gray-300">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-2 hover:bg-gray-50"
+                  className="px-2 py-1 hover:bg-gray-50"
                 >
                   +
                 </button>
@@ -322,11 +322,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex space-x-4">
+          <div className="flex space-x-2">
             <button
               onClick={handleAddToCart}
               disabled={!product.inStock || isAddingToCart || isProductInCart}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-lg font-semibold transition-colors ${
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-semibold transition-colors ${
                 isProductInCart
                   ? 'bg-green-600 text-white cursor-not-allowed'
                   : product.inStock
@@ -356,7 +356,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
             <button
               onClick={handleWishlist}
-              className={`p-3 rounded-lg border-2 transition-colors ${
+              className={`p-2 rounded-lg border-2 transition-colors ${
                 isWishlisted
                   ? 'border-red-500 bg-red-50 text-red-600'
                   : 'border-gray-300 hover:border-red-500'
@@ -367,17 +367,17 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
 
           {/* Trust Badges */}
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-200">
             <div className="text-center">
-              <Truck className="w-6 h-6 text-green-600 mx-auto mb-2" />
+              <Truck className="w-5 h-5 text-green-600 mx-auto mb-1" />
               <p className="text-sm text-gray-600">Free Shipping</p>
             </div>
             <div className="text-center">
-              <Shield className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <Shield className="w-5 h-5 text-blue-600 mx-auto mb-1" />
               <p className="text-sm text-gray-600">Quality Guaranteed</p>
             </div>
             <div className="text-center">
-              <Clock className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+              <Clock className="w-5 h-5 text-purple-600 mx-auto mb-1" />
               <p className="text-sm text-gray-600">Fast Delivery</p>
             </div>
           </div>
@@ -386,13 +386,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
       {/* Nutrition Facts */}
       {product.nutritionFacts && (
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Nutrition Facts</h2>
-          <div className="bg-gray-50 rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Nutrition Facts</h2>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Per Serving</h3>
-                <div className="space-y-2">
+                <h3 className="font-semibold text-gray-900 mb-2">Per Serving</h3>
+                <div className="space-y-1">
                   <div className="flex justify-between">
                     <span>Serving Size</span>
                     <span className="font-medium">{product.nutritionFacts.servingSize}</span>
@@ -424,8 +424,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Ingredients</h3>
-                <ul className="space-y-1">
+                <h3 className="font-semibold text-gray-900 mb-2">Ingredients</h3>
+                <ul className="space-y-0.5">
                   {product.nutritionFacts.ingredients.map((ingredient, index) => (
                     <li key={index} className="text-gray-600">• {ingredient}</li>
                   ))}
@@ -437,9 +437,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       )}
 
       {/* Reviews Section */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
-        <div className="space-y-6">
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-3">Customer Reviews</h2>
+        <div className="space-y-3">
           {[
             {
               name: "Alex Johnson",
@@ -460,15 +460,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               comment: "Been using this for 3 months now and I can definitely see the difference. Great value for money!"
             }
           ].map((review, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">{review.name.charAt(0)}</span>
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-semibold text-sm">{review.name.charAt(0)}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{review.name}</p>
-                    <p className="text-sm text-gray-500">{review.date}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{review.name}</p>
+                    <p className="text-xs text-gray-500">{review.date}</p>
                   </div>
                 </div>
                 <div className="flex items-center">

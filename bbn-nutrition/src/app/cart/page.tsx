@@ -66,21 +66,21 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cart.title')}</h1>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">{t('cart.title')}</h1>
           <p className="text-gray-600">
             {items.length} {items.length !== 1 ? t('cart.items') : t('cart.item')}
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Cart Items */}
           <div className="flex-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">{t('cart.cartItems')}</h2>
+                  <h2 className="text-base font-semibold text-gray-900">{t('cart.cartItems')}</h2>
                   <button
                     onClick={handleClearCart}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
@@ -92,11 +92,11 @@ export default function CartPage() {
 
               <div className="divide-y divide-gray-200">
                 {items.map((item) => (
-                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="p-6">
-                    <div className="flex items-center space-x-4">
+                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="p-4">
+                    <div className="flex items-center space-x-3">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
-                        <div className="w-20 h-20 relative rounded-lg overflow-hidden">
+                        <div className="w-16 h-16 relative rounded-lg overflow-hidden">
                           <Image
                             src={item.product.images[0] || '/images/products/placeholder.svg'}
                             alt={item.product.name}
@@ -110,7 +110,7 @@ export default function CartPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-base font-semibold text-gray-900">
                               {item.product.name}
                             </h3>
                             {item.variant && (
@@ -121,7 +121,7 @@ export default function CartPage() {
                             <p className="text-sm text-gray-500">{item.product.brand}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-semibold text-gray-900">
+                            <p className="text-base font-semibold text-gray-900">
                               {formatPrice((item.variant?.price || item.product.price) * item.quantity)}
                             </p>
                             <p className="text-sm text-gray-500">
@@ -131,8 +131,8 @@ export default function CartPage() {
                         </div>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center space-x-2">
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center space-x-1">
                             <button
                               onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
                               disabled={isUpdating === item.product.id || item.quantity <= 1}
@@ -168,10 +168,10 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:w-80">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sticky top-8">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">Order Summary</h2>
               
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t('cart.subtotal')}</span>
                   <span className="font-medium">{formatPrice(subtotal)}</span>
@@ -182,16 +182,16 @@ export default function CartPage() {
                     {shipping === 0 ? t('cart.free') : formatPrice(shipping)}
                   </span>
                 </div>
-                <div className="border-t border-gray-200 pt-3">
+                <div className="border-t border-gray-200 pt-2">
                   <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
-                    <span className="text-lg font-semibold text-gray-900">{formatPrice(total)}</span>
+                    <span className="text-base font-semibold text-gray-900">{t('cart.total')}</span>
+                    <span className="text-base font-semibold text-gray-900">{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>
 
               {shipping > 0 && (
-                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+                <div className="mb-4 p-2 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-700">
                     {t('cart.add')} {formatPrice(freeShippingThreshold - subtotal)} {t('cart.freeShippingMessage')}
                   </p>
@@ -199,31 +199,31 @@ export default function CartPage() {
               )}
               
               {shipping === 0 && subtotal >= freeShippingThreshold && (
-                <div className="mb-6 p-3 bg-green-50 rounded-lg">
+                <div className="mb-4 p-2 bg-green-50 rounded-lg">
                   <p className="text-sm text-green-700">
                     {t('cart.qualifyFreeShipping')}
                   </p>
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Link
                   href="/checkout"
-                  className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
                   {t('cart.proceedToCheckout')}
                 </Link>
                 
                 <Link
                   href="/shop"
-                  className="w-full bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                  className="w-full bg-gray-100 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
                 >
                   {t('cart.continueShopping')}
                 </Link>
               </div>
 
               {!isAuthenticated && (
-                <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                <div className="mt-3 p-2 bg-yellow-50 rounded-lg">
                   <p className="text-sm text-yellow-700">
                     {t('header.signIn')}
                   </p>

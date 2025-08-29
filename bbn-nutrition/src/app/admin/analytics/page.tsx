@@ -197,31 +197,31 @@ export default function AdminAnalyticsPage() {
     <div className="min-h-screen bg-dark-bg">
       {/* Header */}
       <div className="bg-dark-card border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link 
                 href="/admin" 
                 className="text-dark-text-secondary hover:text-primary transition-colors"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <ArrowLeft className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-dark-text">Analytics Dashboard</h1>
-                <p className="text-dark-text-secondary">Business insights and performance metrics</p>
+                <h1 className="text-xl font-bold text-dark-text">Analytics Dashboard</h1>
+                <p className="text-sm text-dark-text-secondary">Business insights and performance metrics</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {error && (
-                <div className="flex items-center space-x-2 text-red-400 text-sm">
-                  <AlertTriangle className="w-4 h-4" />
+                <div className="flex items-center space-x-2 text-red-400 text-xs">
+                  <AlertTriangle className="w-3 h-3" />
                   <span>Using cached data</span>
                 </div>
               )}
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+                className="px-3 py-2 bg-dark-gray border border-gray-600 rounded-lg text-sm text-dark-text hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 {refreshing ? 'Refreshing...' : 'Refresh'}
@@ -229,7 +229,7 @@ export default function AdminAnalyticsPage() {
               <select
                 value={timeRange}
                 onChange={(e) => handleTimeRangeChange(e.target.value)}
-                className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="px-3 py-2 bg-dark-gray border border-gray-600 rounded-lg text-sm text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="7days">Last 7 Days</option>
                 <option value="30days">Last 30 Days</option>
@@ -238,7 +238,7 @@ export default function AdminAnalyticsPage() {
                 <option value="12months">Last 12 Months</option>
               </select>
               <button
-                className="px-4 py-2 bg-primary text-dark rounded-lg hover:bg-dark-green transition-colors inline-flex items-center"
+                className="px-3 py-2 bg-primary text-dark rounded-lg hover:bg-dark-green transition-colors inline-flex items-center"
                 onClick={() => window.print()}
               >
                 <Download className="w-4 h-4 mr-2" />
@@ -249,51 +249,51 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-dark-card p-4 rounded-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-dark-text-secondary">Total Revenue</p>
-                <p className="text-2xl font-bold text-dark-text">{formatCurrency(analytics.totalRevenue)}</p>
-                <div className="flex items-center space-x-1 mt-2">
+                <p className="text-xs text-dark-text-secondary">Total Revenue</p>
+                <p className="text-lg font-bold text-dark-text">{formatCurrency(analytics.totalRevenue)}</p>
+                <div className="flex items-center space-x-1 mt-1">
                   {getGrowthIcon(analytics.revenueGrowth)}
-                  <span className={`text-sm font-medium ${getGrowthColor(analytics.revenueGrowth)}`}>
+                  <span className={`text-xs font-medium ${getGrowthColor(analytics.revenueGrowth)}`}>
                     {analytics.revenueGrowth > 0 ? '+' : ''}{analytics.revenueGrowth}%
                   </span>
                   <span className="text-xs text-dark-text-secondary">vs last period</span>
                 </div>
               </div>
-              <DollarSign className="w-8 h-8 text-primary" />
+              <DollarSign className="w-6 h-6 text-primary" />
             </div>
           </div>
 
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-4 rounded-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-dark-text-secondary">Total Orders</p>
-                <p className="text-2xl font-bold text-dark-text">{formatNumber(analytics.totalOrders)}</p>
-                <div className="flex items-center space-x-1 mt-2">
+                <p className="text-xs text-dark-text-secondary">Total Orders</p>
+                <p className="text-lg font-bold text-dark-text">{formatNumber(analytics.totalOrders)}</p>
+                <div className="flex items-center space-x-1 mt-1">
                   {getGrowthIcon(analytics.ordersGrowth)}
-                  <span className={`text-sm font-medium ${getGrowthColor(analytics.ordersGrowth)}`}>
+                  <span className={`text-xs font-medium ${getGrowthColor(analytics.ordersGrowth)}`}>
                     {analytics.ordersGrowth > 0 ? '+' : ''}{analytics.ordersGrowth}%
                   </span>
                   <span className="text-xs text-dark-text-secondary">vs last period</span>
                 </div>
               </div>
-              <ShoppingCart className="w-8 h-8 text-blue-400" />
+              <ShoppingCart className="w-6 h-6 text-blue-400" />
             </div>
           </div>
 
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-4 rounded-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-dark-text-secondary">Total Customers</p>
-                <p className="text-2xl font-bold text-dark-text">{formatNumber(analytics.totalCustomers)}</p>
-                <div className="flex items-center space-x-1 mt-2">
+                <p className="text-xs text-dark-text-secondary">Total Customers</p>
+                <p className="text-lg font-bold text-dark-text">{formatNumber(analytics.totalCustomers)}</p>
+                <div className="flex items-center space-x-1 mt-1">
                   {getGrowthIcon(analytics.customersGrowth)}
-                  <span className={`text-sm font-medium ${getGrowthColor(analytics.customersGrowth)}`}>
+                  <span className={`text-xs font-medium ${getGrowthColor(analytics.customersGrowth)}`}>
                     {analytics.customersGrowth > 0 ? '+' : ''}{analytics.customersGrowth}%
                   </span>
                   <span className="text-xs text-dark-text-secondary">vs last period</span>

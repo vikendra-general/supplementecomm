@@ -152,51 +152,51 @@ export default function AdminSettingsPage() {
     switch (activeTab) {
       case 'general':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">Site Name</label>
+              <label className="block text-xs font-medium text-dark-text mb-1">Site Name</label>
               <input
                 type="text"
                 value={settings.siteName}
                 onChange={(e) => handleInputChange('siteName', e.target.value)}
-                className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">Site Description</label>
+              <label className="block text-xs font-medium text-dark-text mb-1">Site Description</label>
               <textarea
                 value={settings.siteDescription}
                 onChange={(e) => handleInputChange('siteDescription', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                rows={2}
+                className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">Site URL</label>
+              <label className="block text-xs font-medium text-dark-text mb-1">Site URL</label>
               <input
                 type="url"
                 value={settings.siteUrl}
                 onChange={(e) => handleInputChange('siteUrl', e.target.value)}
-                className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Admin Email</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Admin Email</label>
                 <input
                   type="email"
                   value={settings.adminEmail}
                   onChange={(e) => handleInputChange('adminEmail', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Support Email</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Support Email</label>
                 <input
                   type="email"
                   value={settings.supportEmail}
                   onChange={(e) => handleInputChange('supportEmail', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -205,42 +205,42 @@ export default function AdminSettingsPage() {
 
       case 'business':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">Business Name</label>
+              <label className="block text-xs font-medium text-dark-text mb-1">Business Name</label>
               <input
                 type="text"
                 value={settings.businessName}
                 onChange={(e) => handleInputChange('businessName', e.target.value)}
-                className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-text mb-2">Business Address</label>
+              <label className="block text-xs font-medium text-dark-text mb-1">Business Address</label>
               <textarea
                 value={settings.businessAddress}
                 onChange={(e) => handleInputChange('businessAddress', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                rows={2}
+                className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Business Phone</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Business Phone</label>
                 <input
                   type="tel"
                   value={settings.businessPhone}
                   onChange={(e) => handleInputChange('businessPhone', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Business Email</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Business Email</label>
                 <input
                   type="email"
                   value={settings.businessEmail}
                   onChange={(e) => handleInputChange('businessEmail', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -249,14 +249,14 @@ export default function AdminSettingsPage() {
 
       case 'ecommerce':
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Currency</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Currency</label>
                 <select
                   value={settings.currency}
                   onChange={(e) => handleInputChange('currency', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="INR">Indian Rupee (₹)</option>
                   <option value="USD">US Dollar ($)</option>
@@ -264,36 +264,36 @@ export default function AdminSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Tax Rate (%)</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Tax Rate (%)</label>
                 <input
                   type="number"
                   value={settings.taxRate}
                   onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value))}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                   min="0"
                   max="100"
                   step="0.1"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Free Shipping Threshold (₹)</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Free Shipping Threshold (₹)</label>
                 <input
                   type="number"
                   value={settings.freeShippingThreshold}
                   onChange={(e) => handleInputChange('freeShippingThreshold', parseFloat(e.target.value))}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                   min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Shipping Fee (₹)</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Shipping Fee (₹)</label>
                 <input
                   type="number"
                   value={settings.shippingFee}
                   onChange={(e) => handleInputChange('shippingFee', parseFloat(e.target.value))}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                   min="0"
                 />
               </div>
@@ -303,12 +303,12 @@ export default function AdminSettingsPage() {
 
       case 'email':
         return (
-          <div className="space-y-6">
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-dark-text">Email Notifications</h4>
-                  <p className="text-sm text-dark-text-secondary">Send email notifications for system events</p>
+                  <h4 className="text-xs font-medium text-dark-text">Email Notifications</h4>
+                  <p className="text-xs text-dark-text-secondary">Send email notifications for system events</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -317,13 +317,13 @@ export default function AdminSettingsPage() {
                     onChange={(e) => handleInputChange('emailNotifications', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-dark-text">Order Confirmation Emails</h4>
-                  <p className="text-sm text-dark-text-secondary">Send confirmation emails for new orders</p>
+                  <h4 className="text-xs font-medium text-dark-text">Order Confirmation Emails</h4>
+                  <p className="text-xs text-dark-text-secondary">Send confirmation emails for new orders</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -332,13 +332,13 @@ export default function AdminSettingsPage() {
                     onChange={(e) => handleInputChange('orderConfirmationEmails', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-dark-text">Marketing Emails</h4>
-                  <p className="text-sm text-dark-text-secondary">Send promotional and marketing emails</p>
+                  <h4 className="text-xs font-medium text-dark-text">Marketing Emails</h4>
+                  <p className="text-xs text-dark-text-secondary">Send promotional and marketing emails</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -347,7 +347,7 @@ export default function AdminSettingsPage() {
                     onChange={(e) => handleInputChange('marketingEmails', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
             </div>
@@ -356,11 +356,11 @@ export default function AdminSettingsPage() {
 
       case 'security':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-medium text-dark-text">Require Email Verification</h4>
-                <p className="text-sm text-dark-text-secondary">Users must verify their email before accessing the account</p>
+                <h4 className="text-xs font-medium text-dark-text">Require Email Verification</h4>
+                <p className="text-xs text-dark-text-secondary">Users must verify their email before accessing the account</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -369,28 +369,28 @@ export default function AdminSettingsPage() {
                   onChange={(e) => handleInputChange('requireEmailVerification', e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Minimum Password Length</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Minimum Password Length</label>
                 <input
                   type="number"
                   value={settings.passwordMinLength}
                   onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value))}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                   min="6"
                   max="20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Session Timeout (hours)</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Session Timeout (hours)</label>
                 <input
                   type="number"
                   value={settings.sessionTimeout}
                   onChange={(e) => handleInputChange('sessionTimeout', parseInt(e.target.value))}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                   min="1"
                   max="168"
                 />
@@ -401,60 +401,44 @@ export default function AdminSettingsPage() {
 
       case 'appearance':
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Primary Color</label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="color"
-                    value={settings.primaryColor}
-                    onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    className="w-12 h-10 border border-gray-600 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={settings.primaryColor}
-                    onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    className="flex-1 px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
+                <label className="block text-xs font-medium text-dark-text mb-1">Primary Color</label>
+                <input
+                  type="color"
+                  value={settings.primaryColor}
+                  onChange={(e) => handleInputChange('primaryColor', e.target.value)}
+                  className="w-full h-8 bg-dark-gray border border-gray-600 rounded-lg cursor-pointer"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Secondary Color</label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="color"
-                    value={settings.secondaryColor}
-                    onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    className="w-12 h-10 border border-gray-600 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={settings.secondaryColor}
-                    onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    className="flex-1 px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
+                <label className="block text-xs font-medium text-dark-text mb-1">Secondary Color</label>
+                <input
+                  type="color"
+                  value={settings.secondaryColor}
+                  onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
+                  className="w-full h-8 bg-dark-gray border border-gray-600 rounded-lg cursor-pointer"
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Logo URL</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Logo URL</label>
                 <input
                   type="url"
                   value={settings.logoUrl}
                   onChange={(e) => handleInputChange('logoUrl', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Favicon URL</label>
+                <label className="block text-xs font-medium text-dark-text mb-1">Favicon URL</label>
                 <input
                   type="url"
                   value={settings.faviconUrl}
                   onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -469,30 +453,30 @@ export default function AdminSettingsPage() {
   return (
     <AdminProtectedRoute>
       <AdminLayout>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link
                 href="/admin"
-                className="p-2 rounded-lg bg-dark-card border border-gray-700 text-dark-text-secondary hover:text-dark-text transition-colors"
+                className="p-1.5 rounded-lg bg-dark-card border border-gray-700 text-dark-text-secondary hover:text-dark-text transition-colors"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-dark-text">Settings</h1>
-                <p className="text-dark-text-secondary">Manage your application settings and configuration</p>
+                <h1 className="text-lg font-bold text-dark-text">Settings</h1>
+                <p className="text-xs text-dark-text-secondary">Manage your application settings and configuration</p>
               </div>
             </div>
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center space-x-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 px-4 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isSaving ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <Save className="w-4 h-4" />
+                <Save className="w-3 h-3" />
               )}
               <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
             </button>
@@ -500,7 +484,7 @@ export default function AdminSettingsPage() {
 
           {/* Save Message */}
           {saveMessage && (
-            <div className={`p-4 rounded-lg ${saveMessage.includes('success') ? 'bg-green-900/20 border border-green-700 text-green-400' : 'bg-red-900/20 border border-red-700 text-red-400'}`}>
+            <div className={`p-3 rounded-lg text-sm ${saveMessage.includes('success') ? 'bg-green-900/20 border border-green-700 text-green-400' : 'bg-red-900/20 border border-red-700 text-red-400'}`}>
               {saveMessage}
             </div>
           )}
@@ -514,19 +498,19 @@ export default function AdminSettingsPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 px-6 py-4 font-medium transition-colors ${
+                    className={`flex items-center space-x-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
                       activeTab === tab.id
                         ? 'bg-primary text-white border-b-2 border-primary'
                         : 'text-dark-text-secondary hover:text-dark-text hover:bg-dark-gray'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3 h-3" />
                     <span>{tab.name}</span>
                   </button>
                 );
               })}
             </div>
-            <div className="p-6">
+            <div className="p-4">
               {renderTabContent()}
             </div>
           </div>

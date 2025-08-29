@@ -1,0 +1,90 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="containerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="labelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f9fafb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f8fafc"/>
+  
+  <!-- Container Shadow -->
+  <ellipse cx="200" cy="360" rx="90" ry="15" fill="#000000" opacity="0.15"/>
+  
+  <!-- Main Container (Large Tub) -->
+  <rect x="110" y="70" width="180" height="260" rx="10" ry="10" fill="url(#containerGradient)" filter="url(#shadow)"/>
+  
+  <!-- Container Lid -->
+  <ellipse cx="200" cy="70" rx="90" ry="12" fill="#374151"/>
+  <ellipse cx="200" cy="65" rx="85" ry="10" fill="#4b5563"/>
+  
+  <!-- Container Highlights -->
+  <rect x="115" y="75" width="170" height="8" rx="4" ry="4" fill="#ffffff" opacity="0.2"/>
+  <rect x="115" y="75" width="20" height="250" rx="4" ry="4" fill="#ffffff" opacity="0.1"/>
+  
+  <!-- Label Background -->
+  <rect x="125" y="110" width="150" height="180" rx="8" ry="8" fill="url(#labelGradient)"/>
+  
+  <!-- Brand Name -->
+  <text x="200" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1f2937">BBN</text>
+  
+  <!-- Product Name -->
+  <text x="200" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#374151">MASS</text>
+  <text x="200" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#374151">GAINER</text>
+  
+  <!-- Muscle Building Icon -->
+  <g transform="translate(200, 195)">
+    <!-- Dumbbell -->
+    <rect x="-20" y="-2" width="40" height="4" fill="#6b7280"/>
+    <rect x="-25" y="-6" width="8" height="12" fill="#4b5563"/>
+    <rect x="17" y="-6" width="8" height="12" fill="#4b5563"/>
+    <!-- Muscle flex lines -->
+    <path d="M-15,-10 Q-10,-15 -5,-10" stroke="#f59e0b" stroke-width="2" fill="none"/>
+    <path d="M5,-10 Q10,-15 15,-10" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Calorie Content -->
+  <rect x="160" y="220" width="80" height="25" rx="12" ry="12" fill="url(#accentGradient)"/>
+  <text x="200" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">600</text>
+  <text x="200" y="247" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#ffffff">CALORIES</text>
+  
+  <!-- Protein Content -->
+  <text x="200" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#1f2937">50g Protein</text>
+  
+  <!-- Flavor -->
+  <text x="200" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="500" fill="#6b7280">Chocolate</text>
+  
+  <!-- Weight -->
+  <text x="200" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">5 LBS (2.27 KG)</text>
+  
+  <!-- Mass Gainer Badge -->
+  <rect x="135" y="90" width="50" height="15" rx="7" ry="7" fill="#f59e0b"/>
+  <text x="160" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#ffffff">MASS BUILDER</text>
+  
+  <!-- Serving Size -->
+  <rect x="220" y="90" width="45" height="15" rx="7" ry="7" fill="#10b981"/>
+  <text x="242" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#ffffff">150g SERVE</text>
+  
+  <!-- Growth Indicators -->
+  <g transform="translate(250, 135)">
+    <rect x="0" y="8" width="6" height="4" fill="#10b981"/>
+    <rect x="8" y="6" width="6" height="6" fill="#10b981"/>
+    <rect x="16" y="4" width="6" height="8" fill="#10b981"/>
+    <rect x="24" y="2" width="6" height="10" fill="#10b981"/>
+  </g>
+  
+  <!-- Carbs indicator -->
+  <text x="200" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="500" fill="#6b7280">80g Carbs • 8g Fat</text>
+</svg>

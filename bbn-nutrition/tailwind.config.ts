@@ -8,17 +8,21 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'sans': ['Poppins', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
+      },
       colors: {
-        // iHerb-Inspired Clean & Professional Health Palette
-        primary: '#38a169',           // Natural Green (main brand)
-        'primary-dark': '#2f855a',    // Darker Green (hover states)
-        'primary-light': '#68d391',   // Light Green (accents)
-        secondary: '#f7fafc',         // Light Gray (backgrounds)
-        'accent-orange': '#ed8936',   // Warm Orange (CTAs)
-        'accent-blue': '#3182ce',     // Trust Blue (links)
-        'success-green': '#48bb78',   // Success states
-        'warning-orange': '#ed8936',  // Warning states
-        'info-blue': '#4299e1',       // Info states
+        // Nutrabay-Inspired Modern Health & Wellness Palette
+        primary: '#16a34a',           // Vibrant Green (main brand)
+        'primary-dark': '#15803d',    // Darker Green (hover states)
+        'primary-light': '#22c55e',   // Light Green (accents)
+        secondary: '#f8fafc',         // Clean Light Gray (backgrounds)
+        'accent-orange': '#f97316',   // Bold Orange (CTAs)
+        'accent-blue': '#2563eb',     // Trust Blue (links)
+        'success-green': '#10b981',   // Success states
+        'warning-orange': '#f59e0b',  // Warning states
+        'info-blue': '#3b82f6',       // Info states
         
         // Text colors
         'text-primary': '#2d3748',    // Main text

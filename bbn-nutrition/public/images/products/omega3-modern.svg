@@ -1,0 +1,84 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="containerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="labelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f9ff;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f8fafc"/>
+  
+  <!-- Container Shadow -->
+  <ellipse cx="200" cy="350" rx="60" ry="10" fill="#000000" opacity="0.1"/>
+  
+  <!-- Main Container (Bottle Shape) -->
+  <rect x="150" y="100" width="100" height="180" rx="6" ry="6" fill="url(#containerGradient)" filter="url(#shadow)"/>
+  <rect x="160" y="90" width="80" height="20" rx="4" ry="4" fill="#075985"/>
+  
+  <!-- Container Highlights -->
+  <rect x="155" y="105" width="90" height="4" rx="2" ry="2" fill="#ffffff" opacity="0.4"/>
+  <rect x="155" y="105" width="10" height="170" rx="2" ry="2" fill="#ffffff" opacity="0.15"/>
+  
+  <!-- Label Background -->
+  <rect x="160" y="130" width="80" height="120" rx="4" ry="4" fill="url(#labelGradient)"/>
+  
+  <!-- Brand Name -->
+  <text x="200" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0ea5e9">BBN</text>
+  
+  <!-- Product Name -->
+  <text x="200" y="164" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">OMEGA-3</text>
+  <text x="200" y="176" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">FISH OIL</text>
+  
+  <!-- Fish Icon -->
+  <g transform="translate(200, 195)">
+    <path d="M-15,0 Q-10,-8 0,-5 Q10,-8 15,0 Q10,8 0,5 Q-10,8 -15,0 Z" fill="#0ea5e9" opacity="0.7"/>
+    <circle cx="-8" cy="-2" r="1.5" fill="#ffffff"/>
+    <path d="M15,0 L25,-3 L25,3 Z" fill="#0ea5e9" opacity="0.7"/>
+  </g>
+  
+  <!-- EPA/DHA Content -->
+  <rect x="170" y="210" width="60" height="16" rx="8" ry="8" fill="#0ea5e9"/>
+  <text x="200" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#ffffff">EPA + DHA</text>
+  
+  <!-- Dosage -->
+  <text x="200" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="600" fill="#0ea5e9">1000mg</text>
+  
+  <!-- Softgel Count -->
+  <text x="200" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="500" fill="#6b7280">120 Softgels</text>
+  
+  <!-- Quality Badge -->
+  <rect x="165" y="110" width="30" height="10" rx="5" ry="5" fill="#10b981"/>
+  <text x="180" y="117" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="#ffffff">PURE</text>
+  
+  <!-- Heart Health Icon -->
+  <g transform="translate(220, 148)">
+    <path d="M0,-2 C-2,-4 -6,-4 -6,0 C-6,2 0,6 0,6 C0,6 6,2 6,0 C6,-4 2,-4 0,-2 Z" fill="#ef4444" transform="scale(0.6)"/>
+  </g>
+  
+  <!-- Brain Health Icon -->
+  <g transform="translate(230, 160)">
+    <circle cx="0" cy="0" r="4" fill="#8b5cf6" opacity="0.8"/>
+    <path d="M-2,-2 Q0,-3 2,-2 Q3,0 2,2 Q0,3 -2,2 Q-3,0 -2,-2" fill="#ffffff" transform="scale(0.7)"/>
+  </g>
+  
+  <!-- Molecular Structure -->
+  <g transform="translate(175, 265)">
+    <circle cx="0" cy="0" r="2" fill="#0ea5e9"/>
+    <circle cx="10" cy="0" r="2" fill="#0ea5e9"/>
+    <circle cx="20" cy="0" r="2" fill="#0ea5e9"/>
+    <circle cx="30" cy="0" r="2" fill="#0ea5e9"/>
+    <circle cx="40" cy="0" r="2" fill="#0ea5e9"/>
+    <line x1="2" y1="0" x2="8" y2="0" stroke="#6b7280" stroke-width="1"/>
+    <line x1="12" y1="0" x2="18" y2="0" stroke="#6b7280" stroke-width="1"/>
+    <line x1="22" y1="0" x2="28" y2="0" stroke="#6b7280" stroke-width="1"/>
+    <line x1="32" y1="0" x2="38" y2="0" stroke="#6b7280" stroke-width="1"/>
+  </g>
+</svg>

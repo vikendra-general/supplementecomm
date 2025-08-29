@@ -120,19 +120,19 @@ export default function AdminDashboard() {
     growth?: number;
     color: string;
   }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-700">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-xs font-medium text-gray-700">{title}</p>
+          <p className="text-lg font-bold text-gray-900 mt-0.5">{value}</p>
           {growth !== undefined && (
-            <div className="flex items-center mt-2">
+            <div className="flex items-center mt-1">
               {growth >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                <TrendingDown className="w-3 h-3 text-red-500 mr-1" />
               )}
-              <span className={`text-sm font-medium ${
+              <span className={`text-xs font-medium ${
                 growth >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
                 {growth >= 0 ? '+' : ''}{growth.toFixed(1)}%
@@ -141,8 +141,8 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-lg ${color}`}>
-          <Icon className="w-6 h-6 text-white" />
+        <div className={`p-2 rounded-lg ${color}`}>
+          <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
     </div>
@@ -151,20 +151,20 @@ export default function AdminDashboard() {
   return (
     <AdminProtectedRoute>
       <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-3">
         {/* Admin Notice */}
-        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-4 mb-6">
+        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-3 mb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white bg-opacity-20 rounded-full p-2">
-                <Settings className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-2">
+              <div className="bg-white bg-opacity-20 rounded-full p-1.5">
+                <Settings className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">Administrator Dashboard</h2>
-                <p className="text-green-100 text-sm">You are logged in as an administrator - manage your website, not place orders</p>
+                <h2 className="text-white font-semibold text-base">Administrator Dashboard</h2>
+                <p className="text-green-100 text-xs">You are logged in as an administrator - manage your website, not place orders</p>
               </div>
             </div>
-            <div className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
+            <div className="bg-white bg-opacity-20 text-white px-2 py-0.5 rounded-full text-xs font-medium">
               Admin Mode
             </div>
           </div>
@@ -173,27 +173,27 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Website Management Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome back, {user?.name} - Manage your BBN Nutrition website</p>
+            <h1 className="text-xl font-bold text-gray-900">Website Management Dashboard</h1>
+            <p className="text-gray-600 mt-0.5 text-sm">Welcome back, {user?.name} - Manage your BBN Nutrition website</p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="7days">Last 7 days</option>
               <option value="30days">Last 30 days</option>
               <option value="90days">Last 90 days</option>
             </select>
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+            <button className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium">
               Export Report
             </button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             title="Total Revenue"
             value={formatCurrency(stats?.totalRevenue || 0)}
@@ -224,30 +224,30 @@ export default function AdminDashboard() {
         </div>
 
         {/* Admin Management Panel */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-3">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Admin Management Center</h2>
-              <p className="text-gray-600 mt-1">Complete website management and administrative controls</p>
+              <h2 className="text-lg font-bold text-gray-900">Admin Management Center</h2>
+              <p className="text-gray-600 mt-0.5 text-sm">Complete website management and administrative controls</p>
             </div>
-            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            <div className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">
               Administrator Access
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Product Management */}
             <Link
               href="/admin/products"
-              className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
+              className="group p-3 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
-                  <Package className="w-6 h-6 text-orange-600" />
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+                  <Package className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Product Management</h3>
-                  <p className="text-sm text-gray-600">Add, edit, delete products & inventory</p>
+                  <h3 className="font-semibold text-gray-900 text-sm">Product Management</h3>
+                  <p className="text-xs text-gray-600">Add, edit, delete products & inventory</p>
                 </div>
               </div>
             </Link>
@@ -255,15 +255,15 @@ export default function AdminDashboard() {
             {/* Order Management */}
             <Link
               href="/admin/orders"
-              className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
+              className="group p-3 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                  <ShoppingCart className="w-6 h-6 text-blue-600" />
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                  <ShoppingCart className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Order Management</h3>
-                  <p className="text-sm text-gray-600">Process orders & track fulfillment</p>
+                  <h3 className="font-semibold text-gray-900 text-sm">Order Management</h3>
+                  <p className="text-xs text-gray-600">Process orders & track fulfillment</p>
                 </div>
               </div>
             </Link>
@@ -271,15 +271,15 @@ export default function AdminDashboard() {
             {/* User Management */}
             <Link
               href="/admin/users"
-              className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
+              className="group p-3 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-                  <Users className="w-6 h-6 text-purple-600" />
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                  <Users className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">User Management</h3>
-                  <p className="text-sm text-gray-600">Manage customers & admin accounts</p>
+                  <h3 className="font-semibold text-gray-900 text-sm">User Management</h3>
+                  <p className="text-xs text-gray-600">Manage customers & admin accounts</p>
                 </div>
               </div>
             </Link>
@@ -287,15 +287,15 @@ export default function AdminDashboard() {
             {/* Analytics & Reports */}
             <Link
               href="/admin/analytics"
-              className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
+              className="group p-3 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Analytics & Reports</h3>
-                  <p className="text-sm text-gray-600">Sales data & business insights</p>
+                  <h3 className="font-semibold text-gray-900 text-sm">Analytics & Reports</h3>
+                  <p className="text-xs text-gray-600">Sales data & business insights</p>
                 </div>
               </div>
             </Link>
@@ -303,49 +303,49 @@ export default function AdminDashboard() {
             {/* Website Settings */}
             <Link
               href="/admin/settings"
-              className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
+              className="group p-3 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-gray-200 transition-colors">
-                  <Settings className="w-6 h-6 text-gray-600" />
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-gray-100 rounded-lg group-hover:bg-gray-200 transition-colors">
+                  <Settings className="w-4 h-4 text-gray-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Website Settings</h3>
-                  <p className="text-sm text-gray-600">Configure site & admin preferences</p>
+                  <h3 className="font-semibold text-gray-900 text-sm">Website Settings</h3>
+                  <p className="text-xs text-gray-600">Configure site & admin preferences</p>
                 </div>
               </div>
             </Link>
 
             {/* Quick Actions */}
-             <div className="group p-4 border border-gray-200 rounded-lg bg-gray-50">
-               <div className="flex items-center space-x-3">
-                 <div className="p-2 bg-yellow-100 rounded-lg">
-                   <Eye className="w-6 h-6 text-yellow-600" />
+             <div className="group p-3 border border-gray-200 rounded-lg bg-gray-50">
+               <div className="flex items-center space-x-2">
+                 <div className="p-1.5 bg-yellow-100 rounded-lg">
+                   <Eye className="w-4 h-4 text-yellow-600" />
                  </div>
                  <div className="w-full">
-                   <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
-                   <div className="grid grid-cols-2 gap-2">
+                   <h3 className="font-semibold text-gray-900 mb-2 text-sm">Quick Actions</h3>
+                   <div className="grid grid-cols-2 gap-1.5">
                      <Link
                        href="/admin/products?action=add"
-                       className="text-xs bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-center"
+                       className="text-xs bg-green-600 text-white px-2 py-1.5 rounded hover:bg-green-700 text-center"
                      >
                        Add Product
                      </Link>
                      <Link
                        href="/admin/orders?status=pending"
-                       className="text-xs bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-center"
+                       className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded hover:bg-blue-700 text-center"
                      >
                        Pending Orders
                      </Link>
                      <Link
                        href="/admin/users?action=add"
-                       className="text-xs bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 text-center"
+                       className="text-xs bg-purple-600 text-white px-2 py-1.5 rounded hover:bg-purple-700 text-center"
                      >
                        Add User
                      </Link>
                      <Link
                        href="/admin/analytics?view=sales"
-                       className="text-xs bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-center"
+                       className="text-xs bg-indigo-600 text-white px-2 py-1.5 rounded hover:bg-indigo-700 text-center"
                      >
                        View Reports
                      </Link>
@@ -357,98 +357,98 @@ export default function AdminDashboard() {
         </div>
 
         {/* Comprehensive Admin Tools */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-3">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">All Admin Tools & Features</h2>
-              <p className="text-gray-600 mt-1">Complete access to all administrative functions</p>
+              <h2 className="text-lg font-bold text-gray-900">All Admin Tools & Features</h2>
+              <p className="text-gray-600 mt-0.5 text-sm">Complete access to all administrative functions</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Product Operations */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide border-b border-gray-200 pb-2">Product Operations</h3>
-              <div className="space-y-2">
-                <Link href="/admin/products" className="block text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 px-2 py-1 rounded transition-colors">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wide border-b border-gray-200 pb-1">Product Operations</h3>
+              <div className="space-y-1">
+                <Link href="/admin/products" className="block text-xs text-gray-700 hover:text-green-600 hover:bg-green-50 px-1.5 py-0.5 rounded transition-colors">
                   → View All Products
                 </Link>
-                <Link href="/admin/products?action=add" className="block text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/products?action=add" className="block text-xs text-gray-700 hover:text-green-600 hover:bg-green-50 px-1.5 py-0.5 rounded transition-colors">
                   → Add New Product
                 </Link>
-                <Link href="/admin/products?view=inventory" className="block text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/products?view=inventory" className="block text-xs text-gray-700 hover:text-green-600 hover:bg-green-50 px-1.5 py-0.5 rounded transition-colors">
                   → Manage Inventory
                 </Link>
-                <Link href="/admin/products?view=categories" className="block text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/products?view=categories" className="block text-xs text-gray-700 hover:text-green-600 hover:bg-green-50 px-1.5 py-0.5 rounded transition-colors">
                   → Product Categories
                 </Link>
-                <Link href="/admin/products?action=bulk" className="block text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/products?action=bulk" className="block text-xs text-gray-700 hover:text-green-600 hover:bg-green-50 px-1.5 py-0.5 rounded transition-colors">
                   → Bulk Operations
                 </Link>
               </div>
             </div>
 
             {/* Order Management */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide border-b border-gray-200 pb-2">Order Management</h3>
-              <div className="space-y-2">
-                <Link href="/admin/orders" className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wide border-b border-gray-200 pb-1">Order Management</h3>
+              <div className="space-y-1">
+                <Link href="/admin/orders" className="block text-xs text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors">
                   → All Orders
                 </Link>
-                <Link href="/admin/orders?status=pending" className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/orders?status=pending" className="block text-xs text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors">
                   → Pending Orders
                 </Link>
-                <Link href="/admin/orders?status=processing" className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/orders?status=processing" className="block text-xs text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors">
                   → Processing Orders
                 </Link>
-                <Link href="/admin/orders?status=shipped" className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/orders?status=shipped" className="block text-xs text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors">
                   → Shipped Orders
                 </Link>
-                <Link href="/admin/orders?view=refunds" className="block text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/orders?view=refunds" className="block text-xs text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors">
                   → Refunds & Returns
                 </Link>
               </div>
             </div>
 
             {/* User & Customer Management */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide border-b border-gray-200 pb-2">User Management</h3>
-              <div className="space-y-2">
-                <Link href="/admin/users" className="block text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded transition-colors">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wide border-b border-gray-200 pb-1">User Management</h3>
+              <div className="space-y-1">
+                <Link href="/admin/users" className="block text-xs text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-1.5 py-0.5 rounded transition-colors">
                   → All Users
                 </Link>
-                <Link href="/admin/users?role=customer" className="block text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/users?role=customer" className="block text-xs text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-1.5 py-0.5 rounded transition-colors">
                   → Customers
                 </Link>
-                <Link href="/admin/users?role=admin" className="block text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/users?role=admin" className="block text-xs text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-1.5 py-0.5 rounded transition-colors">
                   → Admin Users
                 </Link>
-                <Link href="/admin/users?action=add" className="block text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/users?action=add" className="block text-xs text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-1.5 py-0.5 rounded transition-colors">
                   → Add New User
                 </Link>
-                <Link href="/admin/users?view=permissions" className="block text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/users?view=permissions" className="block text-xs text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-1.5 py-0.5 rounded transition-colors">
                   → User Permissions
                 </Link>
               </div>
             </div>
 
             {/* Analytics & Reports */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide border-b border-gray-200 pb-2">Analytics & Reports</h3>
-              <div className="space-y-2">
-                <Link href="/admin/analytics" className="block text-sm text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wide border-b border-gray-200 pb-1">Analytics & Reports</h3>
+              <div className="space-y-1">
+                <Link href="/admin/analytics" className="block text-xs text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-colors">
                   → Analytics Dashboard
                 </Link>
-                <Link href="/admin/analytics?view=sales" className="block text-sm text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/analytics?view=sales" className="block text-xs text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-colors">
                   → Sales Reports
                 </Link>
-                <Link href="/admin/analytics?view=products" className="block text-sm text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/analytics?view=products" className="block text-xs text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-colors">
                   → Product Performance
                 </Link>
-                <Link href="/admin/analytics?view=customers" className="block text-sm text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/analytics?view=customers" className="block text-xs text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-colors">
                   → Customer Analytics
                 </Link>
-                <Link href="/admin/analytics?action=export" className="block text-sm text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors">
+                <Link href="/admin/analytics?action=export" className="block text-xs text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-colors">
                   → Export Reports
                 </Link>
               </div>
@@ -456,54 +456,54 @@ export default function AdminDashboard() {
           </div>
 
           {/* Additional Admin Features */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Additional Admin Features</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              <Link href="/admin/settings" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Settings className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Settings</span>
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <h3 className="font-semibold text-gray-900 mb-2 text-sm">Additional Admin Features</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              <Link href="/admin/settings" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Settings className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">Settings</span>
               </Link>
-              <Link href="/admin/backup" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Package className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Backup</span>
+              <Link href="/admin/backup" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Package className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">Backup</span>
               </Link>
-              <Link href="/admin/logs" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Eye className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">System Logs</span>
+              <Link href="/admin/logs" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Eye className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">System Logs</span>
               </Link>
-              <Link href="/admin/maintenance" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Settings className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Maintenance</span>
+              <Link href="/admin/maintenance" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Settings className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">Maintenance</span>
               </Link>
-              <Link href="/admin/security" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Settings className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Security</span>
+              <Link href="/admin/security" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Settings className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">Security</span>
               </Link>
-              <Link href="/admin/help" className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <Eye className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Help & Docs</span>
+              <Link href="/admin/help" className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <Eye className="w-3 h-3 text-gray-600" />
+                <span className="text-xs text-gray-700">Help & Docs</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* Charts and Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Recent Orders */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-3 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Recent Orders</h3>
                 <Link
                   href="/admin/orders"
-                  className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+                  className="text-green-600 hover:text-green-700 text-xs font-medium flex items-center"
                 >
                   View all
-                  <ArrowUpRight className="w-4 h-4 ml-1" />
+                  <ArrowUpRight className="w-3 h-3 ml-1" />
                 </Link>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-3">
               {loading ? (
                 <div className="space-y-4">
                   {[...Array(5)].map((_, i) => (
@@ -519,19 +519,19 @@ export default function AdminDashboard() {
               ) : recentOrders.length > 0 ? (
                 <div className="space-y-4">
                   {recentOrders.slice(0, 5).map((order) => (
-                    <div key={order._id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <ShoppingCart className="w-5 h-5 text-green-600" />
+                    <div key={order._id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <ShoppingCart className="w-4 h-4 text-green-600" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">#{order.orderNumber}</p>
+                          <p className="text-xs font-medium text-gray-900">#{order.orderNumber}</p>
                           <p className="text-xs text-gray-500">{order.user.name}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">{formatCurrency(order.total)}</p>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                        <p className="text-xs font-medium text-gray-900">{formatCurrency(order.total)}</p>
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {order.status}
                         </span>
                       </div>
@@ -549,19 +549,19 @@ export default function AdminDashboard() {
 
           {/* Top Products */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-3 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Top Products</h3>
                 <Link
                   href="/admin/products"
-                  className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+                  className="text-green-600 hover:text-green-700 text-xs font-medium flex items-center"
                 >
                   View all
-                  <ArrowUpRight className="w-4 h-4 ml-1" />
+                  <ArrowUpRight className="w-3 h-3 ml-1" />
                 </Link>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-3">
               {loading ? (
                 <div className="space-y-4">
                   {[...Array(5)].map((_, i) => (
@@ -577,18 +577,18 @@ export default function AdminDashboard() {
               ) : topProducts.length > 0 ? (
                 <div className="space-y-4">
                   {topProducts.slice(0, 5).map((item, index) => (
-                    <div key={item._id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <span className="text-sm font-bold text-gray-600">#{index + 1}</span>
+                    <div key={item._id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <span className="text-xs font-bold text-gray-600">#{index + 1}</span>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{item.product.name}</p>
+                          <p className="text-xs font-medium text-gray-900">{item.product.name}</p>
                           <p className="text-xs text-gray-500">{item.totalSold} sold</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">{formatCurrency(item.totalRevenue)}</p>
+                        <p className="text-xs font-medium text-gray-900">{formatCurrency(item.totalRevenue)}</p>
                       </div>
                     </div>
                   ))}
@@ -604,36 +604,36 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Actions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <Link
               href="/admin/products"
-              className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-200"
+              className="flex items-center p-2 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-200"
             >
-              <Package className="w-5 h-5 text-green-600 mr-3" />
-              <span className="font-medium text-green-900">Manage Products</span>
+              <Package className="w-4 h-4 text-green-600 mr-2" />
+              <span className="font-medium text-green-900 text-xs">Manage Products</span>
             </Link>
             <Link
               href="/admin/orders"
-              className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+              className="flex items-center p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
             >
-              <ShoppingCart className="w-5 h-5 text-blue-600 mr-3" />
-              <span className="font-medium text-blue-900">View Orders</span>
+              <ShoppingCart className="w-4 h-4 text-blue-600 mr-2" />
+              <span className="font-medium text-blue-900 text-xs">View Orders</span>
             </Link>
             <Link
               href="/admin/users"
-              className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+              className="flex items-center p-2 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
             >
-              <Users className="w-5 h-5 text-purple-600 mr-3" />
-              <span className="font-medium text-purple-900">Manage Users</span>
+              <Users className="w-4 h-4 text-purple-600 mr-2" />
+              <span className="font-medium text-purple-900 text-xs">Manage Users</span>
             </Link>
             <Link
               href="/admin/analytics"
-              className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200"
+              className="flex items-center p-2 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200"
             >
-              <Eye className="w-5 h-5 text-orange-600 mr-3" />
-              <span className="font-medium text-orange-900">View Analytics</span>
+              <Eye className="w-4 h-4 text-orange-600 mr-2" />
+              <span className="font-medium text-orange-900 text-xs">View Analytics</span>
             </Link>
           </div>
         </div>

@@ -556,13 +556,13 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
             {user?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-3 text-sm">
             {user?.role === 'admin' 
               ? 'Welcome to the admin panel! Manage your store, products, orders, and users from here.'
               : 'Welcome back! Here\'s an overview of your account and recent orders.'
@@ -570,21 +570,21 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-3">
               {/* User Info */}
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg ring-4 ring-primary/20">
-                  <span className="text-white font-bold text-xl">{user?.name?.charAt(0) || 'U'}</span>
+              <div className="text-center mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-full mx-auto mb-2 flex items-center justify-center shadow-lg ring-2 ring-primary/20">
+                  <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || 'U'}</span>
                 </div>
-                <h3 className="font-semibold text-gray-900">{user?.name}</h3>
-                <p className="text-sm text-gray-600">{user?.email}</p>
+                <h3 className="font-semibold text-gray-900 text-sm">{user?.name}</h3>
+                <p className="text-xs text-gray-600">{user?.email}</p>
               </div>
 
               {/* Navigation */}
-              <nav className="space-y-2">
+              <nav className="space-y-1">
                 {(user?.role === 'admin' ? [
                   { id: 'overview', label: 'Admin Overview', icon: BarChart3 },
                   { id: 'products', label: 'Manage Products', icon: ShoppingBag },
@@ -601,14 +601,14 @@ export default function DashboardPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-left transition-colors ${
                       activeTab === item.id
                         ? 'bg-primary/10 text-primary border border-primary/20'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <item.icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                    <item.icon className="w-4 h-4" />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </button>
                 ))}
               </nav>
@@ -619,69 +619,69 @@ export default function DashboardPage() {
           <div className="lg:col-span-3">
             {/* Admin Overview Tab */}
             {activeTab === 'overview' && user?.role === 'admin' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Admin Overview</h2>
+              <div className="space-y-3">
+                <h2 className="text-xl font-bold text-gray-900">Admin Overview</h2>
                 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Total Products</p>
-                        <p className="text-2xl font-bold text-gray-900">--</p>
+                        <p className="text-xs font-medium text-gray-600">Total Products</p>
+                        <p className="text-lg font-bold text-gray-900">--</p>
                       </div>
-                      <ShoppingBag className="w-8 h-8 text-primary" />
+                      <ShoppingBag className="w-6 h-6 text-primary" />
                     </div>
                   </div>
                   
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                        <p className="text-2xl font-bold text-gray-900">--</p>
+                        <p className="text-xs font-medium text-gray-600">Total Orders</p>
+                        <p className="text-lg font-bold text-gray-900">--</p>
                       </div>
-                      <Package className="w-8 h-8 text-green-600" />
+                      <Package className="w-6 h-6 text-green-600" />
                     </div>
                   </div>
                   
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Total Users</p>
-                        <p className="text-2xl font-bold text-gray-900">--</p>
+                        <p className="text-xs font-medium text-gray-600">Total Users</p>
+                        <p className="text-lg font-bold text-gray-900">--</p>
                       </div>
-                      <Users className="w-8 h-8 text-purple-600" />
+                      <Users className="w-6 h-6 text-purple-600" />
                     </div>
                   </div>
                   
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">₹--</p>
+                        <p className="text-xs font-medium text-gray-600">Revenue</p>
+                        <p className="text-lg font-bold text-gray-900">₹--</p>
                       </div>
-                      <BarChart3 className="w-8 h-8 text-orange-600" />
+                      <BarChart3 className="w-6 h-6 text-orange-600" />
                     </div>
                   </div>
                 </div>
                 
                 {/* Quick Actions */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <Link href="/admin/products" className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <ShoppingBag className="w-6 h-6 text-primary" />
-                      <span className="font-medium text-gray-900">Manage Products</span>
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">Quick Actions</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <Link href="/admin/products" className="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <ShoppingBag className="w-5 h-5 text-primary" />
+                      <span className="font-medium text-gray-900 text-sm">Manage Products</span>
                     </Link>
                     
-                    <Link href="/admin/orders" className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Package className="w-6 h-6 text-green-600" />
-                      <span className="font-medium text-gray-900">View All Orders</span>
+                    <Link href="/admin/orders" className="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Package className="w-5 h-5 text-green-600" />
+                      <span className="font-medium text-gray-900 text-sm">View All Orders</span>
                     </Link>
                     
-                    <Link href="/admin/users" className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Users className="w-6 h-6 text-purple-600" />
-                      <span className="font-medium text-gray-900">Manage Users</span>
+                    <Link href="/admin/users" className="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      <span className="font-medium text-gray-900 text-sm">Manage Users</span>
                     </Link>
                   </div>
                 </div>
@@ -690,17 +690,17 @@ export default function DashboardPage() {
             
             {/* Admin Products Tab */}
             {activeTab === 'products' && user?.role === 'admin' && (
-              <div className="space-y-6">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Products</h2>
-                  <Link href="/admin/products" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                  <h2 className="text-xl font-bold text-gray-900">Manage Products</h2>
+                  <Link href="/admin/products" className="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors text-sm">
                     Go to Product Management
                   </Link>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <p className="text-gray-600 mb-4">Access the full product management interface to:</p>
-                  <ul className="list-disc list-inside space-y-2 text-gray-600">
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <p className="text-gray-600 mb-2 text-sm">Access the full product management interface to:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
                     <li>Add new products</li>
                     <li>Edit existing products</li>
                     <li>Manage inventory</li>
@@ -713,17 +713,17 @@ export default function DashboardPage() {
             
             {/* Admin Users Tab */}
             {activeTab === 'users' && user?.role === 'admin' && (
-              <div className="space-y-6">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Users</h2>
-                  <Link href="/admin/users" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                  <h2 className="text-xl font-bold text-gray-900">Manage Users</h2>
+                  <Link href="/admin/users" className="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors text-sm">
                     Go to User Management
                   </Link>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <p className="text-gray-600 mb-4">Access the user management interface to:</p>
-                  <ul className="list-disc list-inside space-y-2 text-gray-600">
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <p className="text-gray-600 mb-2 text-sm">Access the user management interface to:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
                     <li>View all registered users</li>
                     <li>Manage user roles and permissions</li>
                     <li>Handle user support requests</li>
@@ -735,14 +735,14 @@ export default function DashboardPage() {
             
             {/* Admin Reports Tab */}
             {activeTab === 'reports' && user?.role === 'admin' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
+              <div className="space-y-3">
+                <h2 className="text-xl font-bold text-gray-900">Reports & Analytics</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Reports</h3>
-                    <p className="text-gray-600 mb-4">View detailed sales analytics and revenue reports.</p>
-                    <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <h3 className="text-base font-semibold text-gray-900 mb-2">Sales Reports</h3>
+                    <p className="text-gray-600 mb-2 text-sm">View detailed sales analytics and revenue reports.</p>
+                    <button className="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors text-sm">
                       View Sales Reports
                     </button>
                   </div>

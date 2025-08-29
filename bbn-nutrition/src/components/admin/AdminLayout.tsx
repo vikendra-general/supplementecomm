@@ -49,17 +49,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-56 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+          <div className="flex items-center justify-between h-12 px-4 border-b border-gray-200">
             <Link href="/admin" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BBN</span>
+              <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">BBN</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Admin</span>
+              <span className="text-lg font-bold text-gray-900">Admin</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -70,21 +70,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-3 py-4 space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`flex items-center px-2 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                     isActive
                       ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className={`w-5 h-5 mr-3 ${
+                  <item.icon className={`w-4 h-4 mr-2 ${
                     isActive ? 'text-green-500' : 'text-gray-400'
                   }`} />
                   {item.name}
@@ -94,23 +94,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
 
           {/* User section */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
+          <div className="border-t border-gray-200 p-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">
                   {user?.name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                <p className="text-xs font-medium text-gray-900 truncate">{user?.name}</p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
             </div>
             <button
               onClick={logout}
-              className="mt-3 w-full flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              className="mt-2 w-full flex items-center px-2 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-3 h-3 mr-1" />
               Sign out
             </button>
           </div>
@@ -118,10 +118,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-56">
         {/* Top header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center justify-between h-12 px-4">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -204,7 +204,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4">
           {children}
         </main>
       </div>

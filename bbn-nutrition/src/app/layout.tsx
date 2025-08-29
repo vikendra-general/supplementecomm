@@ -40,7 +40,7 @@ export default function RootLayout({
               <AuthProvider>
                 <CartProvider>
                   <OrderProvider>
-                    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+                    <div className="min-h-screen flex flex-col bg-gradient-dark text-white">
                       <Header />
                       <main className="flex-grow">
                         {children}

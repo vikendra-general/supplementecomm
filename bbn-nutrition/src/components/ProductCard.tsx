@@ -17,12 +17,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, isInCart } = useCart();
+  const { addToCart, removeFromCart, isInCart } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { translateProduct, t } = useLanguage();
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isRemovingFromCart, setIsRemovingFromCart] = useState(false);
   
   // Get translated product data
   const translatedProduct = translateProduct(product);
@@ -65,6 +66,17 @@ export default function ProductCard({ product }: ProductCardProps) {
       } else {
         toast.success(`${product.name} added to cart! Sign in to save your cart.`);
       }
+    }, 500);
+  };
+
+  const handleRemoveFromCart = () => {
+    setIsRemovingFromCart(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      removeFromCart(product.id);
+      setIsRemovingFromCart(false);
+      toast.success(`${product.name} removed from cart!`);
     }, 500);
   };
 
@@ -117,128 +129,156 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isProductInCart = isInCart(product.id);
 
   return (
-    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group relative border border-gray-200 hover:border-gray-300 flex flex-col h-full">
       {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <Link href={`/product/${product.id}`}>
-          <div className="relative w-full h-full">
-            <Image
-              src={product.images[0] || '/images/products/placeholder.svg'}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
-          </div>
+          <Image
+            src={product.images[0] || '/images/products/placeholder.svg'}
+            alt={product.name}
+            fill
+            className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         </Link>
         
         {/* Wishlist Button */}
         <button
           onClick={handleWishlist}
-          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+          className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 hover:bg-white transition-all duration-200 shadow-md hover:shadow-lg backdrop-blur-sm"
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <Heart 
-            className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+            className={`w-4 h-4 transition-all duration-200 ${
+              isWishlisted ? 'fill-red-500 text-red-500 scale-110' : 'text-gray-400 hover:text-red-500 hover:scale-110'
+            }`} 
           />
         </button>
 
         {/* Sale Badge */}
         {product.originalPrice && product.originalPrice > product.price && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
-            SALE
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
           </div>
         )}
 
         {/* Out of Stock Badge */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <span className="text-white font-semibold">{t('common.outOfStock')}</span>
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm">
+            <span className="bg-red-500 text-white px-3 py-1.5 rounded-lg font-semibold shadow-lg text-xs">{t('common.outOfStock')}</span>
           </div>
         )}
 
         {/* In Cart Badge */}
         {isProductInCart && (
-          <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
+          <div className="absolute bottom-2 left-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg">
+            <ShoppingCart className="w-3 h-3" />
             IN CART
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-3 flex flex-col flex-grow">
         {/* Brand */}
-        <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
+        {product.brand && (
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">
+            {product.brand}
+          </p>
+        )}
         
         {/* Product Name */}
         <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2 text-sm leading-tight">
             {translatedProduct.name}
           </h3>
         </Link>
 
         {/* Rating */}
-        <div className="flex items-center mb-2">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating)
-                    ? 'text-yellow-400 fill-current'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
+        {product.rating && (
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-3 h-3 ${
+                    i < Math.floor(product.rating)
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-600 font-medium">({product.rating})</span>
           </div>
-          <span className="text-sm text-gray-500 ml-1">
-            ({product.reviews})
-          </span>
-        </div>
+        )}
 
         {/* Price */}
-        <div className="flex items-center mb-3">
-          <span className="text-lg font-bold text-gray-900">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-sm text-gray-500 line-through ml-2">
-              {formatPrice(product.originalPrice)}
+        <div className="flex items-baseline gap-2 mb-3">
+          {product.originalPrice && product.originalPrice > product.price ? (
+            <>
+              <span className="text-lg font-bold text-gray-900">
+                {formatPrice(product.price)}
+              </span>
+              <span className="text-sm text-gray-500 line-through font-medium">
+                {formatPrice(product.originalPrice)}
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-gray-900">
+              {formatPrice(product.price)}
             </span>
           )}
         </div>
 
-        {/* Add to Cart Button */}
+        {/* Add to Cart / Remove from Cart Button */}
         <div className="mt-auto">
-        <button
-          onClick={handleAddToCart}
-          disabled={!product.inStock || isAddingToCart || isProductInCart}
-          className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
-            isProductInCart
-              ? 'bg-primary text-secondary cursor-not-allowed'
-              : product.inStock
-              ? 'energetic-cta'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {isAddingToCart ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{t('common.loading')}</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              <span>
-                {isProductInCart 
-                  ? t('common.inCart') 
-                  : product.inStock 
+        {isProductInCart ? (
+          <button
+            onClick={handleRemoveFromCart}
+            disabled={isRemovingFromCart}
+            className="w-full py-2 px-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:transform-none text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+          >
+            {isRemovingFromCart ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
+                <span>Removing...</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                <span>Remove from Cart</span>
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            disabled={!product.inStock || isAddingToCart}
+            className={`w-full py-2 px-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:transform-none text-sm ${
+              product.inStock
+                ? 'bg-primary text-white hover:bg-primary-dark'
+                : 'bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed'
+            }`}
+          >
+            {isAddingToCart ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>{t('common.loading')}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                <span>
+                  {product.inStock 
                     ? t('common.addToCart') 
                     : t('common.outOfStock')
-                }
-              </span>
-            </>
-          )}
-        </button>
+                  }
+                </span>
+              </>
+            )}
+          </button>
+        )}
 
         {/* Anonymous User Message */}
         {!isAuthenticated && (

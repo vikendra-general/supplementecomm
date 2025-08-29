@@ -283,35 +283,35 @@ export default function AdminProductsPage() {
     <div className="min-h-screen bg-dark-bg">
       {/* Header */}
       <div className="bg-dark-card border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link 
                 href="/admin" 
                 className="text-dark-text-secondary hover:text-primary transition-colors"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <ArrowLeft className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-dark-text">Product Management</h1>
-                <p className="text-dark-text-secondary">Manage your product catalog</p>
+                <h1 className="text-xl font-bold text-dark-text">Product Management</h1>
+                <p className="text-dark-text-secondary text-sm">Manage your product catalog</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={fetchProducts}
                 disabled={loading}
-                className="bg-dark-gray text-dark-text px-4 py-2 rounded-lg hover:bg-hover-subtle hover:bg-opacity-50 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-dark-gray text-dark-text px-3 py-1.5 rounded-lg hover:bg-hover-subtle hover:bg-opacity-50 transition-all flex items-center space-x-1.5 disabled:opacity-50 text-sm"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
               <button
                 onClick={() => setShowProductForm(true)}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-3 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-4 py-1.5 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-1.5 disabled:opacity-50 text-sm"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 <span>Add Product</span>
               </button>
             </div>
@@ -319,61 +319,61 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Error Banner */}
         {error && (
-          <div className="mb-6 bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded-lg flex items-center justify-between">
+          <div className="mb-3 bg-red-900 border border-red-700 text-red-100 px-3 py-2 rounded-lg flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5" />
-              <span>{error}</span>
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm">{error}</span>
             </div>
             <button
               onClick={() => setError(null)}
               className="text-red-300 hover:text-red-100"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3" />
             </button>
           </div>
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <div className="bg-dark-card p-3 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <Package className="w-8 h-8 text-primary" />
-              <div className="ml-4">
-                <p className="text-sm text-dark-text-secondary">Total Products</p>
-                <p className="text-2xl font-bold text-dark-text">{products.length}</p>
+              <Package className="w-6 h-6 text-primary" />
+              <div className="ml-3">
+                <p className="text-xs text-dark-text-secondary">Total Products</p>
+                <p className="text-lg font-bold text-dark-text">{products.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-3 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <Star className="w-8 h-8 text-yellow-400" />
-              <div className="ml-4">
-                <p className="text-sm text-dark-text-secondary">Featured Products</p>
-                <p className="text-2xl font-bold text-dark-text">{products.filter(p => p.featured).length}</p>
+              <Star className="w-6 h-6 text-yellow-400" />
+              <div className="ml-3">
+                <p className="text-xs text-dark-text-secondary">Featured Products</p>
+                <p className="text-lg font-bold text-dark-text">{products.filter(p => p.featured).length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-3 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <BarChart3 className="w-8 h-8 text-green-400" />
-              <div className="ml-4">
-                <p className="text-sm text-dark-text-secondary">Best Sellers</p>
-                <p className="text-2xl font-bold text-dark-text">{products.filter(p => p.bestSeller).length}</p>
+              <BarChart3 className="w-6 h-6 text-green-400" />
+              <div className="ml-3">
+                <p className="text-xs text-dark-text-secondary">Best Sellers</p>
+                <p className="text-lg font-bold text-dark-text">{products.filter(p => p.bestSeller).length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-3 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <DollarSign className="w-8 h-8 text-primary" />
-              <div className="ml-4">
-                <p className="text-sm text-dark-text-secondary">Avg. Price</p>
-                <p className="text-2xl font-bold text-dark-text">
+              <DollarSign className="w-6 h-6 text-primary" />
+              <div className="ml-3">
+                <p className="text-xs text-dark-text-secondary">Avg. Price</p>
+                <p className="text-lg font-bold text-dark-text">
                   ₹{Math.round(products.reduce((sum, p) => sum + p.price, 0) / products.length)}
                 </p>
               </div>
@@ -382,23 +382,23 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-dark-card p-6 rounded-lg border border-gray-700 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-dark-card p-3 rounded-lg border border-gray-700 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-dark-text-secondary" />
+              <Search className="absolute left-2 top-2 w-4 h-4 text-dark-text-secondary" />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text placeholder-dark-text-secondary focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-8 pr-3 py-1.5 bg-dark-gray border border-gray-600 rounded-lg text-dark-text placeholder-dark-text-secondary focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               />
             </div>
             
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="px-3 py-1.5 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             >
               <option key="all-categories" value="">All Categories</option>
               {categories.map(category => (
@@ -409,7 +409,7 @@ export default function AdminProductsPage() {
             <select
               value={filterBrand}
               onChange={(e) => setFilterBrand(e.target.value)}
-              className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="px-3 py-1.5 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             >
               <option key="all-brands" value="">All Brands</option>
               {brands.map(brand => (
@@ -423,7 +423,7 @@ export default function AdminProductsPage() {
                 setFilterCategory('');
                 setFilterBrand('');
               }}
-              className="px-4 py-2 border border-gray-600 text-dark-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors"
+              className="px-3 py-1.5 border border-gray-600 text-dark-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm"
             >
               Clear Filters
             </button>
@@ -436,22 +436,22 @@ export default function AdminProductsPage() {
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-dark-gray">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -459,24 +459,24 @@ export default function AdminProductsPage() {
               <tbody className="divide-y divide-gray-700">
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-hover-subtle hover:bg-opacity-30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-12 w-12">
-                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
-                            <Package className="w-6 h-6 text-gray-400" />
+                        <div className="flex-shrink-0 h-8 w-8">
+                          <div className="h-8 w-8 rounded-lg bg-gray-600 flex items-center justify-center">
+                            <Package className="w-4 h-4 text-gray-400" />
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-dark-text">{product.name}</div>
-                          <div className="text-sm text-dark-text-secondary">{product.brand}</div>
-                          <div className="flex items-center space-x-2 mt-1">
+                        <div className="ml-3">
+                          <div className="text-xs font-medium text-dark-text">{product.name}</div>
+                          <div className="text-xs text-dark-text-secondary">{product.brand}</div>
+                          <div className="flex items-center space-x-1 mt-0.5">
                             {product.featured && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
                                 Featured
                               </span>
                             )}
                             {product.bestSeller && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                 Best Seller
                               </span>
                             )}
@@ -484,10 +484,10 @@ export default function AdminProductsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-dark-text">
                       {product.category}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-dark-text">
                       <div>
                         <span className="font-semibold">₹{product.price}</span>
                         {product.originalPrice && (
@@ -495,11 +495,11 @@ export default function AdminProductsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-dark-text">
                       {product.stockQuantity || 0}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
                         product.inStock 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
@@ -507,19 +507,19 @@ export default function AdminProductsPage() {
                         {product.inStock ? 'In Stock' : 'Out of Stock'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                      <div className="flex items-center space-x-1">
                         <button
                           onClick={() => handleEditProduct(product)}
                           className="text-primary hover:text-primary-dark transition-colors"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => handleDeleteProduct(product.id)}
                           className="text-red-400 hover:text-red-300 transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
                     </td>
@@ -533,10 +533,10 @@ export default function AdminProductsPage() {
 
       {/* Product Form Modal */}
       {showProductForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 my-4">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-2 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 my-2">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
               <button
@@ -545,9 +545,9 @@ export default function AdminProductsPage() {
                   setEditingProduct(null);
                   resetForm();
                 }}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <X className="w-6 h-6 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
             

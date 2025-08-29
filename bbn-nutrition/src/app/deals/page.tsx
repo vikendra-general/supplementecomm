@@ -47,7 +47,7 @@ export default function DealsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
@@ -66,53 +66,53 @@ export default function DealsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center space-x-2 bg-red-50 border border-red-200 px-4 py-2 rounded-full mb-6">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center space-x-2 bg-red-50 border border-red-200 px-3 py-1 rounded-full mb-3">
             <Tag className="w-4 h-4 text-red-600" />
             <span className="text-sm font-medium text-red-800">Limited Time Offers</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
             Today&apos;s <span className="text-red-600">Deals</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Don&apos;t miss out on these amazing discounts! Limited time offers on your favorite supplements.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-center">
-              <div className="p-3 bg-red-100 rounded-lg">
-                <TrendingDown className="w-6 h-6 text-red-600" />
+              <div className="p-2 bg-red-100 rounded-lg">
+                <TrendingDown className="w-5 h-5 text-red-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-500">Active Deals</p>
-                <p className="text-2xl font-bold text-gray-900">{dealsProducts.length}</p>
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Active Deals</p>
+                <p className="text-xl font-bold text-gray-900">{dealsProducts.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-center">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <Clock className="w-6 h-6 text-orange-600" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Clock className="w-5 h-5 text-orange-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-500">Time Left</p>
-                <p className="text-2xl font-bold text-gray-900">24h</p>
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Time Left</p>
+                <p className="text-xl font-bold text-gray-900">24h</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Zap className="w-6 h-6 text-green-600" />
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Zap className="w-5 h-5 text-green-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-500">Max Savings</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3">
+                <p className="text-xs text-gray-500">Max Savings</p>
+                <p className="text-xl font-bold text-gray-900">
                   {dealsProducts.length > 0 ? 
                     Math.max(...dealsProducts.map(p => 
                       p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0
@@ -125,29 +125,29 @@ export default function DealsPage() {
 
         {/* Products Grid */}
         {error ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Tag className="w-8 h-8 text-red-500" />
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-red-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+              <Tag className="w-6 h-6 text-red-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Deals</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">Error Loading Deals</h3>
             <p className="text-gray-600">{error}</p>
           </div>
         ) : dealsProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Tag className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+              <Tag className="w-6 h-6 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Deals Available</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No Deals Available</h3>
             <p className="text-gray-600 mb-4">Check back later for amazing deals and discounts!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {dealsProducts.map((product) => (
               <div key={product.id} className="relative">
                 <ProductCard product={product} />
                 {/* Deal Badge */}
                 {product.originalPrice && (
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
+                  <div className="absolute top-1 left-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                     {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                   </div>
                 )}

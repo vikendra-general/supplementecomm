@@ -54,7 +54,7 @@ export default function BestSellersPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
@@ -73,41 +73,41 @@ export default function BestSellersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center space-x-2 bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-full mb-6">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center space-x-2 bg-yellow-50 border border-yellow-200 px-3 py-1 rounded-full mb-3">
             <Trophy className="w-4 h-4 text-yellow-600" />
             <span className="text-sm font-medium text-yellow-800">Top Rated Products</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
             Best <span className="text-yellow-600">Sellers</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Discover our most popular supplements trusted by thousands of customers worldwide.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-lg p-6 text-center shadow-sm">
-            <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <h3 className="text-2xl font-bold text-gray-900">{products.length}</h3>
-            <p className="text-gray-600">Best Selling Products</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <TrendingUp className="w-6 h-6 text-green-600 mx-auto mb-1" />
+            <h3 className="text-xl font-bold text-gray-900">{products.length}</h3>
+            <p className="text-sm text-gray-600">Best Selling Products</p>
           </div>
-          <div className="bg-white rounded-lg p-6 text-center shadow-sm">
-            <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-            <h3 className="text-2xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <Trophy className="w-6 h-6 text-yellow-600 mx-auto mb-1" />
+            <h3 className="text-xl font-bold text-gray-900">
               {products.filter(p => p.rating >= 4.5).length}
             </h3>
-            <p className="text-gray-600">4.5+ Star Rated</p>
+            <p className="text-sm text-gray-600">4.5+ Star Rated</p>
           </div>
-          <div className="bg-white rounded-lg p-6 text-center shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+          <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-1">
               <span className="text-blue-600 font-bold">✓</span>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-gray-900">
               {products.filter(p => p.inStock).length}
             </h3>
-            <p className="text-gray-600">In Stock</p>
+            <p className="text-sm text-gray-600">In Stock</p>
           </div>
         </div>
 
@@ -122,16 +122,16 @@ export default function BestSellersPage() {
 
         {/* Products Grid */}
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
           !loading && !error && (
-            <div className="text-center py-12">
-              <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Best Sellers Yet</h3>
+            <div className="text-center py-8">
+              <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Best Sellers Yet</h3>
               <p className="text-gray-600">Check back soon for our top-rated products!</p>
             </div>
           )

@@ -85,36 +85,36 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-              <p className="text-gray-600 mt-1">Welcome back, User</p>
+              <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+              <p className="text-gray-600 mt-1 text-sm">Welcome back, User</p>
             </div>
             {/* The logout button is removed as per the edit hint. */}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <nav className="space-y-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <nav className="space-y-1">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                      className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors text-sm ${
                         activeTab === tab.id
                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className="w-5 h-5 mr-3" />
+                      <Icon className="w-4 h-4 mr-2" />
                       {tab.name}
                     </button>
                   );
@@ -126,50 +126,50 @@ export default function ProfilePage() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             {activeTab === 'overview' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Overview</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Account Overview</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="p-6 bg-blue-50 rounded-lg">
-                    <div className="flex items-center mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="flex items-center mb-2">
                       {/* ShoppingBag icon removed */}
                       <div>
-                        <p className="text-sm font-medium text-blue-600">Total Orders</p>
-                        <p className="text-2xl font-bold text-blue-900">{orders.length}</p>
+                        <p className="text-xs font-medium text-blue-600">Total Orders</p>
+                        <p className="text-xl font-bold text-blue-900">{orders.length}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 bg-green-50 rounded-lg">
-                    <div className="flex items-center mb-4">
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <div className="flex items-center mb-2">
                       {/* Heart icon removed */}
                       <div>
-                        <p className="text-sm font-medium text-green-600">Wishlist Items</p>
-                        <p className="text-2xl font-bold text-green-900">{wishlist.length}</p>
+                        <p className="text-xs font-medium text-green-600">Wishlist Items</p>
+                        <p className="text-xl font-bold text-green-900">{wishlist.length}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
+                    <h3 className="text-base font-semibold text-gray-900 mb-3">Recent Orders</h3>
                     {orders.slice(0, 3).map((order) => (
-                      <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-3">
+                      <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2">
                         <div>
-                          <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                          <p className="text-sm text-gray-600">Order Date</p>
+                          <p className="font-medium text-gray-900 text-sm">{order.orderNumber}</p>
+                          <p className="text-xs text-gray-600">Order Date</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-gray-900">₹{order.total}</p>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                          <p className="text-base font-bold text-gray-900">₹{order.total}</p>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             <span className="ml-1">{order.status}</span>
                           </span>
                         </div>
                       </div>
                     ))}
                     {orders.length === 0 && (
-                      <p className="text-gray-500 text-center py-8">No orders yet</p>
+                      <p className="text-gray-500 text-center py-6 text-sm">No orders yet</p>
                     )}
                   </div>
                 </div>
@@ -177,56 +177,56 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'orders' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Order History</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Order History</h2>
                 
                 {orders.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {orders.map((order) => (
-                      <div key={order._id} className="border border-gray-200 rounded-lg p-6">
-                        <div className="flex items-center justify-between mb-4">
+                      <div key={order._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{order.orderNumber}</h3>
-                            <p className="text-sm text-gray-600">Order Date</p>
+                            <h3 className="text-base font-semibold text-gray-900">{order.orderNumber}</h3>
+                            <p className="text-xs text-gray-600">Order Date</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold text-gray-900">₹{order.total}</p>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${order.status}`}>
+                            <p className="text-base font-bold text-gray-900">₹{order.total}</p>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${order.status}`}>
                               <span className="ml-1">{order.status}</span>
                             </span>
                           </div>
                         </div>
                         
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {order.items.map((item, index) => (
-                            <div key={index} className="flex items-center justify-between py-2">
+                            <div key={index} className="flex items-center justify-between py-1">
                               <div className="flex items-center">
-                                <div className="w-12 h-12 bg-gray-200 rounded-lg mr-4"></div>
+                                <div className="w-10 h-10 bg-gray-200 rounded-lg mr-3"></div>
                                 <div>
-                                  <p className="font-medium text-gray-900">{item.product.name}</p>
-                                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                                  <p className="font-medium text-gray-900 text-sm">{item.product.name}</p>
+                                  <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
                                 </div>
                               </div>
-                              <p className="font-medium text-gray-900">{/* formatCurrency(item.price * item.quantity) */}</p>
+                              <p className="font-medium text-gray-900 text-sm">{/* formatCurrency(item.price * item.quantity) */}</p>
                             </div>
                           ))}
                         </div>
                         
-                        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
+                        <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between">
                           <Link 
                             href={`/orders/${order._id}`}
-                            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm"
                           >
-                            <Eye className="w-4 h-4 mr-2" />
+                            <Eye className="w-3 h-3 mr-1" />
                             View Details
                           </Link>
                           
                           {order.trackingNumber && (
                             <Link 
                               href={`/track-order/${order._id}`}
-                              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
+                              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm"
                             >
-                              <Truck className="w-4 h-4 mr-2" />
+                              <Truck className="w-3 h-3 mr-1" />
                               Track Order
                             </Link>
                           )}
@@ -235,13 +235,13 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center py-8">
                     {/* ShoppingBag icon removed */}
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                    <p className="text-gray-600 mb-6">Start shopping to see your order history here.</p>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">No orders yet</h3>
+                    <p className="text-gray-600 mb-4 text-sm">Start shopping to see your order history here.</p>
                     <Link 
                       href="/shop" 
-                      className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       Start Shopping
                     </Link>
@@ -251,24 +251,24 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'wishlist' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">My Wishlist</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">My Wishlist</h2>
                 
                 {wishlist.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {wishlist.map((item) => (
-                      <div key={item._id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
-                        <h3 className="font-semibold text-gray-900 mb-2">{item.name}</h3>
-                        <div className="flex items-center justify-between mb-4">
+                      <div key={item._id} className="border border-gray-200 rounded-lg p-3">
+                        <div className="w-full h-40 bg-gray-200 rounded-lg mb-3"></div>
+                        <h3 className="font-semibold text-gray-900 mb-2 text-sm">{item.name}</h3>
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
                             {item.originalPrice && item.originalPrice > item.price ? (
                               <>
-                                <span className="text-lg font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
-                                <span className="text-sm text-gray-500 line-through ml-2">{/* formatCurrency(item.originalPrice) */}</span>
+                                <span className="text-base font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
+                                <span className="text-xs text-gray-500 line-through ml-2">{/* formatCurrency(item.originalPrice) */}</span>
                               </>
                             ) : (
-                              <span className="text-lg font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
+                              <span className="text-base font-bold text-gray-900">{/* formatCurrency(item.price) */}</span>
                             )}
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -278,10 +278,10 @@ export default function ProfilePage() {
                           </span>
                         </div>
                         <div className="flex space-x-2">
-                          <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                          <button className="flex-1 bg-blue-600 text-white py-1.5 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
                             Add to Cart
                           </button>
-                          <button className="px-3 py-2 text-red-600 hover:text-red-700 transition-colors">
+                          <button className="px-2 py-1.5 text-red-600 hover:text-red-700 transition-colors">
                             {/* Trash2 icon removed */}
                           </button>
                         </div>
@@ -289,13 +289,13 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center py-8">
                     {/* Heart icon removed */}
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
-                    <p className="text-gray-600 mb-6">Save items you love to your wishlist for later.</p>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
+                    <p className="text-gray-600 mb-4 text-sm">Save items you love to your wishlist for later.</p>
                     <Link 
                       href="/shop" 
-                      className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       Start Shopping
                     </Link>
@@ -305,32 +305,32 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'addresses' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
-                  <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">My Addresses</h2>
+                  <button className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm">
                     {/* Plus icon removed */}
                     Add Address
                   </button>
                 </div>
                 
                 {addresses.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {addresses.map((address) => (
-                      <div key={address._id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
+                      <div key={address._id} className="border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center">
-                            <MapPin className="w-5 h-5 text-gray-400 mr-2" />
-                            <span className="text-sm font-medium text-gray-600 uppercase">{address.type}</span>
+                            <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                            <span className="text-xs font-medium text-gray-600 uppercase">{address.type}</span>
                             {address.isDefault && (
                               <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                                 Default
                               </span>
                             )}
                           </div>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-1">
                             <button className="text-blue-600 hover:text-blue-700">
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-3 h-3" />
                             </button>
                             <button className="text-red-600 hover:text-red-700">
                               {/* Trash2 icon removed */}
@@ -338,19 +338,19 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-gray-900">{address.address}</p>
-                          <p className="text-gray-600">{address.city}, {address.state} {address.zipCode}</p>
-                          <p className="text-gray-600">{address.country}</p>
+                          <p className="text-gray-900 text-sm">{address.address}</p>
+                          <p className="text-gray-600 text-xs">{address.city}, {address.state} {address.zipCode}</p>
+                          <p className="text-gray-600 text-xs">{address.country}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
-                    <p className="text-gray-600 mb-6">Add your shipping addresses for faster checkout.</p>
-                    <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                  <div className="text-center py-8">
+                    <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <h3 className="text-base font-medium text-gray-900 mb-2">No addresses saved</h3>
+                    <p className="text-gray-600 mb-4 text-sm">Add your shipping addresses for faster checkout.</p>
+                    <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm">
                       {/* Plus icon removed */}
                       Add Address
                     </button>
@@ -360,66 +360,66 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'settings' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Account Settings</h2>
                 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h3 className="text-base font-semibold text-gray-900 mb-3">Profile Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
                         <input
                           type="text"
                           defaultValue="User Name"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
                           Email
                         </label>
                         <input
                           type="email"
                           defaultValue="user@example.com"
                           disabled
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg bg-gray-50 text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
                           Phone
                         </label>
                         <input
                           type="tel"
                           defaultValue="+1234567890"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferences</h3>
-                    <div className="space-y-4">
+                    <h3 className="text-base font-semibold text-gray-900 mb-3">Preferences</h3>
+                    <div className="space-y-3">
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                        <span className="ml-2 text-sm text-gray-700">Email notifications</span>
+                        <input type="checkbox" defaultChecked className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                        <span className="ml-2 text-xs text-gray-700">Email notifications</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                        <span className="ml-2 text-sm text-gray-700">SMS notifications</span>
+                        <input type="checkbox" className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                        <span className="ml-2 text-xs text-gray-700">SMS notifications</span>
                       </label>
                       <label className="flex items-center">
-                        <input type="checkbox" defaultChecked className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                        <span className="ml-2 text-sm text-gray-700">Marketing emails</span>
+                        <input type="checkbox" defaultChecked className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                        <span className="ml-2 text-xs text-gray-700">Marketing emails</span>
                       </label>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-gray-200">
-                    <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                      <Save className="w-4 h-4 mr-2" />
+                  <div className="pt-4 border-t border-gray-200">
+                    <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                      <Save className="w-3 h-3 mr-1" />
                       Save Changes
                     </button>
                   </div>
