@@ -1,11 +1,219 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 const { protect } = require('../middleware/auth');
 const Order = require('../models/Order');
 const User = require('../models/User'); // Added missing import for User
 
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
 const router = express.Router();
+
+// @desc    Create Razorpay order
+// @route   POST /api/payments/razorpay/create-order
+// @access  Private
+router.post('/razorpay/create-order', protect, [
+  body('amount')
+    .isFloat({ min: 0.01 })
+    .withMessage('Amount must be greater than 0'),
+  body('currency')
+    .optional()
+    .isIn(['INR', 'USD'])
+    .withMessage('Invalid currency'),
+  body('orderId')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid order ID')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { amount, currency = 'INR', orderId } = req.body;
+
+    // Create Razorpay order
+    const options = {
+      amount: Math.round(amount * 100), // Convert to paise
+      currency: currency,
+      receipt: `order_${Date.now()}`,
+      notes: {
+        userId: req.user.id,
+        orderId: orderId || '',
+        integration_check: 'accept_a_payment'
+      }
+    };
+
+    const razorpayOrder = await razorpay.orders.create(options);
+
+    res.json({
+      success: true,
+      data: {
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        key: process.env.RAZORPAY_KEY_ID
+      },
+      message: 'Razorpay order created successfully'
+    });
+  } catch (error) {
+    console.error('Create Razorpay order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating Razorpay order'
+    });
+  }
+});
+
+// @desc    Verify Razorpay payment
+// @route   POST /api/payments/razorpay/verify
+// @access  Private
+router.post('/razorpay/verify', protect, [
+  body('razorpay_order_id')
+    .notEmpty()
+    .withMessage('Razorpay order ID is required'),
+  body('razorpay_payment_id')
+    .notEmpty()
+    .withMessage('Razorpay payment ID is required'),
+  body('razorpay_signature')
+    .notEmpty()
+    .withMessage('Razorpay signature is required'),
+  body('orderId')
+    .isMongoId()
+    .withMessage('Valid order ID is required')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId
+    } = req.body;
+
+    // Verify signature
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest('hex');
+
+    if (expectedSignature === razorpay_signature) {
+      // Payment is verified
+      // Update order status
+      const order = await Order.findByIdAndUpdate(
+        orderId,
+        {
+          paymentStatus: 'paid',
+          status: 'confirmed',
+          $push: {
+            statusHistory: {
+              status: 'confirmed',
+              timestamp: new Date(),
+              note: 'Payment confirmed via Razorpay'
+            }
+          }
+        },
+        { new: true }
+      ).populate('user', 'name email');
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Order not found'
+        });
+      }
+
+      // Update user stats
+      if (order.user) {
+        await User.findByIdAndUpdate(order.user._id, {
+          $inc: {
+            'stats.totalOrders': 1,
+            'stats.totalSpent': order.total
+          },
+          'stats.lastOrderDate': new Date()
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Payment verified successfully',
+        order: order,
+        paymentId: razorpay_payment_id
+      });
+    } else {
+      // Payment verification failed
+      await Order.findByIdAndUpdate(
+        orderId,
+        {
+          paymentStatus: 'failed',
+          status: 'cancelled',
+          $push: {
+            statusHistory: {
+              status: 'cancelled',
+              timestamp: new Date(),
+              note: 'Payment verification failed'
+            }
+          }
+        }
+      );
+
+      res.status(400).json({
+        success: false,
+        message: 'Payment verification failed'
+      });
+    }
+  } catch (error) {
+    console.error('Verify Razorpay payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying payment'
+    });
+  }
+});
+
+// @desc    Get Razorpay payment details
+// @route   GET /api/payments/razorpay/payment/:paymentId
+// @access  Private
+router.get('/razorpay/payment/:paymentId', protect, async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    
+    const payment = await razorpay.payments.fetch(paymentId);
+    
+    res.json({
+      success: true,
+      payment: payment
+    });
+  } catch (error) {
+    console.error('Get Razorpay payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching payment details'
+    });
+  }
+});
 
 // @desc    Create payment intent
 // @route   POST /api/payments/create-payment-intent
@@ -303,4 +511,4 @@ router.get('/history', protect, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

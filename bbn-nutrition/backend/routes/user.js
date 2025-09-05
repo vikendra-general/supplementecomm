@@ -41,9 +41,9 @@ router.post('/addresses', protect, [
   body('state')
     .notEmpty()
     .withMessage('State is required'),
-  body('zipCode')
+  body('pinCode')
     .notEmpty()
-    .withMessage('ZIP code is required'),
+    .withMessage('PIN code is required'),
   body('country')
     .optional()
     .isString()
@@ -60,7 +60,7 @@ router.post('/addresses', protect, [
       });
     }
 
-    const { type, address, city, state, zipCode, country = 'United States', isDefault = false } = req.body;
+    const { type, address, city, state, pinCode, country = 'India', isDefault = false } = req.body;
 
     const user = await User.findById(req.user.id);
 
@@ -77,7 +77,7 @@ router.post('/addresses', protect, [
       address,
       city,
       state,
-      zipCode,
+      pinCode,
       country,
       isDefault: isDefault || user.addresses.length === 0
     });
@@ -118,15 +118,21 @@ router.put('/addresses/:id', protect, [
     .optional()
     .notEmpty()
     .withMessage('State cannot be empty'),
-  body('zipCode')
+  body('pinCode')
     .optional()
     .notEmpty()
-    .withMessage('ZIP code cannot be empty')
+    .withMessage('PIN code cannot be empty')
 ], async (req, res) => {
   try {
+    console.log('🔄 Address update request received:');
+    console.log('Address ID:', req.params.id);
+    console.log('User ID:', req.user.id);
+    console.log('Request body:', req.body);
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -135,9 +141,11 @@ router.put('/addresses/:id', protect, [
     }
 
     const { id } = req.params;
-    const { type, address, city, state, zipCode, country, isDefault } = req.body;
+    const { type, address, city, state, pinCode, country, isDefault } = req.body;
 
     const user = await User.findById(req.user.id);
+    console.log('👤 User found:', user ? 'Yes' : 'No');
+    console.log('📍 User addresses count:', user ? user.addresses.length : 0);
     
     // Find the address to update
     const addressIndex = user.addresses.findIndex(addr => addr._id.toString() === id);
@@ -154,7 +162,7 @@ router.put('/addresses/:id', protect, [
     if (address) user.addresses[addressIndex].address = address;
     if (city) user.addresses[addressIndex].city = city;
     if (state) user.addresses[addressIndex].state = state;
-    if (zipCode) user.addresses[addressIndex].zipCode = zipCode;
+    if (pinCode) user.addresses[addressIndex].pinCode = pinCode;
     if (country) user.addresses[addressIndex].country = country;
 
     // If setting as default, update other addresses
@@ -165,6 +173,8 @@ router.put('/addresses/:id', protect, [
     }
 
     await user.save();
+    console.log('✅ Address updated successfully');
+    console.log('📍 Updated addresses count:', user.addresses.length);
 
     res.json({
       success: true,
@@ -305,4 +315,4 @@ router.delete('/wishlist/:productId', protect, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

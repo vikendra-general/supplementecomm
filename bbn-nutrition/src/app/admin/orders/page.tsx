@@ -32,7 +32,7 @@ interface Address {
   address: string;
   city: string;
   state: string;
-  zipCode: string;
+  pinCode: string;
   country: string;
 }
 
@@ -93,14 +93,14 @@ const mockOrders: Order[] = [
       address: '123 Main Street',
       city: 'Mumbai',
       state: 'Maharashtra',
-      zipCode: '400001',
-      country: 'India'
-    },
-    billingAddress: {
-      address: '123 Main Street',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      zipCode: '400001',
+      pinCode: '400001',
+        country: 'India'
+      },
+      billingAddress: {
+        address: '123 Main St',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        pinCode: '400001',
       country: 'India'
     },
     trackingNumber: 'TRK123456789',
@@ -134,14 +134,14 @@ const mockOrders: Order[] = [
       address: '456 Park Avenue',
       city: 'Delhi',
       state: 'Delhi',
-      zipCode: '110001',
-      country: 'India'
-    },
-    billingAddress: {
-      address: '456 Park Avenue',
-      city: 'Delhi',
-      state: 'Delhi',
-      zipCode: '110001',
+      pinCode: '110001',
+        country: 'India'
+      },
+      billingAddress: {
+        address: '456 Oak Ave',
+        city: 'Delhi',
+        state: 'Delhi',
+        pinCode: '110001',
       country: 'India'
     },
     trackingNumber: null,
@@ -180,14 +180,14 @@ const mockOrders: Order[] = [
       address: '789 Tech Park',
       city: 'Bangalore',
       state: 'Karnataka',
-      zipCode: '560001',
-      country: 'India'
-    },
-    billingAddress: {
-      address: '789 Tech Park',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      zipCode: '560001',
+      pinCode: '560001',
+        country: 'India'
+      },
+      billingAddress: {
+        address: '789 Pine Rd',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        pinCode: '560001',
       country: 'India'
     },
     trackingNumber: 'TRK987654321',
@@ -639,7 +639,7 @@ export default function AdminOrdersPage() {
                       <div className="text-dark-text">
                         <p>{selectedOrder.shippingAddress.address}</p>
                         <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}</p>
-                        <p>{selectedOrder.shippingAddress.zipCode}, {selectedOrder.shippingAddress.country}</p>
+                        <p>{selectedOrder.shippingAddress.pinCode}, {selectedOrder.shippingAddress.country}</p>
                       </div>
                     </div>
                   </div>

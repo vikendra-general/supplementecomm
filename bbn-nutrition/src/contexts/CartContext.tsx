@@ -52,31 +52,64 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   useEffect(() => {
     if (isInitialized) return;
     
-    try {
-      let savedCart: CartItem[] = [];
-      
-      if (isAuthenticated && user) {
-        // Load user-specific cart
-        const userCart = localStorage.getItem(`cart_${user.id}`);
-        if (userCart) {
-          savedCart = JSON.parse(userCart);
+    // Add a small delay to ensure auth state is settled
+    const loadCart = () => {
+      try {
+        let savedCart: CartItem[] = [];
+        
+        if (isAuthenticated && user) {
+          // Load user-specific cart
+          const userCart = localStorage.getItem(`cart_${user.id}`);
+          if (userCart) {
+            savedCart = JSON.parse(userCart);
+            console.log('Loaded user cart:', savedCart.length, 'items');
+          }
+        } else {
+          // Load anonymous cart
+          const anonymousCart = localStorage.getItem('cart_anonymous');
+          if (anonymousCart) {
+            savedCart = JSON.parse(anonymousCart);
+            console.log('Loaded anonymous cart:', savedCart.length, 'items');
+          }
         }
-      } else {
-        // Load anonymous cart
-        const anonymousCart = localStorage.getItem('cart_anonymous');
-        if (anonymousCart) {
-          savedCart = JSON.parse(anonymousCart);
-        }
+        
+        setItems(savedCart);
+        console.log('Cart initialized with', savedCart.length, 'items');
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error);
+        setItems([]);
+      } finally {
+        setIsInitialized(true);
       }
-      
-      setItems(savedCart);
-    } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
-      setItems([]);
-    } finally {
-      setIsInitialized(true);
-    }
+    };
+    
+    // Use setTimeout to ensure this runs after auth initialization
+    const timeoutId = setTimeout(loadCart, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [isAuthenticated, user, isInitialized]);
+
+  // Fallback: Ensure cart is loaded if initialization seems stuck
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      if (!isInitialized) {
+        console.log('Cart initialization fallback triggered');
+        try {
+          const anonymousCart = localStorage.getItem('cart_anonymous');
+          if (anonymousCart) {
+            const savedCart = JSON.parse(anonymousCart);
+            setItems(savedCart);
+            console.log('Fallback loaded anonymous cart:', savedCart.length, 'items');
+          }
+        } catch (error) {
+          console.error('Fallback cart loading failed:', error);
+        }
+        setIsInitialized(true);
+      }
+    }, 1000); // 1 second fallback
+    
+    return () => clearTimeout(fallbackTimer);
+  }, [isInitialized]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -86,11 +119,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       if (isAuthenticated && user) {
         // Save to user-specific storage
         localStorage.setItem(`cart_${user.id}`, JSON.stringify(items));
+        console.log('Saved user cart:', items.length, 'items to cart_' + user.id);
         // Clear anonymous cart after successful login
         localStorage.removeItem('cart_anonymous');
       } else {
         // Save to anonymous storage
         localStorage.setItem('cart_anonymous', JSON.stringify(items));
+        console.log('Saved anonymous cart:', items.length, 'items');
       }
     } catch (error) {
       console.error('Error saving cart to localStorage:', error);
@@ -162,6 +197,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [isAuthenticated, isInitialized]);
 
   const addToCart = useCallback((product: Product, quantity: number = 1, variant?: CartItem['variant']) => {
+    console.log('Adding to cart:', product.name, 'quantity:', quantity, 'variant:', variant?.name);
     setItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(
         item => item.product.id === product.id && 
@@ -191,10 +227,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
               toast.error(`Maximum quantity (${availableStock}) already in cart.`);
             });
           }
+          console.log('Updated existing item to max stock:', availableStock);
           return updatedItems;
         }
         
         updatedItems[existingItemIndex].quantity = newQuantity;
+        console.log('Updated existing item quantity to:', newQuantity);
         return updatedItems;
       } else {
         // Add new item
@@ -203,16 +241,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             import('react-hot-toast').then(({ default: toast }) => {
               toast.error(`Only ${availableStock} item(s) available. Added maximum possible quantity.`);
             });
-            return [...prevItems, { product, quantity: availableStock, variant }];
+            const newItems = [...prevItems, { product, quantity: availableStock, variant }];
+            console.log('Added new item with max available quantity:', availableStock);
+            return newItems;
           } else {
             import('react-hot-toast').then(({ default: toast }) => {
               toast.error('This item is out of stock.');
             });
+            console.log('Item out of stock, not added');
             return prevItems;
           }
         }
         
-        return [...prevItems, { product, quantity, variant }];
+        const newItems = [...prevItems, { product, quantity, variant }];
+        console.log('Added new item to cart, total items:', newItems.length);
+        return newItems;
       }
     });
   }, []);

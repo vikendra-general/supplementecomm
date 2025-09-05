@@ -30,6 +30,7 @@ import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Product } from '@/types';
 import { formatPrice } from '@/utils/currency';
+import { apiService } from '@/utils/api';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -49,7 +50,7 @@ export default function DashboardPage() {
     address: string;
     city: string;
     state: string;
-    zipCode: string;
+    pinCode: string;
     country: string;
     isDefault: boolean;
   }[]>([]);
@@ -73,7 +74,7 @@ export default function DashboardPage() {
     landmark: '',
     city: '',
     state: '',
-    zipCode: '',
+    pinCode: '',
     country: 'India',
     isDefault: false
   });
@@ -232,7 +233,7 @@ export default function DashboardPage() {
       landmark: landmark,
       city: address.city,
       state: address.state,
-      zipCode: address.zipCode,
+      pinCode: address.pinCode,
       country: address.country,
       isDefault: address.isDefault
     });
@@ -254,7 +255,7 @@ export default function DashboardPage() {
       landmark: '',
       city: '',
       state: '',
-      zipCode: '',
+      pinCode: '',
       country: 'India',
       isDefault: false
     });
@@ -302,7 +303,7 @@ export default function DashboardPage() {
                  address: fullAddress || `${road} ${neighbourhood}`.trim() || 'Address detected',
                  city: city || 'City detected',
                  state: state || 'State detected',
-                 zipCode: postcode || '',
+                 pinCode: postcode || '',
                  country: country
                });
                
@@ -314,7 +315,7 @@ export default function DashboardPage() {
                  address: `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
                  city: 'Please enter city',
                  state: 'Please enter state',
-                 zipCode: '',
+                 pinCode: '',
                  country: 'India'
                });
                toast.success('Location detected! Please fill in the address details.');
@@ -326,7 +327,7 @@ export default function DashboardPage() {
                address: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`,
                city: 'Please enter city',
                state: 'Please enter state',
-               zipCode: '',
+               pinCode: '',
                country: 'India'
              });
              toast.success('Location detected! Please fill in the address details.');
@@ -340,7 +341,7 @@ export default function DashboardPage() {
              address: `Location detected (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`,
              city: 'Please enter city',
              state: 'Please enter state',
-             zipCode: '',
+             pinCode: '',
              country: 'India'
            });
            toast.success('Location detected! Please fill in the address details.');
@@ -390,10 +391,22 @@ export default function DashboardPage() {
     }));
   };
 
+  // Validate Indian PIN code (6 digits)
+  const validatePincode = (pincode: string) => {
+    const pincodeRegex = /^[0-9]{6}$/;
+    return pincodeRegex.test(pincode);
+  };
+
   const handleSaveAddress = async () => {
     // Validate form - only essential fields are required
-    if (!addressForm.address || !addressForm.city || !addressForm.state || !addressForm.zipCode) {
-      toast.error('Please fill in all required fields (Street Address, City, State, ZIP Code)');
+    if (!addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pinCode) {
+      toast.error('Please fill in all required fields (Street Address, City, State, PIN Code)');
+      return;
+    }
+
+    // Validate PIN code format
+    if (!validatePincode(addressForm.pinCode)) {
+      toast.error('Please enter a valid 6-digit PIN code');
       return;
     }
 
@@ -404,7 +417,7 @@ export default function DashboardPage() {
         address: `${addressForm.flatNumber ? addressForm.flatNumber + ', ' : ''}${addressForm.building ? addressForm.building + ', ' : ''}${addressForm.address}${addressForm.landmark ? ', ' + addressForm.landmark : ''}`,
         city: addressForm.city,
         state: addressForm.state,
-        zipCode: addressForm.zipCode,
+        pinCode: addressForm.pinCode,
         country: addressForm.country,
         isDefault: addressForm.isDefault
       };
@@ -1013,7 +1026,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="space-y-2 text-gray-600">
                             <p>{address.address}</p>
-                            <p>{address.city}, {address.state} {address.zipCode}</p>
+                            <p>{address.city}, {address.state} {address.pinCode}</p>
                             <p>{address.country}</p>
                           </div>
                         </div>
@@ -1287,15 +1300,25 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        ZIP Code *
+                        PIN Code *
                       </label>
                       <input
                         type="text"
-                        value={addressForm.zipCode}
-                        onChange={(e) => handleAddressFormChange('zipCode', e.target.value)}
-                        placeholder="ZIP Code"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        value={addressForm.pinCode}
+                        onChange={(e) => handleAddressFormChange('pinCode', e.target.value)}
+                        placeholder="PIN Code"
+                        maxLength={6}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+                          addressForm.pinCode && !validatePincode(addressForm.pinCode)
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-primary'
+                        }`}
                       />
+                      {addressForm.pinCode && !validatePincode(addressForm.pinCode) && (
+                        <p className="mt-1 text-sm text-red-600">
+                          PIN code must be exactly 6 digits
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -35,7 +35,7 @@ interface Address {
   address: string;
   city: string;
   state: string;
-  zipCode: string;
+  pinCode: string;
   country: string;
   isDefault: boolean;
   label: string;
@@ -339,7 +339,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-gray-900">{address.address}</p>
-                          <p className="text-gray-600">{address.city}, {address.state} {address.zipCode}</p>
+                          <p className="text-gray-600">{address.city}, {address.state} {address.pinCode}</p>
                           <p className="text-gray-600">{address.country}</p>
                         </div>
                       </div>

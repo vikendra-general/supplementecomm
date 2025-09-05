@@ -8,7 +8,7 @@ interface Address {
   address: string;
   city: string;
   state: string;
-  zipCode: string;
+  pinCode: string;
   country: string;
   isDefault: boolean;
 }

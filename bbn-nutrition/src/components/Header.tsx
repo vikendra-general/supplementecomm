@@ -86,7 +86,7 @@ export default function Header() {
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
-                      {user.addresses.find(addr => addr.isDefault)?.city || user.addresses[0]?.city}, {user.addresses.find(addr => addr.isDefault)?.zipCode || user.addresses[0]?.zipCode}
+                      {user.addresses.find(addr => addr.isDefault)?.city || user.addresses[0]?.city}, {user.addresses.find(addr => addr.isDefault)?.pinCode || user.addresses[0]?.pinCode}
                     </span>
                   </div>
                 </div>

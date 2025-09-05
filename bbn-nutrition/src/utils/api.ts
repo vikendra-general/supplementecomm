@@ -321,6 +321,34 @@ class ApiService {
     });
   }
 
+  // Razorpay payment endpoints
+  async createRazorpayOrder(orderData: {
+    amount: number;
+    currency?: string;
+    orderId?: string;
+  }) {
+    return this.request('/payments/razorpay/create-order', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async verifyRazorpayPayment(paymentData: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    orderId: string;
+  }) {
+    return this.request('/payments/razorpay/verify', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  }
+
+  async getRazorpayPayment(paymentId: string) {
+    return this.request(`/payments/razorpay/payment/${paymentId}`);
+  }
+
   // User endpoints
   async updateUserAddress(addressData: {
     street: string;

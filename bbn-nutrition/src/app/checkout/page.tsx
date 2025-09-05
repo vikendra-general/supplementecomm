@@ -3,11 +3,47 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Truck, Shield, Lock } from 'lucide-react';
+import { ArrowLeft, Truck, Shield, Lock } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatINR } from '@/utils/currency';
+import { apiService } from '@/utils/api';
 import { Address } from '@/types';
+import Script from 'next/script';
+
+// Declare Razorpay for TypeScript
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+  }) => void;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+}
+
+interface RazorpayInstance {
+  open(): void;
+  close(): void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
 
 interface OrderData {
   _id: string;
@@ -58,6 +94,8 @@ interface OrderData {
   updatedAt: string;
 }
 
+
+
 export default function CheckoutPage() {
   const { items, getCartTotal, clearCart } = useCart();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -92,11 +130,7 @@ export default function CheckoutPage() {
     shippingPincode: '',
     
     // Payment
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: '',
-    paymentMethod: 'credit'
+    paymentMethod: 'razorpay'
   });
 
   // Redirect to login if not authenticated
@@ -112,9 +146,9 @@ export default function CheckoutPage() {
       // Pre-fill form with user data
       setFormData(prev => ({
         ...prev,
-        fullName: user.name || '',
-        email: user.email || '',
-        phone: user.phone || ''
+        fullName: user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || ''
       }));
 
       // Load user addresses
@@ -198,13 +232,115 @@ export default function CheckoutPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    let value = e.target.value;
+    
+    // Special handling for PIN code fields
+    if (e.target.name === 'pincode' || e.target.name === 'shippingPincode') {
+      // Remove any non-numeric characters and trim whitespace
+      value = value.replace(/[^0-9]/g, '').trim();
+      // Limit to 6 digits
+      value = value.slice(0, 6);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     }));
   };
 
   // Validate Indian phone number (10 digits, optionally with +91 prefix)
+  // Handle Razorpay payment
+  const handleRazorpayPayment = async (order: OrderData) => {
+    try {
+      console.log('Creating Razorpay order for:', order._id, 'Amount:', order.total);
+      
+      // Create Razorpay order
+      const response = await apiService.createRazorpayOrder({
+        amount: order.total,
+        currency: 'INR',
+        orderId: order._id
+      });
+
+      console.log('Razorpay order response:', response);
+
+      if (!response || !response.success) {
+        console.error('Razorpay order creation failed:', response);
+        throw new Error(response?.message || 'Failed to create Razorpay order');
+      }
+
+      if (!response.data) {
+        console.error('Razorpay response missing data:', response);
+        throw new Error('Invalid response from payment service');
+      }
+
+      const razorpayData = response.data as {
+         amount: number;
+         currency: string;
+         orderId: string;
+         key: string;
+       };
+
+       // Validate required fields
+       if (!razorpayData.amount || !razorpayData.orderId) {
+         console.error('Missing required Razorpay data:', razorpayData);
+         throw new Error('Invalid payment data received');
+       }
+
+       console.log('Razorpay data:', razorpayData);
+
+       const options: RazorpayOptions = {
+         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+         amount: razorpayData.amount,
+         currency: razorpayData.currency,
+         name: 'BBN Nutrition',
+         description: `Order #${order._id}`,
+         order_id: razorpayData.orderId,
+        handler: async (paymentResponse) => {
+          try {
+            // Verify payment
+            const verifyResult = await apiService.verifyRazorpayPayment({
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+              orderId: order._id
+            });
+
+            if (verifyResult.success) {
+              await sendOrderNotifications(order);
+              clearCart();
+              router.push(`/order-success?orderId=${order._id}`);
+            } else {
+              alert('Payment verification failed. Please contact support.');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: formData.fullName,
+          email: formData.email || '',
+          contact: formData.phone || ''
+        },
+        theme: {
+          color: '#16a34a'
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error('Razorpay payment error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Payment initialization failed';
+      alert(`Payment Error: ${errorMessage}. Please try again.`);
+      
+      // Optional: Show a more user-friendly error message
+      import('react-hot-toast').then(({ default: toast }) => {
+        toast.error(`Payment failed: ${errorMessage}`);
+      });
+    }
+  };
+
   const validatePhone = (phone: string) => {
     const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
     return phoneRegex.test(phone);
@@ -212,8 +348,26 @@ export default function CheckoutPage() {
 
   // Validate Indian PIN code (6 digits)
   const validatePincode = (pincode: string) => {
-    const pincodeRegex = /^[1-9][0-9]{5}$/;
-    return pincodeRegex.test(pincode);
+    if (!pincode) return false;
+    
+    // Remove any whitespace
+    const cleanPincode = pincode.trim();
+    
+    // Check if it's exactly 6 digits
+    const pincodeRegex = /^[0-9]{6}$/;
+    const isValid = pincodeRegex.test(cleanPincode);
+    
+    // Debug logging
+    if (!isValid && cleanPincode.length === 6) {
+      console.log('PIN code validation failed:', {
+        original: pincode,
+        cleaned: cleanPincode,
+        length: cleanPincode.length,
+        characters: cleanPincode.split('').map(c => ({ char: c, code: c.charCodeAt(0) }))
+      });
+    }
+    
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -258,65 +412,58 @@ export default function CheckoutPage() {
           })),
           shippingAddress: {
             fullName: formData.fullName,
-            street: formData.street,
-            landmark: formData.landmark,
+            address: `${formData.street}, ${formData.landmark}`.replace(', ,', ',').replace(/^,|,$/g, ''),
             city: formData.city,
-            district: formData.district,
             state: formData.state,
-            pincode: formData.pincode,
-            country: formData.country,
-            email: formData.email,
-            phone: formData.phone
+            pinCode: formData.pincode,
+            country: formData.country
           },
           billingAddress: formData.sameAsBilling ? {
             fullName: formData.fullName,
-            street: formData.street,
-            landmark: formData.landmark,
+            address: `${formData.street}, ${formData.landmark}`.replace(', ,', ',').replace(/^,|,$/g, ''),
             city: formData.city,
-            district: formData.district,
             state: formData.state,
-            pincode: formData.pincode,
-            country: formData.country,
-            email: formData.email,
-            phone: formData.phone
+            pinCode: formData.pincode,
+            country: formData.country
           } : {
             fullName: formData.shippingFullName,
-            street: formData.shippingStreet,
-            landmark: formData.shippingLandmark,
+            address: `${formData.shippingStreet}, ${formData.shippingLandmark}`.replace(', ,', ',').replace(/^,|,$/g, ''),
             city: formData.shippingCity,
-            district: formData.shippingDistrict,
             state: formData.shippingState,
-            pincode: formData.shippingPincode,
+            pinCode: formData.shippingPincode,
             country: formData.country
           },
           paymentMethod: formData.paymentMethod
         };
 
-        // Create order in backend
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/orders`, {
+        // Create order in backend first
+        const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/orders`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            ...(token && { 'Authorization': `Bearer ${token}` })
           },
           body: JSON.stringify(orderData)
         });
 
-        const result = await response.json();
+        const orderResult = await orderResponse.json();
 
-        if (!response.ok) {
-          throw new Error(result.message || 'Failed to create order');
+        if (!orderResponse.ok) {
+          throw new Error(orderResult.message || 'Failed to create order');
         }
 
-        if (result.success && result.order) {
-          // Send notifications
-          await sendOrderNotifications(result.order);
+        if (orderResult.success && orderResult.order) {
+          const order = orderResult.order;
           
-          // Clear cart
-           clearCart();
-          
-          // Redirect to success page with order ID
-          router.push(`/order-success?orderId=${result.order._id}`);
+          // Handle payment based on method
+          if (formData.paymentMethod === 'razorpay') {
+            await handleRazorpayPayment(order);
+          } else {
+            // For other payment methods (COD, etc.)
+            await sendOrderNotifications(order);
+            clearCart();
+            router.push(`/order-success?orderId=${order._id}`);
+          }
         } else {
           throw new Error('Order creation failed');
         }
@@ -437,11 +584,11 @@ export default function CheckoutPage() {
                             setSelectedBillingAddress(address);
                             setFormData(prev => ({
                               ...prev,
-                              street: address.address,
-                              city: address.city,
-                              state: address.state,
-                              pincode: address.zipCode,
-                              country: address.country
+                              street: address.address || '',
+                              city: address.city || '',
+                              state: address.state || '',
+                              pincode: address.pinCode || '',
+                              country: address.country || 'India'
                             }));
                           }}
                           className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
@@ -455,7 +602,7 @@ export default function CheckoutPage() {
                               <p className="font-medium text-gray-900">{address.type.charAt(0).toUpperCase() + address.type.slice(1)}</p>
                               <p className="text-sm text-gray-600 mt-1">
                                 {address.address}<br/>
-                                {address.city}, {address.state} {address.zipCode}<br/>
+                                {address.city}, {address.state} {address.pinCode}<br/>
                                 {address.country}
                               </p>
                               {address.isDefault && (
@@ -670,10 +817,21 @@ export default function CheckoutPage() {
                       required
                       placeholder="400001"
                       maxLength={6}
-                      pattern="[1-9][0-9]{5}"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                        formData.pincode && formData.pincode.length === 6 && !validatePincode(formData.pincode)
+                          ? 'border-red-300 focus:ring-red-500'
+                          : formData.pincode && formData.pincode.length > 0 && formData.pincode.length < 6
+                          ? 'border-yellow-300 focus:ring-yellow-500'
+                          : 'border-gray-300 focus:ring-blue-500'
+                      }`}
                     />
-                    <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
+                    {formData.pincode && formData.pincode.length === 6 && !validatePincode(formData.pincode) ? (
+                      <p className="mt-1 text-xs text-red-600">PIN code must be exactly 6 digits</p>
+                    ) : formData.pincode && formData.pincode.length > 0 && formData.pincode.length < 6 ? (
+                      <p className="mt-1 text-xs text-yellow-600">PIN code should be 6 digits</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
+                    )}
                   </div>
                 </div>
                   </div>
@@ -716,10 +874,10 @@ export default function CheckoutPage() {
                             setSelectedShippingAddress(address);
                             setFormData(prev => ({
                               ...prev,
-                              shippingStreet: address.address,
-                              shippingCity: address.city,
-                              shippingState: address.state,
-                              shippingPincode: address.zipCode
+                              shippingStreet: address.address || '',
+                              shippingCity: address.city || '',
+                              shippingState: address.state || '',
+                              shippingPincode: address.pinCode || ''
                             }));
                           }}
                           className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
@@ -733,7 +891,7 @@ export default function CheckoutPage() {
                               <p className="font-medium text-gray-900">{address.type.charAt(0).toUpperCase() + address.type.slice(1)}</p>
                               <p className="text-sm text-gray-600 mt-1">
                                 {address.address}<br/>
-                                {address.city}, {address.state} {address.zipCode}<br/>
+                                {address.city}, {address.state} {address.pinCode}<br/>
                                 {address.country}
                               </p>
                               {address.isDefault && (
@@ -911,10 +1069,21 @@ export default function CheckoutPage() {
                           required={!formData.sameAsBilling}
                           placeholder="400001"
                           maxLength={6}
-                          pattern="[1-9][0-9]{5}"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                            formData.shippingPincode && formData.shippingPincode.length === 6 && !validatePincode(formData.shippingPincode)
+                              ? 'border-red-300 focus:ring-red-500'
+                              : formData.shippingPincode && formData.shippingPincode.length > 0 && formData.shippingPincode.length < 6
+                              ? 'border-yellow-300 focus:ring-yellow-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
                         />
-                        <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
+                        {formData.shippingPincode && formData.shippingPincode.length === 6 && !validatePincode(formData.shippingPincode) ? (
+                           <p className="mt-1 text-xs text-red-600">PIN code must be exactly 6 digits</p>
+                         ) : formData.shippingPincode && formData.shippingPincode.length > 0 && formData.shippingPincode.length < 6 ? (
+                           <p className="mt-1 text-xs text-yellow-600">PIN code should be 6 digits</p>
+                         ) : (
+                           <p className="mt-1 text-xs text-gray-500">Enter 6-digit PIN code</p>
+                         )}
                       </div>
                       </div>
                     </div>
@@ -932,91 +1101,38 @@ export default function CheckoutPage() {
                       Payment Method
                     </label>
                     <div className="space-y-3">
-                      <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
+
+                      <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-green-500">
                         <input
                           type="radio"
                           name="paymentMethod"
-                          value="credit"
-                          checked={formData.paymentMethod === 'credit'}
+                          value="razorpay"
+                          checked={formData.paymentMethod === 'razorpay'}
                           onChange={handleChange}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
                         />
-                        <CreditCard className="w-5 h-5 ml-3 text-gray-400" />
-                        <span className="ml-3 text-sm font-medium text-gray-700">Credit Card</span>
+                        <div className="ml-3 flex items-center">
+                          <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold mr-2">
+                            R
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">Razorpay (UPI, Cards, Net Banking)</span>
+                        </div>
                       </label>
                       <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
                         <input
                           type="radio"
                           name="paymentMethod"
-                          value="paypal"
-                          checked={formData.paymentMethod === 'paypal'}
+                          value="cod"
+                          checked={formData.paymentMethod === 'cod'}
                           onChange={handleChange}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                         />
-                        <span className="ml-3 text-sm font-medium text-gray-700">PayPal</span>
+                        <span className="ml-3 text-sm font-medium text-gray-700">Cash on Delivery</span>
                       </label>
                     </div>
                   </div>
 
-                  {formData.paymentMethod === 'credit' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Card Number *
-                        </label>
-                        <input
-                          type="text"
-                          name="cardNumber"
-                          value={formData.cardNumber}
-                          onChange={handleChange}
-                          required
-                          placeholder="1234 5678 9012 3456"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Name on Card *
-                        </label>
-                        <input
-                          type="text"
-                          name="cardName"
-                          value={formData.cardName}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Expiry Date *
-                        </label>
-                        <input
-                          type="text"
-                          name="expiryDate"
-                          value={formData.expiryDate}
-                          onChange={handleChange}
-                          required
-                          placeholder="MM/YY"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          CVV *
-                        </label>
-                        <input
-                          type="text"
-                          name="cvv"
-                          value={formData.cvv}
-                          onChange={handleChange}
-                          required
-                          placeholder="123"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </div>
             )}
@@ -1101,7 +1217,7 @@ export default function CheckoutPage() {
                   <p className="text-xs text-gray-600">Free Shipping</p>
                 </div>
                 <div>
-                  <CreditCard className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                  <Shield className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                   <p className="text-xs text-gray-600">30-Day Returns</p>
                 </div>
               </div>
@@ -1109,6 +1225,10 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
+      />
     </div>
   );
 }

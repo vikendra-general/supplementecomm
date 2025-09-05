@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   orderNumber: {
     type: String,
@@ -71,6 +71,10 @@ const orderSchema = new mongoose.Schema({
       enum: ['home', 'work', 'other'],
       default: 'home'
     },
+    fullName: {
+      type: String,
+      required: true
+    },
     address: {
       type: String,
       required: true
@@ -83,13 +87,13 @@ const orderSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    zipCode: {
+    pinCode: {
       type: String,
       required: true
     },
     country: {
       type: String,
-      default: 'United States'
+      default: 'India'
     }
   },
   billingAddress: {
@@ -98,6 +102,10 @@ const orderSchema = new mongoose.Schema({
       enum: ['home', 'work', 'other'],
       default: 'home'
     },
+    fullName: {
+      type: String,
+      required: true
+    },
     address: {
       type: String,
       required: true
@@ -110,13 +118,13 @@ const orderSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    zipCode: {
+    pinCode: {
       type: String,
       required: true
     },
     country: {
       type: String,
-      default: 'United States'
+      default: 'India'
     }
   },
   trackingNumber: {
@@ -188,4 +196,4 @@ orderSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Order', orderSchema); 
+module.exports = mongoose.model('Order', orderSchema);

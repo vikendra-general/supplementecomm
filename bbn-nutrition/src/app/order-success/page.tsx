@@ -76,11 +76,11 @@ export default function OrderSuccessPage() {
              price: item.price
            })),
            shippingAddress: {
-             name: order.shippingAddress.fullName,
-             address: `${order.shippingAddress.street}, ${order.shippingAddress.landmark}`,
-             city: order.shippingAddress.city,
-             state: order.shippingAddress.state,
-             pincode: order.shippingAddress.pincode
+             name: order.shippingAddress.fullName || 'N/A',
+             address: order.shippingAddress.address || 'N/A',
+             city: order.shippingAddress.city || 'N/A',
+             state: order.shippingAddress.state || 'N/A',
+             pincode: order.shippingAddress.pinCode || 'N/A'
            },
            estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
            trackingNumber: `TRK${order._id.slice(-8).toUpperCase()}`

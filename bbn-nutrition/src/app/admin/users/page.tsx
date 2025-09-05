@@ -34,7 +34,7 @@ interface User {
     address: string;
     city: string;
     state: string;
-    zipCode: string;
+    pinCode: string;
     country: string;
   }[];
 }
@@ -67,7 +67,7 @@ const mockUsers: User[] = [
         address: '123 Main Street',
         city: 'Mumbai',
         state: 'Maharashtra',
-        zipCode: '400001',
+        pinCode: '400001',
         country: 'India'
       }
     ]
@@ -89,7 +89,7 @@ const mockUsers: User[] = [
         address: '456 Park Avenue',
         city: 'Delhi',
         state: 'Delhi',
-        zipCode: '110001',
+        pinCode: '110001',
         country: 'India'
       }
     ]
@@ -139,7 +139,7 @@ const mockUsers: User[] = [
         address: '789 Tech Park',
         city: 'Bangalore',
         state: 'Karnataka',
-        zipCode: '560001',
+        pinCode: '560001',
         country: 'India'
       }
     ]

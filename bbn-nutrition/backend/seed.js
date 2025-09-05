@@ -301,7 +301,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       billingAddress: {
@@ -309,7 +309,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       trackingNumber: '1Z999AA1234567890',
@@ -345,7 +345,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       billingAddress: {
@@ -353,7 +353,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       trackingNumber: '1Z999AA1234567891',
@@ -388,7 +388,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       billingAddress: {
@@ -396,7 +396,7 @@ const createSampleOrders = async (users) => {
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
-        zipCode: '10001',
+        pinCode: '10001',
         country: 'United States'
       },
       statusHistory: [

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { protect } = require('../middleware/auth');
+const { protect, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -85,7 +85,7 @@ router.get('/:id', protect, async (req, res) => {
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
-router.post('/', protect, [
+router.post('/', optionalAuth, [
   body('items').isArray().withMessage('Items must be an array'),
   body('items.*.product').notEmpty().withMessage('Product ID is required'),
   body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
@@ -156,7 +156,7 @@ router.post('/', protect, [
     const total = subtotal + tax + shipping;
 
     const order = new Order({
-      user: req.user.id,
+      user: req.user ? req.user.id : null,
       items: orderItems,
       subtotal,
       tax,
@@ -356,4 +356,4 @@ router.get('/:id/tracking', protect, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

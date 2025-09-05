@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    zipCode: {
+    pinCode: {
       type: String,
       required: true
     },
