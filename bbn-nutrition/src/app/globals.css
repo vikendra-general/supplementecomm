@@ -97,22 +97,28 @@ body {
   font-weight: 600 !important;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Hidden */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--light-gray);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-green);
+  background: transparent;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-green-dark);
+  background: transparent;
+}
+
+/* Hide scrollbar for Firefox */
+html {
+  scrollbar-width: none;
 }
 
 /* Ensure form inputs are always visible with energetic theme */

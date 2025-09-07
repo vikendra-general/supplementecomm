@@ -40,24 +40,7 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
-      {/* Top Bar */}
-      <div className="bg-primary text-white text-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-8">
-            <div className="flex items-center space-x-4">
-              {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  <MapPin className="w-3 h-3" />
-                  <span>Deliver to {user.addresses.find(addr => addr.isDefault)?.city || user.addresses[0]?.city}</span>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center space-x-4">
-               {/* Removed Customer Service and Track Your Order - moved to Returns & Orders page */}
-             </div>
-          </div>
-        </div>
-      </div>
+      {/* Top Bar - Hidden */}
 
       {/* Main Header */}
       <div className="bg-white">
