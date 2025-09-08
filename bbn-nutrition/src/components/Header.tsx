@@ -39,23 +39,21 @@ export default function Header() {
 
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
-      {/* Top Bar - Hidden */}
-
+    <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
       {/* Main Header */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16 space-x-4">
+          <div className="flex items-center h-14 space-x-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary-light rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">BBN</span>
+              <div className="w-8 h-8 bg-green-600 rounded-md flex items-center justify-center">
+                <span className="text-white font-bold text-sm">BBN</span>
               </div>
               <div className="hidden lg:block">
-                <div className="text-text-primary font-bold text-lg leading-tight">
+                <div className="text-gray-900 font-bold text-base leading-tight">
                   Booster Box
                 </div>
-                <div className="text-accent-orange text-xs font-medium">
+                <div className="text-orange-500 text-xs font-medium">
                   Nutrition
                 </div>
               </div>
@@ -77,7 +75,7 @@ export default function Header() {
             )}
 
             {/* Amazon Style Search Bar */}
-            <div className="flex-1 max-w-4xl">
+            <div className="flex-1 max-w-2xl">
               <AmazonStyleSearch />
             </div>
 
@@ -89,22 +87,22 @@ export default function Header() {
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
+                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
                     <span className="text-xs">Hello, {user?.name?.split(' ')[0]}</span>
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-medium">Account & Lists</span>
+                      <span className="text-sm font-normal">Account & Lists</span>
                       <ChevronDown className="w-3 h-3" />
                     </div>
                   </button>
                 ) : (
                   <Link
                     href="/login"
-                    className="flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
+                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
                     <span className="text-xs">Hello, sign in</span>
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-medium">Account & Lists</span>
+                      <span className="text-sm font-normal">Account & Lists</span>
                       <ChevronDown className="w-3 h-3" />
                     </div>
                   </Link>
@@ -141,29 +139,26 @@ export default function Header() {
               {/* Returns & Orders */}
               <Link
                 href="/orders"
-                className="hidden lg:flex flex-col items-start text-text-primary hover:text-accent-orange transition-colors"
+                className="hidden lg:flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
               >
                 <span className="text-xs">Returns</span>
-                <span className="text-sm font-medium">& Orders</span>
+                <span className="text-sm font-normal">& Orders</span>
               </Link>
 
               {/* Cart */}
               <Link 
                 href="/cart" 
-                className="flex items-center space-x-2 text-text-primary hover:text-accent-orange transition-colors relative"
+                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors relative"
               >
                 <div className="relative">
-                  <ShoppingCart className="w-8 h-8" />
+                  <ShoppingCart className="w-6 h-6" />
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-orange-400 text-gray-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-medium text-[10px]">
                       {cartCount}
                     </span>
                   )}
                 </div>
-                <div className="hidden lg:flex flex-col">
-                  <span className="text-xs text-orange-400">{cartCount}</span>
-                  <span className="text-sm font-medium">Cart</span>
-                </div>
+                <span className="hidden lg:block text-sm font-medium">Cart</span>
               </Link>
             </div>
           </div>
@@ -171,42 +166,42 @@ export default function Header() {
       </div>
 
       {/* Navigation Bar */}
-      <div className="bg-gray-50 border-t border-gray-200">
+      <div className="bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-10 space-x-6">
+          <div className="flex items-center h-9 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex items-center space-x-1 text-text-primary hover:text-accent-orange transition-colors"
+              className="lg:hidden flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors"
             >
-              <Menu className="w-5 h-5" />
-              <span className="text-sm font-medium">All</span>
+              <Menu className="w-4 h-4" />
+              <span className="text-sm font-normal">All</span>
             </button>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-6">
-              <Link href="/shop" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+            <nav className="hidden lg:flex items-center space-x-5">
+              <Link href="/shop" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 Shop All
               </Link>
-              <Link href="/deals" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/deals" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.todaysDeals')}
               </Link>
-              <Link href="/best-sellers" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/best-sellers" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.bestSellers')}
               </Link>
-              <Link href="/protein-supplements" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/protein-supplements" className="text-orange-500 hover:text-orange-600 transition-colors text-sm font-normal">
                 {t('header.proteinSupplements')}
               </Link>
-              <Link href="/pre-workout" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/pre-workout" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.preWorkout')}
               </Link>
-              <Link href="/vitamins" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/vitamins" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.vitamins')}
               </Link>
-              <Link href="/about" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/about" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.aboutBBN')}
               </Link>
-              <Link href="/contact" className="text-text-primary hover:text-accent-orange transition-colors text-sm font-medium">
+              <Link href="/contact" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.customerService')}
               </Link>
               
@@ -214,19 +209,19 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                  className="flex items-center space-x-1 text-text-primary hover:text-accent-orange transition-colors text-sm font-medium"
+                  className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal"
                 >
                   <img 
                     src={language === 'hi' ? '/images/flags/in.svg' : '/images/flags/us.svg'} 
                     alt={language === 'hi' ? 'Hindi' : 'English'}
-                    className="w-5 h-5 rounded-sm"
+                    className="w-4 h-4 rounded-sm"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                  <Globe className="w-4 h-4" />
-                  <span className="uppercase">{language}</span>
-                  <ChevronDown className="w-4 h-4" />
+                  <Globe className="w-3 h-3" />
+                  <span className="uppercase text-xs">{language}</span>
+                  <ChevronDown className="w-3 h-3" />
                 </button>
                 
                 {isLanguageMenuOpen && (

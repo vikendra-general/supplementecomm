@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+      'plus-jakarta-sans': ['var(--font-plus-jakarta-sans)', 'Plus Jakarta Sans', 'sans-serif'],
+      'sans': ['var(--font-plus-jakarta-sans)', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    },
       colors: {
         // iHerb-Inspired Clean & Professional Health Palette
         primary: '#38a169',           // Natural Green (main brand)

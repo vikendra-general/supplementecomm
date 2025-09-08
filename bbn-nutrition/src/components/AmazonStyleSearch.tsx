@@ -215,9 +215,9 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
   };
 
   return (
-    <div ref={searchRef} className={`relative w-full max-w-4xl ${className}`}>
+    <div ref={searchRef} className={`relative w-full max-w-2xl ${className}`}>
       {/* Search Input Container */}
-      <div className="flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+      <div className="flex bg-white rounded-md shadow-md border border-gray-200 overflow-hidden">
 
         
         {/* Search Input */}
@@ -229,14 +229,14 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
             onChange={handleInputChange}
             onFocus={() => setShowSuggestions(true)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search for supplements, vitamins, protein..."
-            className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-l-lg"
+            placeholder="Search supplements, vitamins, protein..."
+            className="w-full h-9 px-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500 rounded-l-md font-plus-jakarta-sans"
           />
           
           {/* Loading indicator */}
           {isLoading && (
-            <div className="absolute right-4 top-4">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+            <div className="absolute right-3 top-2.5">
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>
             </div>
           )}
         </div>
@@ -244,21 +244,21 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
         {/* Search Button */}
         <button 
           onClick={() => handleSearch()}
-          className="h-12 px-6 bg-orange-400 hover:bg-orange-500 transition-colors flex items-center justify-center rounded-r-lg"
+          className="h-9 px-4 bg-orange-400 hover:bg-orange-500 transition-colors flex items-center justify-center rounded-r-md"
         >
-          <Search className="w-5 h-5 text-gray-900" />
+          <Search className="w-4 h-4 text-gray-900" />
         </button>
       </div>
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto font-plus-jakarta-sans">
           {/* Recent Searches */}
           {searchQuery.length === 0 && recentSearches.length > 0 && (
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-                  <Clock className="w-4 h-4 mr-2" />
+            <div className="p-3 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-medium text-gray-700 flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
                   Recent Searches
                 </h3>
                 <button 
@@ -273,7 +273,7 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
                   <button
                     key={index}
                     onClick={() => handleSearch(search)}
-                    className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded"
+                    className="block w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded"
                   >
                     {search}
                   </button>
@@ -284,17 +284,17 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
 
           {/* Trending Searches */}
           {searchQuery.length === 0 && (
-            <div className="p-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+            <div className="p-3 border-b border-gray-100">
+              <h3 className="text-xs font-medium text-gray-700 mb-2 flex items-center">
+                <TrendingUp className="w-3 h-3 mr-1 text-green-500" />
                 Trending Searches
               </h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 {trendingSearches.slice(0, 6).map((trend, index) => (
                   <button
                     key={index}
                     onClick={() => handleSearch(trend)}
-                    className="text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded border border-gray-200"
+                    className="text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded border border-gray-200"
                   >
                     {trend}
                   </button>
@@ -310,13 +310,13 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
                 <button
                   key={suggestion.id}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="w-full flex items-center px-3 py-3 text-left hover:bg-gray-50 rounded transition-colors"
+                  className="w-full flex items-center px-2 py-2 text-left hover:bg-gray-50 rounded transition-colors"
                 >
-                  <div className="mr-3">
+                  <div className="mr-2">
                     {getSuggestionIcon(suggestion.type)}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-xs text-gray-900">
                       {suggestion.text}
                     </div>
                     {suggestion.count && (
@@ -342,12 +342,12 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
 
           {/* No suggestions */}
           {searchQuery.length > 0 && suggestions.length === 0 && !isLoading && (
-            <div className="p-4 text-center text-gray-500">
-              <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">No suggestions found for &ldquo;{searchQuery}&rdquo;</p>
+            <div className="p-3 text-center text-gray-500">
+              <Search className="w-6 h-6 mx-auto mb-2 text-gray-300" />
+              <p className="text-xs">No suggestions found for &ldquo;{searchQuery}&rdquo;</p>
               <button
                 onClick={() => handleSearch()}
-                className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                className="mt-2 text-blue-600 hover:text-blue-800 text-xs"
               >
                 Search anyway
               </button>

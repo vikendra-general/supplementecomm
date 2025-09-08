@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import dynamic from 'next/dynamic';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -10,7 +10,12 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from '@/components/ui/Notification';
 
-const inter = Inter({ subsets: ['latin'] });
+const plusJakartaSans = Plus_Jakarta_Sans({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-plus-jakarta-sans',
+  display: 'swap'
+});
 
 // Lazy load components for better performance
 const Header = dynamic(() => import('@/components/Header'), {
@@ -33,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${plusJakartaSans.variable} font-plus-jakarta-sans antialiased`}>
         <ErrorBoundary>
           <LanguageProvider>
             <NotificationProvider>
