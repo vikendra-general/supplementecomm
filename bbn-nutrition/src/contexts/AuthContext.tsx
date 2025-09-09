@@ -109,11 +109,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             const errorName = error instanceof Error ? error.name : '';
             console.warn('Auth initialization failed (API unavailable):', errorMessage);
-            // Don't remove token on network errors, keep it for when API is available
-            // Only remove on explicit auth failures (401, 403)
-            if (errorName !== 'AbortError' && isMounted) {
-              // Keep the token, just set loading to false
-              // The user can still use the app, auth will retry later
+            
+            // On network errors, remove the token to prevent redirect loops
+            // The user will need to login again when the API is available
+            if (isMounted) {
+              localStorage.removeItem('token');
+              setToken(null);
+              setUser(null);
             }
           } finally {
             if (isMounted) {
@@ -234,6 +236,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       keysToRemove.forEach(key => localStorage.removeItem(key));
     } catch (error) {
       console.error('Error clearing user data from localStorage:', error);
+    }
+    
+    // Clear any redirect parameters from URL to prevent cross-session redirects
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('redirect')) {
+        url.searchParams.delete('redirect');
+        window.history.replaceState({}, '', url.toString());
+      }
     }
   };
 
