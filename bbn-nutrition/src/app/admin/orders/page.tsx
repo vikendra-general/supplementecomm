@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiService } from '@/utils/api';
+import { useSearchParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { 
   ArrowLeft,
@@ -199,6 +200,7 @@ const mockOrders: Order[] = [
 
 export default function AdminOrdersPage() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,6 +213,24 @@ export default function AdminOrdersPage() {
   const [newStatus, setNewStatus] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [currentView, setCurrentView] = useState('orders');
+
+  // Handle URL parameters for filtering
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const view = searchParams.get('view');
+    
+    if (status) {
+      setStatusFilter(status);
+    }
+    
+    if (view === 'refunds') {
+      setCurrentView('refunds');
+      setPaymentFilter('refunded');
+    } else if (view) {
+      setCurrentView(view);
+    }
+  }, [searchParams]);
 
   // Fetch orders from API
   const fetchOrders = async () => {

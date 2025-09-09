@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
 import { cache, CACHE_KEYS } from '@/utils/cache';
 import { 
@@ -42,6 +43,7 @@ interface ProductFormData {
 
 export default function AdminProductsPage() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,21 @@ export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterBrand, setFilterBrand] = useState('');
+  const [currentView, setCurrentView] = useState('products');
+
+  // Handle URL parameters
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const view = searchParams.get('view');
+    
+    if (action === 'add') {
+      setShowProductForm(true);
+    }
+    
+    if (view) {
+      setCurrentView(view);
+    }
+  }, [searchParams]);
   const [productFormData, setProductFormData] = useState<ProductFormData>({
     name: '',
     description: '',

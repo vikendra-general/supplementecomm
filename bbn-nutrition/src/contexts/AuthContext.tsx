@@ -36,6 +36,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -296,6 +297,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      if (!token) return;
+      
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -305,6 +328,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateProfile,
     changePassword,
+    refreshUser,
     isAuthenticated: !!user && !!token,
   };
 

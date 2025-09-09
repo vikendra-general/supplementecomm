@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
 import { 
   ArrowLeft,
@@ -69,11 +70,28 @@ interface AnalyticsData {
 
 export default function AdminAnalyticsPage() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('12months');
   const [refreshing, setRefreshing] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // Handle URL parameters
+  useEffect(() => {
+    const view = searchParams.get('view');
+    const action = searchParams.get('action');
+    
+    if (view) {
+      setCurrentView(view);
+    }
+    
+    if (action === 'export') {
+      setShowExportModal(true);
+    }
+  }, [searchParams]);
 
   const fetchAnalytics = useCallback(async () => {
     try {

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
+import { apiService } from '@/utils/api';
 import { 
   ArrowLeft,
   Search,
@@ -28,8 +30,11 @@ interface User {
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
-  totalOrders: number;
-  totalSpent: number;
+  updatedAt: string;
+  stats?: {
+    totalOrders: number;
+    totalSpent: number;
+  };
   addresses?: {
     address: string;
     city: string;
@@ -48,113 +53,39 @@ interface UserFormData {
   isActive: boolean;
 }
 
-// Mock user data
-const mockUsers: User[] = [
-  {
-    _id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+91 9876543210',
-    role: 'user',
-    emailVerified: true,
-    isActive: true,
-    lastLogin: '2024-01-22T10:30:00Z',
-    createdAt: '2023-12-01T08:00:00Z',
-    totalOrders: 5,
-    totalSpent: 2500.50,
-    addresses: [
-      {
-        address: '123 Main Street',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pinCode: '400001',
-        country: 'India'
-      }
-    ]
-  },
-  {
-    _id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    phone: '+91 9876543211',
-    role: 'user',
-    emailVerified: true,
-    isActive: true,
-    lastLogin: '2024-01-21T14:15:00Z',
-    createdAt: '2023-11-15T12:30:00Z',
-    totalOrders: 3,
-    totalSpent: 1200.75,
-    addresses: [
-      {
-        address: '456 Park Avenue',
-        city: 'Delhi',
-        state: 'Delhi',
-        pinCode: '110001',
-        country: 'India'
-      }
-    ]
-  },
-  {
-    _id: '3',
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    phone: '+91 9876543212',
-    role: 'user',
-    emailVerified: false,
-    isActive: true,
-    lastLogin: '2024-01-20T09:45:00Z',
-    createdAt: '2024-01-10T16:20:00Z',
-    totalOrders: 1,
-    totalSpent: 599.99,
-    addresses: []
-  },
-  {
-    _id: '4',
-    name: 'Admin User',
-    email: 'admin@bbn-nutrition.com',
-    phone: '+91 9876543213',
-    role: 'admin',
-    emailVerified: true,
-    isActive: true,
-    lastLogin: '2024-01-22T11:00:00Z',
-    createdAt: '2023-10-01T10:00:00Z',
-    totalOrders: 0,
-    totalSpent: 0,
-    addresses: []
-  },
-  {
-    _id: '5',
-    name: 'Sarah Wilson',
-    email: 'sarah@example.com',
-    phone: '+91 9876543214',
-    role: 'user',
-    emailVerified: true,
-    isActive: false,
-    lastLogin: '2023-12-15T08:30:00Z',
-    createdAt: '2023-09-20T14:45:00Z',
-    totalOrders: 8,
-    totalSpent: 4200.25,
-    addresses: [
-      {
-        address: '789 Tech Park',
-        city: 'Bangalore',
-        state: 'Karnataka',
-        pinCode: '560001',
-        country: 'India'
-      }
-    ]
-  }
-];
+
 
 export default function AdminUsersPage() {
-  const { user, isAuthenticated } = useAuth();
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [loading, setLoading] = useState(false);
+  const { user, isAuthenticated, refreshUser } = useAuth();
+  const searchParams = useSearchParams();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [currentView, setCurrentView] = useState('users');
+
+  // Handle URL parameters
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const role = searchParams.get('role');
+    const view = searchParams.get('view');
+    
+    if (action === 'add') {
+      setShowUserForm(true);
+    }
+    
+    if (role) {
+      setRoleFilter(role);
+    }
+    
+    if (view) {
+      setCurrentView(view);
+    }
+  }, [searchParams]);
   const [userFormData, setUserFormData] = useState<UserFormData>({
     name: '',
     email: '',
@@ -163,6 +94,70 @@ export default function AdminUsersPage() {
     emailVerified: false,
     isActive: true
   });
+
+  // Fetch users on component mount
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      fetchUsers();
+    }
+  }, [isAuthenticated, user]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('http://localhost:5001/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUsers(data.data || []);
+        } else {
+          setError(data.message || 'Failed to fetch users');
+        }
+      } else {
+        setError('Failed to fetch users');
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setError('Error fetching users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserRole = async (userId: string, newRole: 'user' | 'admin') => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Update the user in the local state
+          setUsers(users.map(u => 
+            u._id === userId ? { ...u, role: newRole } : u
+          ));
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      return false;
+    }
+  };
 
   // Filter users
   const filteredUsers = users.filter(user => {
@@ -215,8 +210,11 @@ export default function AdminUsersPage() {
           _id: Date.now().toString(),
           ...userFormData,
           createdAt: new Date().toISOString(),
-          totalOrders: 0,
-          totalSpent: 0,
+          updatedAt: new Date().toISOString(),
+          stats: {
+            totalOrders: 0,
+            totalSpent: 0
+          },
           addresses: []
         };
         setUsers([...users, newUser]);
@@ -257,6 +255,21 @@ export default function AdminUsersPage() {
     ));
   };
 
+  const handlePromoteToAdmin = async (userId: string) => {
+    if (window.confirm('Are you sure you want to promote this user to admin?')) {
+      const success = await updateUserRole(userId, 'admin');
+      if (success) {
+        alert('User promoted to admin successfully!');
+        // If the promoted user is the current user, refresh their data
+        if (user && user.id === userId) {
+          await refreshUser();
+        }
+      } else {
+        alert('Failed to promote user to admin.');
+      }
+    }
+  };
+
   const resetForm = () => {
     setUserFormData({
       name: '',
@@ -275,6 +288,36 @@ export default function AdminUsersPage() {
       day: 'numeric'
     });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-dark-text-secondary">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+        <div className="text-center bg-dark-card p-8 rounded-lg shadow-lg border border-red-500">
+          <h1 className="text-2xl font-bold text-red-400 mb-4">Error</h1>
+          <p className="text-dark-text-secondary mb-6">{error}</p>
+          <button
+            onClick={fetchUsers}
+            className="bg-primary text-dark font-semibold px-6 py-3 rounded-lg hover:bg-primary-dark transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-dark-bg">
@@ -483,10 +526,10 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text">
-                      {user.totalOrders}
+                      {user.stats?.totalOrders || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-text">
-                      ₹{user.totalSpent.toFixed(2)}
+                      ₹{(user.stats?.totalSpent || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text">
                       {formatDate(user.createdAt)}
@@ -496,9 +539,19 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleEditUser(user)}
                           className="text-primary hover:text-primary-dark transition-colors"
+                          title="Edit User"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
+                        {user.role === 'user' && (
+                          <button
+                            onClick={() => handlePromoteToAdmin(user._id)}
+                            className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                            title="Promote to Admin"
+                          >
+                            <Crown className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleToggleUserStatus(user._id)}
                           className={`transition-colors ${
@@ -506,12 +559,14 @@ export default function AdminUsersPage() {
                               ? 'text-red-400 hover:text-red-300' 
                               : 'text-green-400 hover:text-green-300'
                           }`}
+                          title={user.isActive ? 'Deactivate User' : 'Activate User'}
                         >
                           {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user._id)}
                           className="text-red-400 hover:text-red-300 transition-colors"
+                          title="Delete User"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -528,9 +583,9 @@ export default function AdminUsersPage() {
       {/* User Form Modal */}
       {showUserForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-dark-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-700">
-            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-dark-text">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300">
+            <div className="p-6 border-b border-gray-300 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {editingUser ? 'Edit User' : 'Add New User'}
               </h2>
               <button
@@ -539,9 +594,9 @@ export default function AdminUsersPage() {
                   setEditingUser(null);
                   resetForm();
                 }}
-                className="p-2 rounded-full hover:bg-hover-subtle hover:bg-opacity-20 transition-colors"
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <X className="w-6 h-6 text-dark-text-secondary" />
+                <X className="w-6 h-6 text-gray-500" />
               </button>
             </div>
             
@@ -549,23 +604,23 @@ export default function AdminUsersPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                     <input
                       type="text"
                       value={userFormData.name}
                       onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Enter full name"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Email Address</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                     <input
                       type="email"
                       value={userFormData.email}
                       onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Enter email address"
                     />
                   </div>
@@ -573,22 +628,22 @@ export default function AdminUsersPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                     <input
                       type="tel"
                       value={userFormData.phone}
                       onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Enter phone number"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-dark-text mb-2">Role</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                     <select
                       value={userFormData.role}
                       onChange={(e) => setUserFormData({ ...userFormData, role: e.target.value as 'user' | 'admin' })}
-                      className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -597,7 +652,7 @@ export default function AdminUsersPage() {
                 </div>
                 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-dark-text">Account Settings</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Account Settings</h3>
                   
                   <div className="flex items-center space-x-3">
                     <input
@@ -605,9 +660,9 @@ export default function AdminUsersPage() {
                       id="isActive"
                       checked={userFormData.isActive}
                       onChange={(e) => setUserFormData({ ...userFormData, isActive: e.target.checked })}
-                      className="w-4 h-4 text-primary bg-dark-gray border-gray-600 rounded focus:ring-primary focus:ring-2"
+                      className="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2"
                     />
-                    <label htmlFor="isActive" className="text-sm text-dark-text">Active Account</label>
+                    <label htmlFor="isActive" className="text-sm text-gray-700">Active Account</label>
                   </div>
                   
                   <div className="flex items-center space-x-3">
@@ -616,29 +671,29 @@ export default function AdminUsersPage() {
                       id="emailVerified"
                       checked={userFormData.emailVerified}
                       onChange={(e) => setUserFormData({ ...userFormData, emailVerified: e.target.checked })}
-                      className="w-4 h-4 text-primary bg-dark-gray border-gray-600 rounded focus:ring-primary focus:ring-2"
+                      className="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2"
                     />
-                    <label htmlFor="emailVerified" className="text-sm text-dark-text">Email Verified</label>
+                    <label htmlFor="emailVerified" className="text-sm text-gray-700">Email Verified</label>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="p-6 border-t border-gray-700 flex justify-end space-x-4">
+            <div className="p-6 border-t border-gray-300 flex justify-end space-x-4">
               <button
                 onClick={() => {
                   setShowUserForm(false);
                   setEditingUser(null);
                   resetForm();
                 }}
-                className="px-6 py-2 border border-gray-600 text-dark-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors"
+                className="px-6 py-2 border border-gray-300 text-gray-700 hover:text-green-600 hover:border-green-500 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveUser}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-2 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Saving...' : 'Save User'}</span>
