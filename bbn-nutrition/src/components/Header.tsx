@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, Search, User, Menu, X, Heart, LogOut, MapPin, ChevronDown, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,25 +44,23 @@ export default function Header() {
       {/* Main Header */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-14 space-x-4">
+          <div className="flex items-center h-14">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-8 h-8 bg-green-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BBN</span>
-              </div>
-              <div className="hidden lg:block">
-                <div className="text-gray-900 font-bold text-base leading-tight">
-                  Booster Box
-                </div>
-                <div className="text-orange-500 text-xs font-medium">
-                  Nutrition
-                </div>
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <div className="w-20 h-20 flex items-center justify-center">
+                <Image
+                  src="/images/BBNLogo.png"
+                  alt="BBN Nutrition Logo"
+                  width={80}
+                  height={80}
+                  className="object-contain"
+                />
               </div>
             </Link>
 
             {/* Location Selector - Only show when user is logged in */}
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-              <div className="hidden md:flex items-center text-text-primary text-sm">
+              <div className="hidden md:flex items-center text-text-primary text-sm ml-6">
                 <div className="flex flex-col">
                   <span className="text-text-secondary text-xs">Deliver to</span>
                   <div className="flex items-center space-x-1">
@@ -74,13 +73,13 @@ export default function Header() {
               </div>
             )}
 
-            {/* Amazon Style Search Bar */}
-            <div className="flex-1 max-w-2xl">
+            {/* Amazon Style Search Bar - Centered and Responsive */}
+            <div className="flex-1 mx-6 max-w-2xl">
               <AmazonStyleSearch />
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-6 flex-shrink-0">
 
               {/* Account & Lists */}
               <div className="relative">
@@ -168,11 +167,11 @@ export default function Header() {
       {/* Navigation Bar */}
       <div className="bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-9 space-x-6">
+          <div className="flex items-center justify-center h-9 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors"
+              className="lg:hidden flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors absolute left-4"
             >
               <Menu className="w-4 h-4" />
               <span className="text-sm font-normal">All</span>
@@ -189,7 +188,7 @@ export default function Header() {
               <Link href="/best-sellers" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.bestSellers')}
               </Link>
-              <Link href="/protein-supplements" className="text-orange-500 hover:text-orange-600 transition-colors text-sm font-normal">
+              <Link href="/protein-supplements" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
                 {t('header.proteinSupplements')}
               </Link>
               <Link href="/pre-workout" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">

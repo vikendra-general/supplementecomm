@@ -244,9 +244,9 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
         {/* Search Button */}
         <button 
           onClick={() => handleSearch()}
-          className="h-9 px-4 bg-orange-400 hover:bg-orange-500 transition-colors flex items-center justify-center rounded-r-md"
+          className="h-9 px-4 bg-green-500 hover:bg-green-600 transition-colors flex items-center justify-center rounded-r-md"
         >
-          <Search className="w-4 h-4 text-gray-900" />
+          <Search className="w-4 h-4 text-white" />
         </button>
       </div>
 
