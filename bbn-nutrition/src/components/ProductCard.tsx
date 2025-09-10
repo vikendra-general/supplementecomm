@@ -106,6 +106,9 @@ export default function ProductCard({ product }: ProductCardProps) {
          id: string;
          product: Product;
          addedAt: string;
+         autoAddToCart?: boolean;
+         notifyOnRestock?: boolean;
+         wasOutOfStock?: boolean;
        }
        
        const productExists = wishlistItems.find((item: WishlistItem) => item.product.id === product.id);
@@ -113,18 +116,26 @@ export default function ProductCard({ product }: ProductCardProps) {
        if (productExists) {
          // Remove from wishlist
          wishlistItems = wishlistItems.filter((item: WishlistItem) => item.product.id !== product.id);
-        setIsWishlisted(false);
-        toast.success('Removed from wishlist');
+         setIsWishlisted(false);
+         toast.success('Removed from wishlist');
       } else {
-        // Add to wishlist
+        // Add to wishlist - automatically enable auto-cart for out-of-stock items
         const wishlistItem = {
           id: `wishlist_${product.id}_${Date.now()}`,
           product: product,
-          addedAt: new Date().toISOString()
+          addedAt: new Date().toISOString(),
+          autoAddToCart: isOutOfStock, // Auto-enable for out-of-stock items
+          notifyOnRestock: true,
+          wasOutOfStock: isOutOfStock
         };
         wishlistItems.push(wishlistItem);
         setIsWishlisted(true);
-        toast.success('Added to wishlist');
+        
+        if (isOutOfStock) {
+          toast.success('Added to wishlist! Will auto-add to cart when back in stock.');
+        } else {
+          toast.success('Added to wishlist!');
+        }
       }
       
       localStorage.setItem(wishlistKey, JSON.stringify(wishlistItems));
@@ -154,7 +165,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         
         {/* Wishlist Button */}
         <button
-          onClick={handleWishlist}
+          onClick={(e) => {
+              e.preventDefault();
+              handleWishlist();
+            }}
           className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
         >
           <Heart 
@@ -163,7 +177,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
 
         {/* Sale Badge */}
-        {product.originalPrice && product.originalPrice > product.price && (
+        {product.originalPrice && product.originalPrice > product.price && product.inStock && (
           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
             SALE
           </div>
@@ -171,7 +185,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Out of Stock Badge */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center pointer-events-none">
             <span className="text-white font-semibold">{t('common.outOfStock')}</span>
           </div>
         )}
@@ -238,38 +252,46 @@ export default function ProductCard({ product }: ProductCardProps) {
         
         {/* Add to Cart Button */}
         <div className="mt-auto">
-        <button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock || isAddingToCart || maxCanAdd === 0}
-          className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
-            isProductInCart
-              ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
-              : isOutOfStock || maxCanAdd === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'energetic-cta'
-          }`}
-        >
-          {isAddingToCart ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{t('common.loading')}</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              <span>
-                {isProductInCart 
-                  ? 'Go to Cart' 
-                  : isOutOfStock
-                  ? t('common.outOfStock')
-                  : maxCanAdd === 0
-                  ? 'Max in Cart'
-                  : t('common.addToCart')
-                }
-              </span>
-            </>
-          )}
-        </button>
+        {isOutOfStock ? (
+              <button
+                disabled
+                className="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-bold cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>{t('common.outOfStock')}</span>
+              </button>
+            ) : (
+          <button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || maxCanAdd === 0}
+            className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
+              isProductInCart
+                ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
+                : maxCanAdd === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'energetic-cta'
+            }`}
+          >
+            {isAddingToCart ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>{t('common.loading')}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                <span>
+                  {isProductInCart 
+                    ? 'Go to Cart' 
+                    : maxCanAdd === 0
+                    ? 'Max in Cart'
+                    : t('common.addToCart')
+                  }
+                </span>
+              </>
+            )}
+          </button>
+        )}
 
         {/* Anonymous User Message */}
         {!isAuthenticated && (

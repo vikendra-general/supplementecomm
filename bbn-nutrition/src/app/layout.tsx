@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from '@/components/ui/Notification';
 
@@ -40,11 +41,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${plusJakartaSans.variable} font-plus-jakarta-sans antialiased`}>
         <ErrorBoundary>
-          <LanguageProvider>
-            <NotificationProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <OrderProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <NotificationProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <OrderProvider>
                     <div className="min-h-screen flex flex-col bg-white text-gray-900">
                       <Header />
                       <main className="flex-grow">
@@ -76,11 +78,12 @@ export default function RootLayout({
                         },
                       }}
                     />
-                  </OrderProvider>
-                </CartProvider>
-              </AuthProvider>
-            </NotificationProvider>
-          </LanguageProvider>
+                    </OrderProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </NotificationProvider>
+            </LanguageProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

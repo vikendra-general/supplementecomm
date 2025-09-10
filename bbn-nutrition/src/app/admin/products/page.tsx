@@ -37,7 +37,6 @@ interface ProductFormData {
   tags: string;
   featured: boolean;
   bestSeller: boolean;
-  inStock: boolean;
   todaysDeals: boolean;
 }
 
@@ -80,7 +79,6 @@ export default function AdminProductsPage() {
     tags: '',
     featured: false,
     bestSeller: false,
-    inStock: true,
     todaysDeals: false
   });
 
@@ -160,7 +158,6 @@ export default function AdminProductsPage() {
       formData.append('tags', productFormData.tags);
       formData.append('featured', productFormData.featured.toString());
       formData.append('bestSeller', productFormData.bestSeller.toString());
-      formData.append('inStock', productFormData.inStock.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
       
       // Handle existing images (for editing)
@@ -220,8 +217,7 @@ export default function AdminProductsPage() {
         tags: product.tags?.join(', ') || '',
         featured: product.featured || false,
         bestSeller: product.bestSeller || false,
-        inStock: product.inStock,
-        todaysDeals: (product as Product & { todaysDeals?: boolean }).todaysDeals || false
+        todaysDeals: product.todaysDeals || false
       });
     setShowProductForm(true);
   };
@@ -266,7 +262,6 @@ export default function AdminProductsPage() {
       tags: '',
       featured: false,
       bestSeller: false,
-      inStock: true,
       todaysDeals: false
     });
   };
@@ -672,11 +667,24 @@ export default function AdminProductsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
                     <input
                       type="number"
+                      min="0"
                       value={productFormData.stockQuantity}
-                      onChange={(e) => setProductFormData({ ...productFormData, stockQuantity: e.target.value })}
+                      onChange={(e) => {
+                        const quantity = Math.max(0, parseInt(e.target.value) || 0);
+                        const inStock = quantity > 0;
+                        setProductFormData({ 
+                          ...productFormData, 
+                          stockQuantity: quantity.toString()
+                        });
+                      }}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
                     />
+                    <p className="mt-1 text-sm text-gray-500">
+                      Stock Status: <span className={`font-medium ${productFormData.stockQuantity && parseInt(productFormData.stockQuantity) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {productFormData.stockQuantity && parseInt(productFormData.stockQuantity) > 0 ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </p>
                   </div>
                   
                   {/* Product Images */}
@@ -755,17 +763,7 @@ export default function AdminProductsPage() {
                   <div className="space-y-3">
                     <h4 className="text-md font-medium text-gray-900">Product Flags</h4>
                     
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="inStock"
-                        checked={productFormData.inStock}
-                        onChange={(e) => setProductFormData({ ...productFormData, inStock: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                      <label htmlFor="inStock" className="text-sm text-gray-900">In Stock</label>
-                    </div>
-                    
+
                     <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"

@@ -20,6 +20,7 @@ interface User {
   role: string;
   avatar: string;
   phone?: string;
+  phoneVerified?: boolean;
   addresses?: Address[];
   wishlist?: string[];
   emailVerified: boolean;

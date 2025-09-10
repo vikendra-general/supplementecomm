@@ -321,18 +321,32 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [items]);
 
   const getAvailableStock = useCallback((product: Product, variant?: CartItem['variant']) => {
-    return variant?.stockQuantity ?? product.stockQuantity ?? 0;
+    // If product is marked as out of stock, return 0 regardless of stockQuantity
+    if (!product.inStock) {
+      return 0;
+    }
+    
+    // If variant exists, check variant stock and inStock status
+    if (variant) {
+      if (variant.inStock === false) {
+        return 0;
+      }
+      return variant.stockQuantity ?? 0;
+    }
+    
+    // Return product stock quantity
+    return product.stockQuantity ?? 0;
   }, []);
 
   const getMaxQuantityCanAdd = useCallback((product: Product, variant?: CartItem['variant']) => {
-    const availableStock = variant?.stockQuantity ?? product.stockQuantity ?? 0;
+    const availableStock = getAvailableStock(product, variant);
     const currentQuantityInCart = items.find(
       item => item.product.id === product.id && 
       (!variant || item.variant?.id === variant.id)
     )?.quantity ?? 0;
     
     return Math.max(0, availableStock - currentQuantityInCart);
-  }, [items]);
+  }, [items, getAvailableStock]);
 
   const value: CartContextType = {
     items,

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { 
@@ -60,9 +61,11 @@ interface SettingsData {
 
 export default function AdminSettingsPage() {
   const { user, isAuthenticated } = useAuth();
+  const { colors, updateColors, resetToDefault } = useTheme();
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [previewMode, setPreviewMode] = useState(false);
   
   const [settings, setSettings] = useState<SettingsData>({
     // General Settings
@@ -95,11 +98,20 @@ export default function AdminSettingsPage() {
     sessionTimeout: 24,
     
     // Appearance Settings
-    primaryColor: '#10B981',
-    secondaryColor: '#059669',
+    primaryColor: colors.primaryColor,
+    secondaryColor: colors.secondaryColor,
     logoUrl: '/images/logo.png',
     faviconUrl: '/favicon.ico'
   });
+
+  // Sync settings with theme colors
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      primaryColor: colors.primaryColor,
+      secondaryColor: colors.secondaryColor
+    }));
+  }, [colors]);
 
   // Redirect if not admin
   if (!isAuthenticated || user?.role !== 'admin') {
@@ -123,12 +135,39 @@ export default function AdminSettingsPage() {
     }));
   };
 
+  const handleColorChange = (colorType: string, color: string) => {
+    // Update settings state
+    setSettings(prev => ({
+      ...prev,
+      [colorType]: color
+    }));
+    
+    // Update theme context
+    if (colorType === 'primaryColor') {
+      updateColors({ primaryColor: color });
+    } else if (colorType === 'secondaryColor') {
+      updateColors({ secondaryColor: color });
+    }
+  };
+
+  const handleResetTheme = () => {
+    resetToDefault();
+    setSaveMessage('Theme reset to default colors!');
+    setTimeout(() => setSaveMessage(''), 3000);
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage('');
     
     try {
-      // Simulate API call
+      // Save theme colors
+      updateColors({
+        primaryColor: settings.primaryColor,
+        secondaryColor: settings.secondaryColor
+      });
+      
+      // Simulate API call for other settings
       await new Promise(resolve => setTimeout(resolve, 1000));
       setSaveMessage('Settings saved successfully!');
       setTimeout(() => setSaveMessage(''), 3000);
@@ -401,61 +440,722 @@ export default function AdminSettingsPage() {
 
       case 'appearance':
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Primary Color</label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="color"
-                    value={settings.primaryColor}
-                    onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    className="w-12 h-10 border border-gray-600 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={settings.primaryColor}
-                    onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    className="flex-1 px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+          <div className="space-y-8">
+            {/* Theme Control Header */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Website Theme Control</h3>
+                  <p className="text-sm text-gray-600">Customize your website&apos;s appearance and branding</p>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Secondary Color</label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="color"
-                    value={settings.secondaryColor}
-                    onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    className="w-12 h-10 border border-gray-600 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={settings.secondaryColor}
-                    onChange={(e) => handleInputChange('secondaryColor', e.target.value)}
-                    className="flex-1 px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleResetTheme}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Reset to Default
+                  </button>
+                  <button
+                    onClick={() => setPreviewMode(!previewMode)}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      previewMode 
+                        ? 'bg-green-600 text-white hover:bg-green-700' 
+                        : 'border border-green-600 text-green-600 hover:bg-green-50'
+                    }`}
+                  >
+                    {previewMode ? 'Exit Preview' : 'Live Preview'}
+                  </button>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Logo URL</label>
-                <input
-                  type="url"
-                  value={settings.logoUrl}
-                  onChange={(e) => handleInputChange('logoUrl', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+
+            {/* Brand Colors */}
+             <div className="bg-white rounded-lg border border-gray-200 p-6">
+               <h4 className="text-md font-semibold text-gray-900 mb-6">Brand Colors</h4>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {/* Primary Brand Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Primary Brand Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={settings.primaryColor}
+                         onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: settings.primaryColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={settings.primaryColor}
+                       onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#38a169"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Main buttons, CTAs, and primary actions</p>
+                 </div>
+
+                 {/* Secondary Brand Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Secondary Brand Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={settings.secondaryColor}
+                         onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: settings.secondaryColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={settings.secondaryColor}
+                       onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#2f855a"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Button hover states and secondary actions</p>
+                 </div>
+
+                 {/* Accent Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Accent Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.accentColor}
+                         onChange={(e) => updateColors({ accentColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.accentColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.accentColor}
+                       onChange={(e) => updateColors({ accentColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ed8936"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Badges, highlights, and special elements</p>
+                 </div>
+               </div>
+             </div>
+
+             {/* Background Colors */}
+             <div className="bg-white rounded-lg border border-gray-200 p-6">
+               <h4 className="text-md font-semibold text-gray-900 mb-6">Background Colors</h4>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {/* Page Background */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Page Background</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.backgroundColor}
+                         onChange={(e) => updateColors({ backgroundColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.backgroundColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.backgroundColor}
+                       onChange={(e) => updateColors({ backgroundColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Main website background</p>
+                 </div>
+
+                 {/* Card Background */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Card Background</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.cardBackground}
+                         onChange={(e) => updateColors({ cardBackground: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.cardBackground }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.cardBackground}
+                       onChange={(e) => updateColors({ cardBackground: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Product cards and containers</p>
+                 </div>
+
+                 {/* Header Background */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Header Background</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.headerBackground}
+                         onChange={(e) => updateColors({ headerBackground: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.headerBackground }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.headerBackground}
+                       onChange={(e) => updateColors({ headerBackground: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Top navigation bar</p>
+                 </div>
+
+                 {/* Footer Background */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Footer Background</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.footerBackground}
+                         onChange={(e) => updateColors({ footerBackground: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.footerBackground }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.footerBackground}
+                       onChange={(e) => updateColors({ footerBackground: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#f7fafc"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Bottom footer section</p>
+                 </div>
+               </div>
+             </div>
+
+             {/* Text Colors */}
+             <div className="bg-white rounded-lg border border-gray-200 p-6">
+               <h4 className="text-md font-semibold text-gray-900 mb-6">Text Colors</h4>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {/* Primary Text */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Primary Text</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.textColor}
+                         onChange={(e) => updateColors({ textColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.textColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.textColor}
+                       onChange={(e) => updateColors({ textColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#2d3748"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Main headings and content</p>
+                 </div>
+
+                 {/* Secondary Text */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Secondary Text</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.textSecondary}
+                         onChange={(e) => updateColors({ textSecondary: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.textSecondary }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.textSecondary}
+                       onChange={(e) => updateColors({ textSecondary: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#718096"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Descriptions and subtitles</p>
+                 </div>
+
+                 {/* Muted Text */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Muted Text</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.textMuted}
+                         onChange={(e) => updateColors({ textMuted: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.textMuted }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.textMuted}
+                       onChange={(e) => updateColors({ textMuted: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#a0aec0"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Placeholders and hints</p>
+                 </div>
+
+                 {/* Link Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Link Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.linkColor}
+                         onChange={(e) => updateColors({ linkColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.linkColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.linkColor}
+                       onChange={(e) => updateColors({ linkColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#38a169"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Text links and navigation</p>
+                 </div>
+               </div>
+             </div>
+
+             {/* Form Colors */}
+             <div className="bg-white rounded-lg border border-gray-200 p-6">
+               <h4 className="text-md font-semibold text-gray-900 mb-6">Form & Input Colors</h4>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {/* Input Background */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Input Background</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.inputBackground}
+                         onChange={(e) => updateColors({ inputBackground: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.inputBackground }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.inputBackground}
+                       onChange={(e) => updateColors({ inputBackground: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ffffff"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Form field backgrounds</p>
+                 </div>
+
+                 {/* Input Border */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Input Border</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.inputBorder}
+                         onChange={(e) => updateColors({ inputBorder: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.inputBorder }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.inputBorder}
+                       onChange={(e) => updateColors({ inputBorder: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#e2e8f0"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Form field borders</p>
+                 </div>
+
+                 {/* Input Focus */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Input Focus</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.inputFocus}
+                         onChange={(e) => updateColors({ inputFocus: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.inputFocus }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.inputFocus}
+                       onChange={(e) => updateColors({ inputFocus: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#38a169"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Form field focus highlight</p>
+                 </div>
+
+                 {/* Input Text */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Input Text</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.inputText}
+                         onChange={(e) => updateColors({ inputText: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.inputText }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.inputText}
+                       onChange={(e) => updateColors({ inputText: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#2d3748"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Text inside form fields</p>
+                 </div>
+               </div>
+             </div>
+
+             {/* UI Element Colors */}
+             <div className="bg-white rounded-lg border border-gray-200 p-6">
+               <h4 className="text-md font-semibold text-gray-900 mb-6">UI Element Colors</h4>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {/* Border Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Border Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.borderColor}
+                         onChange={(e) => updateColors({ borderColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.borderColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.borderColor}
+                       onChange={(e) => updateColors({ borderColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#e2e8f0"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">General borders and dividers</p>
+                 </div>
+
+                 {/* Success Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Success Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.successColor}
+                         onChange={(e) => updateColors({ successColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.successColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.successColor}
+                       onChange={(e) => updateColors({ successColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#48bb78"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Success messages and indicators</p>
+                 </div>
+
+                 {/* Warning Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Warning Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.warningColor}
+                         onChange={(e) => updateColors({ warningColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.warningColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.warningColor}
+                       onChange={(e) => updateColors({ warningColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#ed8936"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Warning messages and alerts</p>
+                 </div>
+
+                 {/* Error Color */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">Error Color</label>
+                   <div className="flex items-center space-x-3">
+                     <div className="relative">
+                       <input
+                         type="color"
+                         value={colors.errorColor}
+                         onChange={(e) => updateColors({ errorColor: e.target.value })}
+                         className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm"
+                       />
+                       <div 
+                         className="absolute inset-0 rounded-lg border-2 border-gray-300 pointer-events-none"
+                         style={{ backgroundColor: colors.errorColor }}
+                       ></div>
+                     </div>
+                     <input
+                       type="text"
+                       value={colors.errorColor}
+                       onChange={(e) => updateColors({ errorColor: e.target.value })}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                       placeholder="#f56565"
+                     />
+                   </div>
+                   <p className="text-xs text-gray-500">Error messages and validation</p>
+                 </div>
+               </div>
+             </div>
+
+            {/* Live Preview */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h4 className="text-md font-semibold text-gray-900 mb-4">Live Preview</h4>
+              <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <div className="space-y-4">
+                  {/* Sample Header */}
+                  <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm">
+                    <h5 className="font-semibold text-gray-900">BBN Nutrition</h5>
+                    <div className="flex space-x-2">
+                      <button 
+                        className="px-4 py-2 rounded-lg text-white font-medium transition-colors"
+                        style={{ backgroundColor: settings.primaryColor }}
+                      >
+                        Shop Now
+                      </button>
+                      <button 
+                        className="px-4 py-2 rounded-lg text-white font-medium transition-colors"
+                        style={{ backgroundColor: settings.secondaryColor }}
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Sample Product Card */}
+                  <div className="bg-white rounded-lg shadow-sm p-4">
+                    <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
+                    <h6 className="font-medium text-gray-900 mb-2">Sample Product</h6>
+                    <p className="text-gray-600 text-sm mb-3">Premium quality supplement for fitness enthusiasts</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-gray-900">₹2,999</span>
+                      <button 
+                        className="px-3 py-1 rounded text-white text-sm font-medium"
+                        style={{ backgroundColor: settings.primaryColor }}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark-text mb-2">Favicon URL</label>
-                <input
-                  type="url"
-                  value={settings.faviconUrl}
-                  onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
-                  className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+            </div>
+
+            {/* Branding Assets */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h4 className="text-md font-semibold text-gray-900 mb-6">Branding Assets</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
+                  <input
+                    type="url"
+                    value={settings.logoUrl}
+                    onChange={(e) => handleInputChange('logoUrl', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">URL to your website logo</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Favicon URL</label>
+                  <input
+                    type="url"
+                    value={settings.faviconUrl}
+                    onChange={(e) => handleInputChange('faviconUrl', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="https://example.com/favicon.ico"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">URL to your website favicon</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Theme Presets */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h4 className="text-md font-semibold text-gray-900 mb-4">Quick Theme Presets</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button
+                  onClick={() => {
+                    handleColorChange('primaryColor', '#38a169');
+                    handleColorChange('secondaryColor', '#2f855a');
+                    updateColors({ accentColor: '#ed8936' });
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-green-500 transition-colors"
+                >
+                  <div className="flex space-x-2 mb-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#38a169' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#2f855a' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ed8936' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Default Green</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleColorChange('primaryColor', '#3b82f6');
+                    handleColorChange('secondaryColor', '#1d4ed8');
+                    updateColors({ accentColor: '#f59e0b' });
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors"
+                >
+                  <div className="flex space-x-2 mb-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#1d4ed8' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Ocean Blue</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleColorChange('primaryColor', '#dc2626');
+                    handleColorChange('secondaryColor', '#991b1b');
+                    updateColors({ accentColor: '#ea580c' });
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-red-500 transition-colors"
+                >
+                  <div className="flex space-x-2 mb-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dc2626' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#991b1b' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ea580c' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Energy Red</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleColorChange('primaryColor', '#7c3aed');
+                    handleColorChange('secondaryColor', '#5b21b6');
+                    updateColors({ accentColor: '#c026d3' });
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-purple-500 transition-colors"
+                >
+                  <div className="flex space-x-2 mb-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#7c3aed' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#5b21b6' }}></div>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: '#c026d3' }}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Royal Purple</span>
+                </button>
               </div>
             </div>
           </div>
