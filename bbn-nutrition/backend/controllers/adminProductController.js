@@ -1,3 +1,4 @@
+/* eslint-disable import/no-commonjs */
 const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
 
@@ -135,6 +136,27 @@ exports.createProduct = async (req, res) => {
       productData.tags = productData.tags.split(',').map(tag => tag.trim());
     }
 
+    // Convert string boolean values to actual booleans
+    if (productData.inStock !== undefined) {
+      productData.inStock = productData.inStock === 'true' || productData.inStock === true;
+    }
+    if (productData.featured !== undefined) {
+      productData.featured = productData.featured === 'true' || productData.featured === true;
+    }
+    if (productData.bestSeller !== undefined) {
+      productData.bestSeller = productData.bestSeller === 'true' || productData.bestSeller === true;
+    }
+    if (productData.todaysDeals !== undefined) {
+      productData.todaysDeals = productData.todaysDeals === 'true' || productData.todaysDeals === true;
+    }
+
+    // Automatically set inStock based on stockQuantity
+    if (productData.stockQuantity !== undefined) {
+      const stockQuantity = parseInt(productData.stockQuantity) || 0;
+      productData.stockQuantity = Math.max(0, stockQuantity); // Ensure non-negative
+      productData.inStock = productData.stockQuantity > 0;
+    }
+
     const product = await Product.create(productData);
 
     res.status(201).json({
@@ -203,6 +225,27 @@ exports.updateProduct = async (req, res) => {
     // Handle tags if provided
     if (productData.tags && typeof productData.tags === 'string') {
       productData.tags = productData.tags.split(',').map(tag => tag.trim());
+    }
+
+    // Convert string boolean values to actual booleans
+    if (productData.inStock !== undefined) {
+      productData.inStock = productData.inStock === 'true' || productData.inStock === true;
+    }
+    if (productData.featured !== undefined) {
+      productData.featured = productData.featured === 'true' || productData.featured === true;
+    }
+    if (productData.bestSeller !== undefined) {
+      productData.bestSeller = productData.bestSeller === 'true' || productData.bestSeller === true;
+    }
+    if (productData.todaysDeals !== undefined) {
+      productData.todaysDeals = productData.todaysDeals === 'true' || productData.todaysDeals === true;
+    }
+
+    // Automatically set inStock based on stockQuantity
+    if (productData.stockQuantity !== undefined) {
+      const stockQuantity = parseInt(productData.stockQuantity) || 0;
+      productData.stockQuantity = Math.max(0, stockQuantity); // Ensure non-negative
+      productData.inStock = productData.stockQuantity > 0;
     }
 
     const product = await Product.findByIdAndUpdate(

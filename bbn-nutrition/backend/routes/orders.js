@@ -1,3 +1,4 @@
+/* eslint-disable import/no-commonjs */
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Order = require('../models/Order');
@@ -151,8 +152,8 @@ router.post('/', optionalAuth, [
       await product.save();
     }
 
-    const tax = subtotal * 0.08; // 8% tax
-    const shipping = subtotal > 50 ? 0 : 5.99; // Free shipping over $50
+    const tax = Math.round(subtotal * 0.18); // 18% GST rounded to nearest integer
+    const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
     const total = subtotal + tax + shipping;
 
     const order = new Order({
