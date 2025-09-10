@@ -72,10 +72,10 @@ export default function AdminProductsPage() {
     price: '',
     originalPrice: '',
     category: '',
-    brand: '',
+    brand: 'BBN',
     images: [],
     imageFiles: [],
-    stockQuantity: '',
+    stockQuantity: '0',
     tags: '',
     featured: false,
     bestSeller: false,
@@ -143,6 +143,55 @@ export default function AdminProductsPage() {
     try {
       setLoading(true);
       setError(null);
+      
+      // Frontend validation
+      if (!productFormData.name.trim()) {
+        setError('Product name is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (productFormData.name.trim().length < 2) {
+        setError('Product name must be at least 2 characters');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.description.trim()) {
+        setError('Product description is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (productFormData.description.trim().length < 10) {
+        setError('Product description must be at least 10 characters');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.price || parseFloat(productFormData.price) <= 0) {
+        setError('Valid price is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.category.trim()) {
+        setError('Product category is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.brand.trim()) {
+        setError('Product brand is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.stockQuantity || parseInt(productFormData.stockQuantity) < 0) {
+        setError('Valid stock quantity is required');
+        setLoading(false);
+        return;
+      }
       
       // Create FormData for API request
       const formData = new FormData();
@@ -255,10 +304,10 @@ export default function AdminProductsPage() {
       price: '',
       originalPrice: '',
       category: '',
-      brand: '',
+      brand: 'BBN',
       images: [],
       imageFiles: [],
-      stockQuantity: '',
+      stockQuantity: '0',
       tags: '',
       featured: false,
       bestSeller: false,
@@ -564,40 +613,60 @@ export default function AdminProductsPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-6">
+              {/* Error Display */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+                    <p className="text-red-700 font-medium">Error</p>
+                  </div>
+                  <p className="text-red-600 mt-1">{error}</p>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Product Name <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={productFormData.name}
                       onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter product name"
+                      placeholder="Enter product name (min 2 characters)"
+                      required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description <span className="text-red-500">*</span>
+                    </label>
                     <textarea
                       value={productFormData.description}
                       onChange={(e) => setProductFormData({ ...productFormData, description: e.target.value })}
                       rows={4}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter product description"
+                      placeholder="Enter product description (min 10 characters)"
+                      required
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Category <span className="text-red-500">*</span>
+                      </label>
                       <select
                         value={productFormData.category}
                         onChange={(e) => setProductFormData({ ...productFormData, category: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
                       >
                         <option key="select-category" value="">Select Category</option>
                         <option key="protein" value="Protein">Protein</option>
@@ -612,13 +681,16 @@ export default function AdminProductsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Brand <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={productFormData.brand}
                         onChange={(e) => setProductFormData({ ...productFormData, brand: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter brand name"
+                        required
                       />
                     </div>
                   </div>
@@ -641,13 +713,18 @@ export default function AdminProductsPage() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Price (₹) <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="number"
+                        min="0"
+                        step="0.01"
                         value={productFormData.price}
                         onChange={(e) => setProductFormData({ ...productFormData, price: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00"
+                        required
                       />
                     </div>
                     
@@ -664,7 +741,9 @@ export default function AdminProductsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Stock Quantity <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="number"
                       min="0"
@@ -679,6 +758,7 @@ export default function AdminProductsPage() {
                       }}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
+                      required
                     />
                     <p className="mt-1 text-sm text-gray-500">
                       Stock Status: <span className={`font-medium ${productFormData.stockQuantity && parseInt(productFormData.stockQuantity) > 0 ? 'text-green-600' : 'text-red-600'}`}>
