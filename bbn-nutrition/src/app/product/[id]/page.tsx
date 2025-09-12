@@ -320,7 +320,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 {formatPrice(product.originalPrice)}
               </span>
             )}
-            {product.originalPrice && product.inStock && (
+            {product.originalPrice && (
               <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-semibold">
                 {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
               </span>

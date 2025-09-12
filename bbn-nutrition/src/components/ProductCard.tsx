@@ -177,7 +177,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
 
         {/* Sale Badge */}
-        {product.originalPrice && product.originalPrice > product.price && product.inStock && (
+        {product.originalPrice && product.originalPrice > product.price && (
           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
             SALE
           </div>

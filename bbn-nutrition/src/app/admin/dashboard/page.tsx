@@ -148,6 +148,22 @@ export default function AdminDashboard() {
     </div>
   );
 
+  // Show loading state while user is being loaded
+  if (!user) {
+    return (
+      <AdminProtectedRoute>
+        <AdminLayout>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading dashboard...</p>
+            </div>
+          </div>
+        </AdminLayout>
+      </AdminProtectedRoute>
+    );
+  }
+
   return (
     <AdminProtectedRoute>
       <AdminLayout>
@@ -362,7 +378,7 @@ export default function AdminDashboard() {
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900">#{order.orderNumber}</p>
-                            <p className="text-xs text-gray-500">{order.user.name}</p>
+                            <p className="text-xs text-gray-500">{order.user?.name || 'Unknown User'}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -419,7 +435,7 @@ export default function AdminDashboard() {
                             <span className="text-sm font-bold text-gray-600">#{index + 1}</span>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{item.product.name}</p>
+                            <p className="text-sm font-medium text-gray-900">{item.product?.name || 'Unknown Product'}</p>
                             <p className="text-xs text-gray-500">{item.totalSold} sold</p>
                           </div>
                         </div>

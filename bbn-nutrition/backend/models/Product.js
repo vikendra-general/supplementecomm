@@ -207,23 +207,6 @@ productSchema.pre('save', function(next) {
   next();
 });
 
-// Automatically update inStock status based on stockQuantity
-productSchema.pre('save', function(next) {
-  // Update main product inStock status
-  if (this.isModified('stockQuantity')) {
-    this.inStock = this.stockQuantity > 0;
-  }
-  
-  // Update variant inStock status
-  if (this.isModified('variants')) {
-    this.variants.forEach(variant => {
-      variant.inStock = variant.stockQuantity > 0;
-    });
-  }
-  
-  next();
-});
-
 // Calculate discount percentage
 productSchema.virtual('discountPercentage').get(function() {
   if (this.originalPrice && this.originalPrice > this.price) {
