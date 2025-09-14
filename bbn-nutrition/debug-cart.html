@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart Debug Test</title>
+</head>
+<body>
+    <h1>Cart API Debug Test</h1>
+    <button onclick="testAddToCart()">Test Add to Cart</button>
+    <button onclick="testGetCart()">Test Get Cart</button>
+    <button onclick="testClearCart()">Test Clear Cart</button>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api';
+        
+        // Get auth token from localStorage (if user is logged in)
+        function getAuthToken() {
+            return localStorage.getItem('token') || localStorage.getItem('authToken');
+        }
+        
+        async function testAddToCart() {
+            const token = getAuthToken();
+            if (!token) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">No auth token found. Please log in first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/cart/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        productId: '507f1f77bcf86cd799439011', // Test product ID
+                        quantity: 1
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `
+                    <h3>Add to Cart Result:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <h3>Add to Cart Error:</h3>
+                    <pre style="color: red;">${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function testGetCart() {
+            const token = getAuthToken();
+            if (!token) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">No auth token found. Please log in first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/cart`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `
+                    <h3>Get Cart Result:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <h3>Get Cart Error:</h3>
+                    <pre style="color: red;">${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function testClearCart() {
+            const token = getAuthToken();
+            if (!token) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">No auth token found. Please log in first.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/cart/clear`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `
+                    <h3>Clear Cart Result:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <h3>Clear Cart Error:</h3>
+                    <pre style="color: red;">${error.message}</pre>
+                `;
+            }
+        }
+        
+        // Show current auth status
+        window.onload = function() {
+            const token = getAuthToken();
+            if (token) {
+                document.getElementById('results').innerHTML = `
+                    <p style="color: green;">Auth token found: ${token.substring(0, 20)}...</p>
+                    <p>You can test the cart API endpoints.</p>
+                `;
+            } else {
+                document.getElementById('results').innerHTML = `
+                    <p style="color: red;">No auth token found.</p>
+                    <p>Please log in at <a href="http://localhost:3001/login" target="_blank">http://localhost:3001/login</a> first.</p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

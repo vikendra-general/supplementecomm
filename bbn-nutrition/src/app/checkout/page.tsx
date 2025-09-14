@@ -189,6 +189,15 @@ export default function CheckoutPage() {
                 console.log('Auto-selecting default address:', defaultAddress);
                 setSelectedShippingAddress(defaultAddress);
                 setSelectedBillingAddress(defaultAddress);
+                // Pre-fill form with default address data
+                setFormData(prev => ({
+                  ...prev,
+                  street: defaultAddress.address || '',
+                  city: defaultAddress.city || '',
+                  state: defaultAddress.state || '',
+                  pincode: (defaultAddress.pinCode || '').replace(/[^0-9]/g, '').trim().slice(0, 6),
+                  country: defaultAddress.country || 'India'
+                }));
               }
             } else {
               console.log('No addresses found or API response structure unexpected');
@@ -632,7 +641,7 @@ export default function CheckoutPage() {
                               street: address.address || '',
                               city: address.city || '',
                               state: address.state || '',
-                              pincode: address.pinCode || '',
+                              pincode: (address.pinCode || '').replace(/[^0-9]/g, '').trim().slice(0, 6),
                               country: address.country || 'India'
                             }));
                           }}

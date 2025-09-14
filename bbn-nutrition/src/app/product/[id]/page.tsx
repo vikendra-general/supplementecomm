@@ -122,7 +122,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     notFound();
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     
     const variant = product.variants?.find(v => v.id === selectedVariant);
@@ -144,11 +144,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
     
     setIsAddingToCart(true);
-    // Simulate API call
-    setTimeout(() => {
-      addToCart(product, quantity, variant);
+    try {
+      await addToCart(product, quantity, variant);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart. Please try again.');
+    } finally {
       setIsAddingToCart(false);
-    }, 1000);
+    }
   };
   
   const handleQuantityChange = (newQuantity: number) => {

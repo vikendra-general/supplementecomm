@@ -56,13 +56,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   }, [isAuthenticated, product.id]);
 
-  const handleAddToCart = () => {
-    // If product is already in cart, redirect to cart page
-    if (isProductInCart) {
-      router.push('/cart');
-      return;
-    }
-    
+  const handleAddToCart = async () => {
+    // Check if we can add more items
     if (maxCanAdd === 0) {
       if (isOutOfStock) {
         toast.error('This item is out of stock.');
@@ -74,10 +69,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     
     setIsAddingToCart(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      addToCart(product, 1);
-      setIsAddingToCart(false);
+    try {
+      await addToCart(product, 1);
       
       // Show success toast
       if (isAuthenticated) {
@@ -85,7 +78,12 @@ export default function ProductCard({ product }: ProductCardProps) {
       } else {
         toast.success(`${product.name} added to cart! Sign in to save your cart.`);
       }
-    }, 500);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleWishlist = () => {
@@ -150,7 +148,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
       {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-square overflow-hidden flex-shrink-0">
         <Link href={`/product/${product.id}`}>
           <div className="relative w-full h-full">
             <Image
@@ -205,13 +203,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         
         {/* Product Name */}
         <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2 h-12 flex items-start">
             {translatedProduct.name}
           </h3>
         </Link>
 
         {/* Rating */}
-        <div className="flex items-center mb-2">
+        <div className="flex items-center mb-2 h-6">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <Star
@@ -230,7 +228,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Price */}
-        <div className="flex items-center mb-3">
+        <div className="flex items-center mb-3 h-7">
           <span className="text-lg font-bold text-gray-900">
             {formatPrice(product.price)}
           </span>
@@ -242,13 +240,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Stock Information */}
-        {isLowStock && !isOutOfStock && (
-          <div className="mb-2">
+        <div className="mb-2 h-6 flex items-center">
+          {isLowStock && !isOutOfStock && (
             <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded">
               Only {availableStock} left!
             </span>
-          </div>
-        )}
+          )}
+        </div>
         
         {/* Add to Cart Button */}
         <div className="mt-auto">
@@ -265,9 +263,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             onClick={handleAddToCart}
             disabled={isAddingToCart || maxCanAdd === 0}
             className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
-              isProductInCart
-                ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
-                : maxCanAdd === 0
+              maxCanAdd === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'energetic-cta'
             }`}
@@ -281,9 +277,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <>
                 <ShoppingCart className="w-4 h-4" />
                 <span>
-                  {isProductInCart 
-                    ? 'Go to Cart' 
-                    : maxCanAdd === 0
+                  {maxCanAdd === 0
                     ? 'Max in Cart'
                     : t('common.addToCart')
                   }
@@ -294,11 +288,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Anonymous User Message */}
-        {!isAuthenticated && (
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            Sign in to save your cart
-          </p>
-        )}
+        <div className="mt-2 h-4 flex items-center justify-center">
+          {!isAuthenticated && (
+            <p className="text-xs text-gray-500 text-center">
+              Sign in to save your cart
+            </p>
+          )}
+        </div>
         </div>
       </div>
     </div>

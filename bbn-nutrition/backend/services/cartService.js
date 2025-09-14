@@ -1,22 +1,15 @@
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Cart = require('../models/Cart');
 
 class CartService {
   constructor() {
-    // In a real application, you might use Redis or a dedicated cart collection
-    // For now, we'll use a simple in-memory store with user ID as key
-    this.carts = new Map();
+    // Using MongoDB for persistent cart storage
+    console.log('🛒 CartService initialized with MongoDB persistence');
   }
 
   async addItemToCart(userId, productId, quantity = 1, variant = null) {
     try {
-      // Get or create cart for user
-      let cart = this.carts.get(userId) || {
-        userId,
-        items: [],
-        updatedAt: new Date()
-      };
-
       // Get product details
       const product = await Product.findById(productId);
       if (!product) {
@@ -29,9 +22,18 @@ class CartService {
         throw new Error(`Only ${availableStock} items available in stock`);
       }
 
+      // Get or create cart for user
+      let cart = await Cart.findOne({ userId });
+      if (!cart) {
+        cart = new Cart({
+          userId,
+          items: []
+        });
+      }
+
       // Check if item already exists in cart
       const existingItemIndex = cart.items.findIndex(item => 
-        item.productId === productId && 
+        item.productId.toString() === productId && 
         (!variant || item.variant?.id === variant?.id)
       );
 
@@ -57,8 +59,8 @@ class CartService {
         cart.items.push(cartItem);
       }
 
-      cart.updatedAt = new Date();
-      this.carts.set(userId, cart);
+      // Save cart to database
+      await cart.save();
 
       console.log(`✅ Added ${quantity}x ${product.name} to cart for user ${userId}`);
       return cart;
@@ -70,20 +72,24 @@ class CartService {
 
   async removeItemFromCart(userId, productId, variant = null) {
     try {
-      const cart = this.carts.get(userId);
+      const cart = await Cart.findOne({ userId });
       if (!cart) {
         throw new Error('Cart not found');
       }
 
-      cart.items = cart.items.filter(item => 
-        !(item.productId === productId && 
-          (!variant || item.variant?.id === variant?.id))
+      const itemIndex = cart.items.findIndex(item => 
+        item.productId.toString() === productId && 
+        (!variant || item.variant?.id === variant?.id)
       );
 
-      cart.updatedAt = new Date();
-      this.carts.set(userId, cart);
+      if (itemIndex === -1) {
+        throw new Error('Item not found in cart');
+      }
 
-      console.log(`✅ Removed item from cart for user ${userId}`);
+      const removedItem = cart.items.splice(itemIndex, 1)[0];
+      await cart.save();
+
+      console.log(`✅ Removed ${removedItem.productName} from cart for user ${userId}`);
       return cart;
     } catch (error) {
       console.error('❌ Error removing item from cart:', error);
@@ -134,17 +140,54 @@ class CartService {
     }
   }
 
-  getCart(userId) {
-    return this.carts.get(userId) || {
-      userId,
-      items: [],
-      updatedAt: new Date()
-    };
+  async getCart(userId) {
+    try {
+      let cart = await Cart.findOne({ userId }).populate('items.productId');
+      if (!cart) {
+        cart = {
+          userId,
+          items: [],
+          updatedAt: new Date()
+        };
+      } else {
+        // Convert ObjectIds to strings for frontend compatibility
+        cart = cart.toObject();
+        cart.items = cart.items.map(item => {
+          // Handle both ObjectId and populated Product object cases
+          let productId;
+          if (typeof item.productId === 'object' && item.productId._id) {
+            // If productId is a populated Product object, extract the _id
+            productId = item.productId._id.toString();
+          } else {
+            // If productId is an ObjectId, convert to string
+            productId = item.productId.toString();
+          }
+          
+          return {
+            ...item,
+            productId: productId
+          };
+        });
+      }
+      return cart;
+    } catch (error) {
+      console.error('❌ Error getting cart:', error);
+      return {
+        userId,
+        items: [],
+        updatedAt: new Date()
+      };
+    }
   }
 
-  clearCart(userId) {
-    this.carts.delete(userId);
-    console.log(`✅ Cleared cart for user ${userId}`);
+  async clearCart(userId) {
+    try {
+      await Cart.findOneAndDelete({ userId });
+      console.log(`✅ Cleared cart for user ${userId}`);
+    } catch (error) {
+      console.error('❌ Error clearing cart:', error);
+      throw error;
+    }
   }
 
   getAvailableStock(product, variant = null) {

@@ -38,6 +38,16 @@ interface ProductFormData {
   featured: boolean;
   bestSeller: boolean;
   todaysDeals: boolean;
+  nutritionFacts: {
+    servingSize: string;
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    sugar: string;
+    sodium: string;
+    ingredients: string;
+  };
 }
 
 export default function AdminProductsPage() {
@@ -79,7 +89,17 @@ export default function AdminProductsPage() {
     tags: '',
     featured: false,
     bestSeller: false,
-    todaysDeals: false
+    todaysDeals: false,
+    nutritionFacts: {
+      servingSize: '',
+      calories: '',
+      protein: '',
+      carbs: '',
+      fat: '',
+      sugar: '',
+      sodium: '',
+      ingredients: ''
+    }
   });
 
   // Fetch products from API
@@ -209,6 +229,25 @@ export default function AdminProductsPage() {
       formData.append('bestSeller', productFormData.bestSeller.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
       
+      // Handle nutrition facts
+      const nutritionFacts = {
+        servingSize: productFormData.nutritionFacts.servingSize,
+        calories: parseFloat(productFormData.nutritionFacts.calories) || 0,
+        protein: parseFloat(productFormData.nutritionFacts.protein) || 0,
+        carbs: parseFloat(productFormData.nutritionFacts.carbs) || 0,
+        fat: parseFloat(productFormData.nutritionFacts.fat) || 0,
+        sugar: parseFloat(productFormData.nutritionFacts.sugar) || 0,
+        sodium: parseFloat(productFormData.nutritionFacts.sodium) || 0,
+        ingredients: productFormData.nutritionFacts.ingredients.split(',').map(ingredient => ingredient.trim()).filter(ingredient => ingredient.length > 0)
+      };
+      
+      // Only add nutrition facts if at least one field is filled
+      if (nutritionFacts.servingSize || nutritionFacts.calories > 0 || nutritionFacts.protein > 0 || 
+          nutritionFacts.carbs > 0 || nutritionFacts.fat > 0 || nutritionFacts.sugar > 0 || 
+          nutritionFacts.sodium > 0 || nutritionFacts.ingredients.length > 0) {
+        formData.append('nutritionFacts', JSON.stringify(nutritionFacts));
+      }
+      
       // Handle existing images (for editing)
       productFormData.images.forEach((image) => {
         formData.append('existingImages', image);
@@ -266,7 +305,17 @@ export default function AdminProductsPage() {
         tags: product.tags?.join(', ') || '',
         featured: product.featured || false,
         bestSeller: product.bestSeller || false,
-        todaysDeals: product.todaysDeals || false
+        todaysDeals: product.todaysDeals || false,
+        nutritionFacts: {
+          servingSize: product.nutritionFacts?.servingSize || '',
+          calories: product.nutritionFacts?.calories?.toString() || '',
+          protein: product.nutritionFacts?.protein?.toString() || '',
+          carbs: product.nutritionFacts?.carbs?.toString() || '',
+          fat: product.nutritionFacts?.fat?.toString() || '',
+          sugar: product.nutritionFacts?.sugar?.toString() || '',
+          sodium: product.nutritionFacts?.sodium?.toString() || '',
+          ingredients: product.nutritionFacts?.ingredients?.join(', ') || ''
+        }
       });
     setShowProductForm(true);
   };
@@ -311,7 +360,17 @@ export default function AdminProductsPage() {
       tags: '',
       featured: false,
       bestSeller: false,
-      todaysDeals: false
+      todaysDeals: false,
+      nutritionFacts: {
+        servingSize: '',
+        calories: '',
+        protein: '',
+        carbs: '',
+        fat: '',
+        sugar: '',
+        sodium: '',
+        ingredients: ''
+      }
     });
   };
 
@@ -876,6 +935,140 @@ export default function AdminProductsPage() {
                       />
                       <label htmlFor="todaysDeals" className="text-sm text-gray-900">Today&apos;s Deals</label>
                     </div>
+                  </div>
+                </div>
+                
+                {/* Nutrition Facts */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Nutrition Facts</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Serving Size</label>
+                      <input
+                        type="text"
+                        value={productFormData.nutritionFacts.servingSize}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, servingSize: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g. 1 scoop (30g)"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Calories</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={productFormData.nutritionFacts.calories}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, calories: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Protein (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.protein}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, protein: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Carbs (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.carbs}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, carbs: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Fat (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.fat}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, fat: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sugar (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.sugar}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, sugar: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sodium (mg)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.sodium}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, sodium: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Ingredients</label>
+                    <textarea
+                      value={productFormData.nutritionFacts.ingredients}
+                      onChange={(e) => setProductFormData({ 
+                        ...productFormData, 
+                        nutritionFacts: { ...productFormData.nutritionFacts, ingredients: e.target.value }
+                      })}
+                      rows={3}
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="List ingredients separated by commas (e.g. Whey Protein Isolate, Natural Flavors, Stevia Extract)"
+                    />
                   </div>
                 </div>
               </div>

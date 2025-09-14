@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/components/ui/Notification';
 
@@ -20,6 +20,7 @@ export default function LoginPage() {
     email: '',
     password: '',
     name: '',
+    phone: '',
     confirmPassword: ''
   });
   
@@ -117,7 +118,7 @@ export default function LoginPage() {
           throw new Error(passwordError);
         }
         
-        await register(formData.name, formData.email, formData.password);
+        await register(formData.name, formData.email, formData.password, formData.phone);
         showNotification('success', 'Registration successful! You are now logged in.');
         // Redirect will be handled by useEffect
       }
@@ -137,6 +138,7 @@ export default function LoginPage() {
       email: '',
       password: '',
       name: '',
+      phone: '',
       confirmPassword: ''
     });
   };
@@ -202,6 +204,31 @@ export default function LoginPage() {
                   required={!isLogin}
                   minLength={2}
                 />
+              </div>
+            </div>
+          )}
+
+          {!isLogin && (
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900"
+                  placeholder="Enter your phone number"
+                  pattern="[6789][0-9]{9}"
+                  maxLength={10}
+                />
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                Enter 10-digit mobile number (optional)
               </div>
             </div>
           )}

@@ -17,6 +17,10 @@ router.post('/register', [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please provide a valid email'),
+  body('phone')
+    .optional()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
@@ -34,7 +38,7 @@ router.post('/register', [
       });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -49,6 +53,7 @@ router.post('/register', [
     const user = await User.create({
       name,
       email,
+      phone: phone || '',
       password
     });
 

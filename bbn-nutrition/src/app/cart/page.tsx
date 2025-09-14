@@ -15,6 +15,11 @@ export default function CartPage() {
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  
+  // Debug logging
+  console.log('🛒 Cart page - items:', items);
+  console.log('🛒 Cart page - items length:', items.length);
+  console.log('🛒 Cart page - cart total:', getCartTotal());
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     setIsUpdating(productId);

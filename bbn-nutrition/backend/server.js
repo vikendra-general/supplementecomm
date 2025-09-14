@@ -21,6 +21,7 @@ const productRoutes = require('./routes/products');
 const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
 const categoryRoutes = require('./routes/categories');
+const cartRoutes = require('./routes/cart');
 const stockMonitor = require('./services/stockMonitor');
 
 const app = express();
@@ -44,7 +45,9 @@ app.use(helmet({
   },
 }));
 
-// Rate limiting
+// Rate limiting - DISABLED FOR DEVELOPMENT
+// TODO: Re-enable for production with higher limits
+/*
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -53,14 +56,17 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/', limiter);
+*/
 
-// Auth rate limiting
+// Auth rate limiting - DISABLED FOR DEVELOPMENT
+/*
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'development' ? 50 : 5, // More lenient in development
   message: 'Too many authentication attempts, please try again later.',
 });
 app.use('/api/auth/', authLimiter);
+*/
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
@@ -109,6 +115,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Base API route
 app.get('/api', (req, res) => {

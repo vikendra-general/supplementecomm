@@ -33,7 +33,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
@@ -112,12 +112,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const errorName = error instanceof Error ? error.name : '';
             console.warn('Auth initialization failed (API unavailable):', errorMessage);
             
-            // On network errors, remove the token to prevent redirect loops
-            // The user will need to login again when the API is available
+            // FIXED: Don't remove token on network errors - keep user logged in
+            // Only remove token on explicit 401/403 responses, not network failures
             if (isMounted) {
-              localStorage.removeItem('token');
-              setToken(null);
-              setUser(null);
+              console.log('🔄 Network error during auth check - keeping user logged in');
+              // Keep the token and assume user is still authenticated
+              // The cart will work with the stored token
             }
           } finally {
             if (isMounted) {
@@ -179,14 +179,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, phone?: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phone }),
       });
 
       if (!response.ok) {

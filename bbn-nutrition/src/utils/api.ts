@@ -478,6 +478,80 @@ class ApiService {
     });
   }
 
+  // Cart operations
+  async getCart() {
+    return this.request('/cart');
+  }
+
+  async addToCart(cartData: {
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async updateCartItem(cartData: {
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/update', {
+      method: 'PUT',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async removeFromCart(cartData: {
+    productId: string;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/remove', {
+      method: 'DELETE',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async clearCart() {
+    return this.request('/cart/clear', {
+      method: 'DELETE',
+    });
+  }
+
+  async syncCart(items: Array<{
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }>) {
+    return this.request('/cart/sync', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    });
+  }
+
+  async getCartStats() {
+    return this.request('/cart/stats');
+  }
+
   // Health check
   async healthCheck() {
     return this.request('/health');
