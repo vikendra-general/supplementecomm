@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  phoneVerified: {
+    type: Boolean,
+    default: false
+  },
   addresses: [{
     _id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -91,8 +95,32 @@ const userSchema = new mongoose.Schema({
     }
   }],
   wishlist: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    },
+    autoAddToCart: {
+      type: Boolean,
+      default: false
+    },
+    notifyOnRestock: {
+      type: Boolean,
+      default: true
+    },
+    variant: {
+      id: String,
+      name: String,
+      price: Number
+    },
+    wasOutOfStock: {
+      type: Boolean,
+      default: false
+    }
   }],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
@@ -274,18 +302,59 @@ userSchema.methods.removeAddress = function(addressId) {
 };
 
 // Add to wishlist
-userSchema.methods.addToWishlist = function(productId) {
-  if (!this.wishlist.includes(productId)) {
-    this.wishlist.push(productId);
+userSchema.methods.addToWishlist = function(productId, options = {}) {
+  const existingItem = this.wishlist.find(item => 
+    item.product.toString() === productId && 
+    (!options.variant || item.variant?.id === options.variant?.id)
+  );
+  
+  if (!existingItem) {
+    const wishlistItem = {
+      product: productId,
+      autoAddToCart: options.autoAddToCart || false,
+      notifyOnRestock: options.notifyOnRestock !== false,
+      variant: options.variant || null,
+      wasOutOfStock: options.wasOutOfStock || false
+    };
+    this.wishlist.push(wishlistItem);
+  } else {
+    // Update existing item
+    if (options.autoAddToCart !== undefined) existingItem.autoAddToCart = options.autoAddToCart;
+    if (options.notifyOnRestock !== undefined) existingItem.notifyOnRestock = options.notifyOnRestock;
+    if (options.wasOutOfStock !== undefined) existingItem.wasOutOfStock = options.wasOutOfStock;
+  }
+  return this.save();
+};
+
+// Remove from wishlist
+userSchema.methods.removeFromWishlist = function(productId, variantId = null) {
+  this.wishlist = this.wishlist.filter(item => {
+    const productMatch = item.product.toString() !== productId;
+    const variantMatch = !variantId || item.variant?.id !== variantId;
+    return productMatch || !variantMatch;
+  });
+  return this.save();
+};
+
+userSchema.methods.updateWishlistItem = function(productId, updates, variantId = null) {
+  const item = this.wishlist.find(item => 
+    item.product.toString() === productId && 
+    (!variantId || item.variant?.id === variantId)
+  );
+  
+  if (item) {
+    Object.assign(item, updates);
     return this.save();
   }
   return Promise.resolve(this);
 };
 
-// Remove from wishlist
-userSchema.methods.removeFromWishlist = function(productId) {
-  this.wishlist = this.wishlist.filter(id => id.toString() !== productId);
-  return this.save();
+userSchema.methods.getWishlistItemsForAutoCart = function() {
+  return this.wishlist.filter(item => item.autoAddToCart && item.wasOutOfStock);
+};
+
+userSchema.methods.getWishlistItemsForNotification = function() {
+  return this.wishlist.filter(item => item.notifyOnRestock && item.wasOutOfStock);
 };
 
 // Update user stats

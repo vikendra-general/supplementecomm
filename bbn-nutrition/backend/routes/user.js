@@ -238,7 +238,7 @@ router.delete('/addresses/:id', protect, async (req, res) => {
 // @access  Private
 router.get('/wishlist', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('wishlist');
+    const user = await User.findById(req.user.id).populate('wishlist.product');
     
     res.json({
       success: true,
@@ -256,23 +256,40 @@ router.get('/wishlist', protect, async (req, res) => {
 // @desc    Add product to wishlist
 // @route   POST /api/user/wishlist/:productId
 // @access  Private
-router.post('/wishlist/:productId', protect, async (req, res) => {
+router.post('/wishlist/:productId', protect, [
+  body('autoAddToCart').optional().isBoolean().withMessage('autoAddToCart must be a boolean'),
+  body('notifyOnRestock').optional().isBoolean().withMessage('notifyOnRestock must be a boolean'),
+  body('variant').optional().isObject().withMessage('variant must be an object')
+], async (req, res) => {
   try {
     const { productId } = req.params;
+    const { autoAddToCart, notifyOnRestock, variant } = req.body;
 
     const user = await User.findById(req.user.id);
-
-    // Check if product is already in wishlist
-    if (user.wishlist.includes(productId)) {
-      return res.status(400).json({
+    
+    // Check if product exists
+    const Product = require('../models/Product');
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
         success: false,
-        message: 'Product already in wishlist'
+        message: 'Product not found'
       });
     }
 
-    // Add to wishlist
-    user.wishlist.push(productId);
-    await user.save();
+    // Check if product is out of stock
+    const isOutOfStock = !product.inStock || product.stockQuantity === 0;
+    
+    // Add to wishlist with options
+    await user.addToWishlist(productId, {
+      autoAddToCart: autoAddToCart || false,
+      notifyOnRestock: notifyOnRestock !== false,
+      variant: variant || null,
+      wasOutOfStock: isOutOfStock
+    });
+
+    // Populate the wishlist for response
+    await user.populate('wishlist.product');
 
     res.json({
       success: true,
@@ -294,12 +311,15 @@ router.post('/wishlist/:productId', protect, async (req, res) => {
 router.delete('/wishlist/:productId', protect, async (req, res) => {
   try {
     const { productId } = req.params;
+    const { variantId } = req.query;
 
     const user = await User.findById(req.user.id);
 
     // Remove from wishlist
-    user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
-    await user.save();
+    await user.removeFromWishlist(productId, variantId);
+    
+    // Populate the wishlist for response
+    await user.populate('wishlist.product');
 
     res.json({
       success: true,
@@ -311,6 +331,97 @@ router.delete('/wishlist/:productId', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error during wishlist removal'
+    });
+  }
+});
+
+// @desc    Update wishlist item preferences
+// @route   PUT /api/user/wishlist/:productId
+// @access  Private
+router.put('/wishlist/:productId', protect, [
+  body('autoAddToCart').optional().isBoolean().withMessage('autoAddToCart must be a boolean'),
+  body('notifyOnRestock').optional().isBoolean().withMessage('notifyOnRestock must be a boolean')
+], async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { variantId } = req.query;
+    const { autoAddToCart, notifyOnRestock } = req.body;
+
+    const user = await User.findById(req.user.id);
+    
+    const updates = {};
+    if (autoAddToCart !== undefined) updates.autoAddToCart = autoAddToCart;
+    if (notifyOnRestock !== undefined) updates.notifyOnRestock = notifyOnRestock;
+
+    await user.updateWishlistItem(productId, updates, variantId);
+    
+    // Populate the wishlist for response
+    await user.populate('wishlist.product');
+
+    res.json({
+      success: true,
+      message: 'Wishlist item updated',
+      wishlist: user.wishlist
+    });
+  } catch (error) {
+    console.error('Update wishlist item error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during wishlist update'
+    });
+  }
+});
+
+// @desc    Verify user phone number
+// @route   PUT /api/user/verify-phone
+// @access  Private
+router.put('/verify-phone', protect, [
+  body('phone')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .matches(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/)
+    .withMessage('Please provide a valid Indian phone number')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { phone } = req.body;
+
+    // Update user's phone and mark as verified
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { 
+        phone: phone,
+        phoneVerified: true 
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Phone number verified successfully',
+      user: user
+    });
+  } catch (error) {
+    console.error('Verify phone error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
     });
   }
 });

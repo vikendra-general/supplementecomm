@@ -17,47 +17,93 @@
 }
 
 :root {
-  /* iHerb-Inspired Clean & Professional Health Color Palette */
-  --background: #ffffff;
-  --foreground: #2d3748;
+  /* Brand Colors */
   --primary-green: #38a169;
   --primary-green-dark: #2f855a;
   --primary-green-light: #68d391;
   --accent-orange: #ed8936;
+  
+  /* Background Colors */
+  --background: #ffffff;
+  --card-background: #ffffff;
+  --header-background: #ffffff;
+  --footer-background: #f7fafc;
+  
+  /* Text Colors */
+  --foreground: #2d3748;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --text-muted: #a0aec0;
+  --link-color: #38a169;
+  
+  /* Form Colors */
+  --input-background: #ffffff;
+  --input-border: #e2e8f0;
+  --input-focus: #38a169;
+  --input-text: #2d3748;
+  
+  /* UI Element Colors */
+  --border-light: #e2e8f0;
+  --divider-color: #e2e8f0;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --success-green: #48bb78;
+  --warning-orange: #ed8936;
+  --error-red: #f56565;
+  --info-blue: #4299e1;
+  
+  /* Legacy Colors for Compatibility */
   --accent-blue: #3182ce;
   --secondary-gray: #f7fafc;
   --dark-gray: #4a5568;
   --light-gray: #e2e8f0;
   --white: #ffffff;
   --neutral-light: #f7fafc;
-  --success-green: #48bb78;
-  --warning-orange: #ed8936;
-  --info-blue: #4299e1;
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
-  --border-light: #e2e8f0;
-  --shadow-light: rgba(0, 0, 0, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Brand Colors */
   --color-primary: var(--primary-green);
   --color-primary-dark: var(--primary-green-dark);
   --color-primary-light: var(--primary-green-light);
   --color-accent-orange: var(--accent-orange);
+  
+  /* Background Colors */
+  --color-background: var(--background);
+  --color-card-background: var(--card-background);
+  --color-header-background: var(--header-background);
+  --color-footer-background: var(--footer-background);
+  
+  /* Text Colors */
+  --color-foreground: var(--foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-link: var(--link-color);
+  
+  /* Form Colors */
+  --color-input-background: var(--input-background);
+  --color-input-border: var(--input-border);
+  --color-input-focus: var(--input-focus);
+  --color-input-text: var(--input-text);
+  
+  /* UI Element Colors */
+  --color-border-light: var(--border-light);
+  --color-divider: var(--divider-color);
+  --color-shadow: var(--shadow-light);
+  --color-success-green: var(--success-green);
+  --color-warning-orange: var(--warning-orange);
+  --color-error-red: var(--error-red);
+  --color-info-blue: var(--info-blue);
+  
+  /* Legacy Colors for Compatibility */
   --color-accent-blue: var(--accent-blue);
   --color-secondary-gray: var(--secondary-gray);
   --color-dark-gray: var(--dark-gray);
   --color-light-gray: var(--light-gray);
   --color-white: var(--white);
   --color-neutral-light: var(--neutral-light);
-  --color-success-green: var(--success-green);
-  --color-warning-orange: var(--warning-orange);
-  --color-info-blue: var(--info-blue);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-border-light: var(--border-light);
+  
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -121,37 +167,219 @@ html {
   scrollbar-width: none;
 }
 
-/* Ensure form inputs are always visible with energetic theme */
+/* Form inputs using theme variables */
 input, textarea, select {
-  color: var(--secondary-black) !important;
-  background-color: var(--neutral-light) !important;
-  border: 2px solid #333333 !important;
+  color: var(--input-text) !important;
+  background-color: var(--input-background) !important;
+  border: 1px solid var(--input-border) !important;
   border-radius: 8px !important;
+  transition: all 0.2s ease !important;
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--primary-green) !important;
-  box-shadow: 0 0 0 3px rgba(0, 255, 115, 0.2) !important;
-  background-color: var(--white) !important;
+  border-color: var(--input-focus) !important;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1) !important;
+  background-color: var(--input-background) !important;
+  outline: none !important;
 }
 
-/* Override any dark mode styles and ensure visibility with energetic theme */
+/* Form labels */
+label {
+  color: var(--text-primary) !important;
+}
+
+/* Placeholder text */
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Links */
+a {
+  color: var(--link-color) !important;
+}
+
+a:hover {
+  color: var(--primary-green) !important;
+}
+
+/* Override any dark mode styles and ensure theme consistency */
 @media (prefers-color-scheme: dark) {
   input, textarea, select {
-    color: var(--secondary-black) !important;
-    background-color: var(--neutral-light) !important;
+    color: var(--input-text) !important;
+    background-color: var(--input-background) !important;
+    border-color: var(--input-border) !important;
   }
   
   body {
     background: var(--background) !important;
     color: var(--foreground) !important;
   }
+  
+  /* Ensure cards use theme background */
+  .bg-white {
+    background-color: var(--card-background) !important;
+  }
+  
+  /* Ensure text uses theme colors */
+  .text-gray-900 {
+    color: var(--text-primary) !important;
+  }
+  
+  .text-gray-600 {
+    color: var(--text-secondary) !important;
+  }
+  
+  .text-gray-500 {
+    color: var(--text-muted) !important;
+  }
+}
+
+/* Theme-responsive utility classes */
+.bg-primary {
+  background-color: var(--primary-green) !important;
+}
+
+.bg-secondary {
+  background-color: var(--primary-green-dark) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent-orange) !important;
+}
+
+.bg-card {
+  background-color: var(--card-background) !important;
+}
+
+.bg-header {
+  background-color: var(--header-background) !important;
+}
+
+.bg-footer {
+  background-color: var(--footer-background) !important;
+}
+
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-link {
+  color: var(--link-color) !important;
+}
+
+.border-theme {
+  border-color: var(--border-light) !important;
+}
+
+.border-input {
+  border-color: var(--input-border) !important;
+}
+
+.border-focus {
+  border-color: var(--input-focus) !important;
+}
+
+.bg-success {
+  background-color: var(--success-green) !important;
+}
+
+.bg-warning {
+  background-color: var(--warning-orange) !important;
+}
+
+.bg-error {
+  background-color: var(--error-red) !important;
+}
+
+.bg-info {
+  background-color: var(--info-blue) !important;
+}
+
+.text-success {
+  color: var(--success-green) !important;
+}
+
+.text-warning {
+  color: var(--warning-orange) !important;
+}
+
+.text-error {
+  color: var(--error-red) !important;
+}
+
+.text-info {
+  color: var(--info-blue) !important;
+}
+
+/* Override common Tailwind classes to use theme variables */
+.bg-white {
+  background-color: var(--card-background) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--footer-background) !important;
+}
+
+.text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-700 {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+.border-gray-300 {
+  border-color: var(--input-border) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--border-light) !important;
+}
+
+/* Button styles using theme variables */
+.btn-primary {
+  background-color: var(--primary-green) !important;
+  color: white !important;
+  border-color: var(--primary-green) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-green-dark) !important;
+  border-color: var(--primary-green-dark) !important;
+}
+
+.btn-secondary {
+  background-color: var(--primary-green-dark) !important;
+  color: white !important;
+  border-color: var(--primary-green-dark) !important;
+}
+
+.btn-accent {
+  background-color: var(--accent-orange) !important;
+  color: white !important;
+  border-color: var(--accent-orange) !important;
 }
 
 /* Force light theme for admin pages */
 [data-theme="admin"], .admin-layout {
-  background-color: #f9fafb !important;
-  color: #111827 !important;
+  background-color: var(--background) !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme="admin"] *, .admin-layout * {

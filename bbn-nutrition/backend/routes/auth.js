@@ -184,6 +184,7 @@ router.get('/me', protect, async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         phone: user.phone,
+        phoneVerified: user.phoneVerified,
         addresses: user.addresses,
         wishlist: user.wishlist,
         emailVerified: user.emailVerified,
@@ -239,7 +240,11 @@ router.put('/profile', protect, [
     const { name, phone, avatar } = req.body;
 
     if (name) fieldsToUpdate.name = name;
-    if (phone) fieldsToUpdate.phone = phone;
+    if (phone) {
+      fieldsToUpdate.phone = phone;
+      // Auto-verify phone number when user updates it in profile
+      fieldsToUpdate.phoneVerified = true;
+    }
     if (avatar) fieldsToUpdate.avatar = avatar;
 
     const user = await User.findByIdAndUpdate(
@@ -249,7 +254,7 @@ router.put('/profile', protect, [
         new: true,
         runValidators: true
       }
-    );
+    )
 
     res.json({
       success: true,

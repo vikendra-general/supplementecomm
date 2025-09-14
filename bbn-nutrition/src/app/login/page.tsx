@@ -41,9 +41,20 @@ export default function LoginPage() {
     if (isAuthenticated && !isLoading && user) {
       const redirectTo = searchParams.get('redirect');
       
-      // Check if user is admin and redirect accordingly
+      // Validate redirect URL based on user role
       if (redirectTo) {
-        router.push(redirectTo);
+        // Check if redirect URL is admin-only and user is not admin
+        const isAdminRoute = redirectTo.startsWith('/admin');
+        if (isAdminRoute && user.role !== 'admin') {
+          // Redirect non-admin users to home instead of admin routes
+          router.push('/');
+        } else if (!isAdminRoute || user.role === 'admin') {
+          // Allow redirect if it's not an admin route, or user is admin
+          router.push(redirectTo);
+        } else {
+          // Fallback to role-based default
+          router.push(user.role === 'admin' ? '/admin/dashboard' : '/');
+        }
       } else if (user.role === 'admin') {
         // Redirect admin users to admin dashboard
         router.push('/admin/dashboard');

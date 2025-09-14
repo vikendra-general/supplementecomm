@@ -106,6 +106,8 @@ export default function CheckoutPage() {
   const [selectedBillingAddress, setSelectedBillingAddress] = useState<Address | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressFormType, setAddressFormType] = useState('shipping'); // 'shipping' or 'billing'
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderCreated, setOrderCreated] = useState(false);
   const [formData, setFormData] = useState({
     // Billing Info
     fullName: '',
@@ -161,10 +163,17 @@ export default function CheckoutPage() {
           }
 
           console.log('Loading addresses for user:', user?.email);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/user/addresses`, {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+          console.log('API URL:', apiUrl);
+          
+          const response = await fetch(`${apiUrl}/user/addresses`, {
+            method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            // Add timeout and error handling
+            signal: AbortSignal.timeout(10000) // 10 second timeout
           });
 
           if (response.ok) {
@@ -186,9 +195,16 @@ export default function CheckoutPage() {
             }
           } else {
             console.error('Failed to load addresses:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
           }
         } catch (error) {
           console.error('Error loading addresses:', error);
+          // Check if it's a network error
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            console.error('Network error: Unable to connect to backend server. Please ensure the backend is running on port 5001.');
+          }
+          // Don't throw the error to prevent app crash
         }
       };
 
@@ -288,8 +304,17 @@ export default function CheckoutPage() {
 
        console.log('Razorpay data:', razorpayData);
 
+       // Validate Razorpay key
+       const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+       if (!razorpayKey) {
+         console.error('Razorpay key not found in environment variables');
+         throw new Error('Payment configuration error: Authentication key was missing during initialization. Please contact support.');
+       }
+
+       console.log('Using Razorpay key:', razorpayKey.substring(0, 10) + '...');
+
        const options: RazorpayOptions = {
-         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+         key: razorpayKey,
          amount: razorpayData.amount,
          currency: razorpayData.currency,
          name: 'BBN Nutrition',
@@ -373,12 +398,23 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent double submission
+    if (isSubmitting || orderCreated) {
+      return;
+    }
+    
     // Validate form data based on current step
     if (step === 1) {
       // Validate phone and pincode for billing address
-      if (!validatePhone(formData.phone)) {
-        alert('Please enter a valid Indian phone number');
-        return;
+      // Skip phone validation if user has a verified phone number
+      const isPhoneFromProfile = user?.phone && formData.phone === user.phone;
+      const isPhoneVerified = user?.phoneVerified;
+      
+      if (!isPhoneFromProfile || !isPhoneVerified) {
+        if (!validatePhone(formData.phone)) {
+          alert('Please enter a valid Indian phone number');
+          return;
+        }
       }
       
       if (!validatePincode(formData.pincode)) {
@@ -398,9 +434,11 @@ export default function CheckoutPage() {
     } else {
       // Process order
       try {
+        setIsSubmitting(true);
         const token = localStorage.getItem('token');
         if (!token) {
           alert('Please log in to place an order');
+          setIsSubmitting(false);
           return;
         }
 
@@ -454,6 +492,7 @@ export default function CheckoutPage() {
 
         if (orderResult.success && orderResult.order) {
           const order = orderResult.order;
+          setOrderCreated(true);
           
           // Handle payment based on method
           if (formData.paymentMethod === 'razorpay') {
@@ -471,6 +510,12 @@ export default function CheckoutPage() {
           console.error('Error processing order:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           alert(`Error placing order: ${errorMessage}`);
+          setIsSubmitting(false);
+          setOrderCreated(false);
+        } finally {
+          if (!orderCreated) {
+            setIsSubmitting(false);
+          }
         }
     }
   };
@@ -1150,9 +1195,14 @@ export default function CheckoutPage() {
               )}
               <button
                 type="submit"
-                className="ml-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isSubmitting || orderCreated}
+                className={`ml-auto px-8 py-3 font-semibold rounded-lg transition-colors ${
+                  isSubmitting || orderCreated
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
-                {step === 3 ? 'Place Order' : 'Continue'}
+                {isSubmitting && step === 3 ? 'Processing Order...' : step === 3 ? 'Place Order' : 'Continue'}
               </button>
             </div>
           </form>

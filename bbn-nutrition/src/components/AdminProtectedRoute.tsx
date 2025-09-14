@@ -35,20 +35,12 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
     );
   }
 
-  // Show access denied if not authenticated
+  // Show loading while redirecting if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-lg shadow-lg border border-red-200">
-          <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
-          <p className="text-gray-600 mb-8">Please log in to access the admin panel.</p>
-          <Link 
-            href={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Login
-          </Link>
+        <div className="text-center">
+          <LoadingSpinner size="lg" text="Redirecting to login..." />
         </div>
       </div>
     );
@@ -69,12 +61,6 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
               className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
             >
               Go Home
-            </Link>
-            <Link 
-              href={`/login?redirect=${encodeURIComponent(window.location.pathname)}`}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Login as Admin
             </Link>
           </div>
         </div>

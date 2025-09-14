@@ -298,6 +298,7 @@ const createSampleOrders = async (users) => {
       paymentMethod: 'credit_card',
       shippingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
@@ -306,6 +307,7 @@ const createSampleOrders = async (users) => {
       },
       billingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
@@ -342,6 +344,7 @@ const createSampleOrders = async (users) => {
       paymentMethod: 'paypal',
       shippingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
@@ -350,6 +353,7 @@ const createSampleOrders = async (users) => {
       },
       billingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
@@ -385,6 +389,7 @@ const createSampleOrders = async (users) => {
       paymentMethod: 'credit_card',
       shippingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',
@@ -393,6 +398,7 @@ const createSampleOrders = async (users) => {
       },
       billingAddress: {
         type: 'home',
+        fullName: 'Test User',
         address: '123 Main Street',
         city: 'New York',
         state: 'NY',

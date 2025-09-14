@@ -16,6 +16,7 @@ export interface Product {
   tags: string[];
   featured?: boolean;
   bestSeller?: boolean;
+  todaysDeals?: boolean;
 }
 
 export interface ProductVariant {
@@ -50,6 +51,7 @@ export interface User {
   role: string;
   avatar: string;
   phone?: string;
+  phoneVerified?: boolean;
   addresses?: Address[];
   wishlist?: string[];
   emailVerified: boolean;

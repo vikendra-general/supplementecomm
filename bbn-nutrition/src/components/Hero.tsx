@@ -28,11 +28,11 @@ export default function Hero() {
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       </div>
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           {/* Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
               <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full">
                 <Zap className="w-4 h-4 text-green-600" />
                 <span className="text-sm font-medium text-green-800">Premium Quality Supplements</span>
@@ -71,28 +71,28 @@ export default function Hero() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex items-center space-x-6 pt-4">
+            <div className="flex items-center space-x-4 pt-3">
               <div className="flex items-center space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                 ))}
                 <span className="ml-2 text-sm text-gray-200 font-medium">4.9/5 from 2,500+ reviews</span>
               </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-300">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-300">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">10K+</div>
-                <div className="text-sm text-gray-200 font-medium">Happy Customers</div>
+                <div className="text-2xl font-bold text-white">10K+</div>
+                <div className="text-xs text-gray-200 font-medium">Happy Customers</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">50+</div>
-                <div className="text-sm text-gray-200 font-medium">Premium Products</div>
+                <div className="text-2xl font-bold text-white">50+</div>
+                <div className="text-xs text-gray-200 font-medium">Premium Products</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">99%</div>
-                <div className="text-sm text-gray-200 font-medium">Satisfaction Rate</div>
+                <div className="text-2xl font-bold text-white">99%</div>
+                <div className="text-xs text-gray-200 font-medium">Satisfaction Rate</div>
               </div>
             </div>
           </div>
@@ -101,22 +101,22 @@ export default function Hero() {
         </div>
 
         {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-8 mt-16 pt-8 border-t border-gray-300">
+        <div className="flex flex-wrap items-center justify-center gap-6 mt-10 pt-6 border-t border-gray-300">
           <div className="flex items-center space-x-2">
-            <Truck className="w-5 h-5 text-green-400" />
-            <span className="text-sm text-gray-200 font-medium">Free Shipping</span>
+            <Truck className="w-4 h-4 text-green-400" />
+            <span className="text-xs text-gray-200 font-medium">Free Shipping</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Shield className="w-5 h-5 text-blue-400" />
-            <span className="text-sm text-gray-200 font-medium">30-Day Returns</span>
+            <Shield className="w-4 h-4 text-blue-400" />
+            <span className="text-xs text-gray-200 font-medium">30-Day Returns</span>
           </div>
           <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-purple-400" />
-            <span className="text-sm text-gray-200 font-medium">Quality Guaranteed</span>
+            <CheckCircle className="w-4 h-4 text-purple-400" />
+            <span className="text-xs text-gray-200 font-medium">Quality Guaranteed</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Star className="w-5 h-5 text-yellow-400" />
-            <span className="text-sm text-gray-200 font-medium">Premium Support</span>
+            <Star className="w-4 h-4 text-yellow-400" />
+            <span className="text-xs text-gray-200 font-medium">Premium Support</span>
           </div>
         </div>
       </div>
