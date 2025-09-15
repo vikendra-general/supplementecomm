@@ -20,19 +20,22 @@ const ProductCard = dynamic(() => import('@/components/ProductCard'), {
 })
 
 // Memoized components for better performance
-const CategoryCard = memo(({ category, t }: { category: { id: string; name: string; description: string; productCount: number }, t: (key: string) => string }) => (
+const CategoryCard = memo(({ category, t }: { category: { id: string; name: string; description: string; productCount: number; image: string }, t: (key: string) => string }) => (
   <Link 
     href={`/shop?category=${category.name.toLowerCase()}`}
-    className="group bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center hover:shadow-lg hover:border-green-300 transition-all duration-300 transform hover:-translate-y-1"
+    className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
   >
-    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg mx-auto mb-3 flex items-center justify-center shadow-md">
-      <span className="text-white font-bold text-lg">{category.name.charAt(0)}</span>
+    <div className="aspect-square overflow-hidden bg-gray-50">
+      <Image
+        src={category.image || '/images/categories/placeholder.svg'}
+        alt={category.name}
+        width={150}
+        height={150}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
     </div>
-    <h3 className="font-bold text-gray-900 mb-2 text-sm">{category.name}</h3>
-    <p className="text-xs text-gray-600 mb-2 leading-relaxed">{category.description}</p>
-    <div className="inline-flex items-center space-x-1 text-green-600 font-medium text-xs">
-      <span>{category.productCount} {t('home.products')}</span>
-      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+    <div className="p-2 text-center">
+      <h3 className="font-semibold text-gray-900 text-xs">{category.name}</h3>
     </div>
   </Link>
 ))
@@ -209,19 +212,14 @@ export default function HomePage() {
       <Hero />
 
       {/* Categories Section */}
-      <section className="py-8 bg-gradient-to-br from-green-50 to-blue-50">
+      <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full mb-6">
-              <Zap className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">{t('home.categoriesTitle')}</span>
-            </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">{t('home.categoriesTitle')}</h2>
-            <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">{t('home.categoriesSubtitle')}</p>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Categories</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {categories.map((category) => (
+          <div className="grid grid-cols-4 gap-3">
+            {categories.slice(0, 8).map((category) => (
               <CategoryCard key={category.id} category={category} t={t} />
             ))}
           </div>
