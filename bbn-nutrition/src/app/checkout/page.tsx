@@ -158,13 +158,10 @@ export default function CheckoutPage() {
         try {
           const token = localStorage.getItem('token');
           if (!token) {
-            console.log('No token found, skipping address loading');
             return;
           }
 
-          console.log('Loading addresses for user:', user?.email);
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-          console.log('API URL:', apiUrl);
           
           const response = await fetch(`${apiUrl}/user/addresses`, {
             method: 'GET',
@@ -178,15 +175,12 @@ export default function CheckoutPage() {
 
           if (response.ok) {
             const result = await response.json();
-            console.log('Address API response:', result);
             if (result.success && result.addresses) {
-              console.log('Found addresses:', result.addresses.length);
               setAddresses(result.addresses);
               
               // Auto-select default address if available
                const defaultAddress = result.addresses.find((addr: Address) => addr.isDefault);
               if (defaultAddress) {
-                console.log('Auto-selecting default address:', defaultAddress);
                 setSelectedShippingAddress(defaultAddress);
                 setSelectedBillingAddress(defaultAddress);
                 // Pre-fill form with default address data
@@ -199,8 +193,6 @@ export default function CheckoutPage() {
                   country: defaultAddress.country || 'India'
                 }));
               }
-            } else {
-              console.log('No addresses found or API response structure unexpected');
             }
           } else {
             console.error('Failed to load addresses:', response.status, response.statusText);
@@ -277,16 +269,12 @@ export default function CheckoutPage() {
   // Handle Razorpay payment
   const handleRazorpayPayment = async (order: OrderData) => {
     try {
-      console.log('Creating Razorpay order for:', order._id, 'Amount:', order.total);
-      
       // Create Razorpay order
       const response = await apiService.createRazorpayOrder({
         amount: order.total,
         currency: 'INR',
         orderId: order._id
       });
-
-      console.log('Razorpay order response:', response);
 
       if (!response || !response.success) {
         console.error('Razorpay order creation failed:', response);
@@ -311,16 +299,12 @@ export default function CheckoutPage() {
          throw new Error('Invalid payment data received');
        }
 
-       console.log('Razorpay data:', razorpayData);
-
        // Validate Razorpay key
        const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
        if (!razorpayKey) {
          console.error('Razorpay key not found in environment variables');
          throw new Error('Payment configuration error: Authentication key was missing during initialization. Please contact support.');
        }
-
-       console.log('Using Razorpay key:', razorpayKey.substring(0, 10) + '...');
 
        const options: RazorpayOptions = {
          key: razorpayKey,
@@ -390,16 +374,6 @@ export default function CheckoutPage() {
     // Check if it's exactly 6 digits
     const pincodeRegex = /^[0-9]{6}$/;
     const isValid = pincodeRegex.test(cleanPincode);
-    
-    // Debug logging
-    if (!isValid && cleanPincode.length === 6) {
-      console.log('PIN code validation failed:', {
-        original: pincode,
-        cleaned: cleanPincode,
-        length: cleanPincode.length,
-        characters: cleanPincode.split('').map(c => ({ char: c, code: c.charCodeAt(0) }))
-      });
-    }
     
     return isValid;
   };

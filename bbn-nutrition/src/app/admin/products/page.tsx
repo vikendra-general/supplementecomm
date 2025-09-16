@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { apiService } from '@/utils/api';
 import { cache, CACHE_KEYS } from '@/utils/cache';
 import { 
@@ -51,6 +52,16 @@ interface ProductFormData {
 }
 
 export default function AdminProductsPage() {
+  return (
+    <AdminProtectedRoute>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
+        <AdminProductsContent />
+      </Suspense>
+    </AdminProtectedRoute>
+  );
+}
+
+function AdminProductsContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -228,25 +239,6 @@ export default function AdminProductsPage() {
       formData.append('featured', productFormData.featured.toString());
       formData.append('bestSeller', productFormData.bestSeller.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
-      
-      // Handle nutrition facts
-      const nutritionFacts = {
-        servingSize: productFormData.nutritionFacts.servingSize,
-        calories: parseFloat(productFormData.nutritionFacts.calories) || 0,
-        protein: parseFloat(productFormData.nutritionFacts.protein) || 0,
-        carbs: parseFloat(productFormData.nutritionFacts.carbs) || 0,
-        fat: parseFloat(productFormData.nutritionFacts.fat) || 0,
-        sugar: parseFloat(productFormData.nutritionFacts.sugar) || 0,
-        sodium: parseFloat(productFormData.nutritionFacts.sodium) || 0,
-        ingredients: productFormData.nutritionFacts.ingredients.split(',').map(ingredient => ingredient.trim()).filter(ingredient => ingredient.length > 0)
-      };
-      
-      // Only add nutrition facts if at least one field is filled
-      if (nutritionFacts.servingSize || nutritionFacts.calories > 0 || nutritionFacts.protein > 0 || 
-          nutritionFacts.carbs > 0 || nutritionFacts.fat > 0 || nutritionFacts.sugar > 0 || 
-          nutritionFacts.sodium > 0 || nutritionFacts.ingredients.length > 0) {
-        formData.append('nutritionFacts', JSON.stringify(nutritionFacts));
-      }
       
       // Handle existing images (for editing)
       productFormData.images.forEach((image) => {

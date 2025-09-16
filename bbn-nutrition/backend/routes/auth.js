@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const crypto = require('crypto');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 
@@ -444,7 +445,6 @@ router.post('/reset-password', [
     const { token, password } = req.body;
 
     // Get hashed token
-    const crypto = require('crypto');
     const resetPasswordToken = crypto
       .createHash('sha256')
       .update(token)
@@ -503,7 +503,6 @@ router.post('/verify-email', [
     const { token } = req.body;
 
     // Get hashed token
-    const crypto = require('crypto');
     const emailVerificationToken = crypto
       .createHash('sha256')
       .update(token)

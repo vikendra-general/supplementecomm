@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -69,6 +69,14 @@ interface AnalyticsData {
 
 
 export default function AdminAnalyticsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading analytics...</div>}>
+      <AdminAnalyticsContent />
+    </Suspense>
+  );
+}
+
+function AdminAnalyticsContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -76,21 +84,14 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('12months');
   const [refreshing, setRefreshing] = useState(false);
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [showExportModal, setShowExportModal] = useState(false);
 
   // Handle URL parameters
   useEffect(() => {
     const view = searchParams.get('view');
     const action = searchParams.get('action');
     
-    if (view) {
-      setCurrentView(view);
-    }
-    
-    if (action === 'export') {
-      setShowExportModal(true);
-    }
+    // URL parameters are available but not currently used
+    // Can be implemented later for view switching and export functionality
   }, [searchParams]);
 
   const fetchAnalytics = useCallback(async () => {

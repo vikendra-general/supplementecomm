@@ -15,11 +15,6 @@ export default function CartPage() {
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  
-  // Debug logging
-  console.log('🛒 Cart page - items:', items);
-  console.log('🛒 Cart page - items length:', items.length);
-  console.log('🛒 Cart page - cart total:', getCartTotal());
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     setIsUpdating(productId);
@@ -96,8 +91,8 @@ export default function CartPage() {
               </div>
 
               <div className="divide-y divide-gray-200">
-                {items.map((item) => (
-                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="p-6">
+                {items.map((item, index) => (
+                  <div key={`${item.product.id}-${item.variant?.id || 'default'}-${index}`} className="p-6">
                     <div className="flex items-center space-x-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0">

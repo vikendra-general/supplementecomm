@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface ThemeColors {
   // Brand Colors
@@ -107,25 +107,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // Apply theme to CSS variables whenever colors change
-  useEffect(() => {
-    applyTheme();
-  }, [colors]);
-
-  const updateColors = (newColors: Partial<ThemeColors>) => {
-    const updatedColors = { ...colors, ...newColors };
-    setColors(updatedColors);
-    
-    // Save to localStorage
-    localStorage.setItem('bbn-admin-theme', JSON.stringify(updatedColors));
-  };
-
-  const resetToDefault = () => {
-    setColors(defaultColors);
-    localStorage.removeItem('bbn-admin-theme');
-  };
-
-  const applyTheme = () => {
+  // Define applyTheme function before using it in useEffect
+  const applyTheme = useCallback(() => {
     const root = document.documentElement;
     
     // Brand Colors
@@ -190,6 +173,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     
     root.style.setProperty('--primary-green-light', primaryLight);
     root.style.setProperty('--color-primary-light', primaryLight);
+  }, [colors]);
+
+  // Apply theme to CSS variables whenever colors change
+  useEffect(() => {
+    applyTheme();
+  }, [applyTheme]);
+
+  const updateColors = (newColors: Partial<ThemeColors>) => {
+    const updatedColors = { ...colors, ...newColors };
+    setColors(updatedColors);
+    
+    // Save to localStorage
+    localStorage.setItem('bbn-admin-theme', JSON.stringify(updatedColors));
+  };
+
+  const resetToDefault = () => {
+    setColors(defaultColors);
+    localStorage.removeItem('bbn-admin-theme');
   };
 
   // Helper function to lighten a color

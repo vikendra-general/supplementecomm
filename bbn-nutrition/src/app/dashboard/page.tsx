@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { 
   Package, 
   Clock, 
@@ -36,7 +36,15 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
+  const { user, isAuthenticated } = useAuth();
   const { orders, isLoading, error, cancelOrder, requestReturn } = useOrders();
   const { addToCart } = useCart();
   const router = useRouter();

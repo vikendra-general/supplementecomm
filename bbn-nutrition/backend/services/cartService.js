@@ -152,22 +152,10 @@ class CartService {
       } else {
         // Convert ObjectIds to strings for frontend compatibility
         cart = cart.toObject();
-        cart.items = cart.items.map(item => {
-          // Handle both ObjectId and populated Product object cases
-          let productId;
-          if (typeof item.productId === 'object' && item.productId._id) {
-            // If productId is a populated Product object, extract the _id
-            productId = item.productId._id.toString();
-          } else {
-            // If productId is an ObjectId, convert to string
-            productId = item.productId.toString();
-          }
-          
-          return {
-            ...item,
-            productId: productId
-          };
-        });
+        cart.items = cart.items.map(item => ({
+          ...item,
+          productId: item.productId.toString() // Convert ObjectId to string
+        }));
       }
       return cart;
     } catch (error) {
