@@ -363,7 +363,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntent = event.data.object;
-      console.log('PaymentIntent was successful!');
       
       // Update order status
       if (paymentIntent.metadata.orderId) {
@@ -390,7 +389,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       
     case 'payment_intent.payment_failed':
       const failedPayment = event.data.object;
-      console.log('PaymentIntent failed!');
       
       // Update order status
       if (failedPayment.metadata.orderId) {
@@ -416,7 +414,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       break;
       
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      // Unhandled event type
+      break;
   }
 
   res.json({ received: true });

@@ -42,6 +42,7 @@ interface OrderTracking {
   notes?: string;
   _id: string;
   total: number;
+  orderNumber?: string;
 }
 
 export default function TrackOrder() {
@@ -59,11 +60,20 @@ export default function TrackOrder() {
         setLoading(true);
         const tracking = await getOrderTracking(orderId);
         if (tracking) {
-          // We need to extend the tracking object with statusHistory
-          const extendedTracking = {
-            ...tracking,
-            statusHistory: [] as StatusHistoryItem[]
-          } as OrderTracking;
+          // Create a proper OrderTracking object with all required properties
+          const extendedTracking: OrderTracking = {
+            status: tracking.status,
+            location: tracking.location,
+            timestamp: tracking.timestamp,
+            description: tracking.description,
+            statusHistory: [],
+            estimatedDelivery: undefined,
+            trackingNumber: undefined,
+            notes: undefined,
+            _id: orderId,
+            total: 0,
+            orderNumber: orderId
+          };
           
           // Convert status history to tracking steps
           const steps = extendedTracking.statusHistory.map((historyItem: StatusHistoryItem) => ({
@@ -77,7 +87,7 @@ export default function TrackOrder() {
           steps.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
           setTrackingData(steps);
-          setOrderDetails(tracking);
+          setOrderDetails(extendedTracking);
         } else {
           setError('No tracking information available');
         }

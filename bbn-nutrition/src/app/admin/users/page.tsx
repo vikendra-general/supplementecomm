@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -55,6 +55,14 @@ interface UserFormData {
 }
 
 export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading users...</div>}>
+      <AdminUsersContent />
+    </Suspense>
+  );
+}
+
+function AdminUsersContent() {
   const { user, isAuthenticated, refreshUser } = useAuth();
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);

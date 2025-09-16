@@ -112,12 +112,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const errorName = error instanceof Error ? error.name : '';
             console.warn('Auth initialization failed (API unavailable):', errorMessage);
             
-            // FIXED: Don't remove token on network errors - keep user logged in
-            // Only remove token on explicit 401/403 responses, not network failures
+            // On network errors, remove the token to prevent redirect loops
+            // The user will need to login again when the API is available
             if (isMounted) {
-              console.log('🔄 Network error during auth check - keeping user logged in');
-              // Keep the token and assume user is still authenticated
-              // The cart will work with the stored token
+              localStorage.removeItem('token');
+              setToken(null);
+              setUser(null);
             }
           } finally {
             if (isMounted) {

@@ -258,6 +258,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <ShoppingCart className="w-4 h-4" />
                 <span>{t('common.outOfStock')}</span>
               </button>
+            ) : isInCart(product.id) ? (
+              <button
+                onClick={() => router.push('/cart')}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>In Cart - View Cart</span>
+              </button>
             ) : (
           <button
             onClick={handleAddToCart}

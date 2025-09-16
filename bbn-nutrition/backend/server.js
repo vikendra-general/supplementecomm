@@ -45,9 +45,7 @@ app.use(helmet({
   },
 }));
 
-// Rate limiting - DISABLED FOR DEVELOPMENT
-// TODO: Re-enable for production with higher limits
-/*
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -56,17 +54,14 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/', limiter);
-*/
 
-// Auth rate limiting - DISABLED FOR DEVELOPMENT
-/*
+// Auth rate limiting
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'development' ? 50 : 5, // More lenient in development
   message: 'Too many authentication attempts, please try again later.',
 });
 app.use('/api/auth/', authLimiter);
-*/
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));

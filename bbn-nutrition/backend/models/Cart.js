@@ -55,7 +55,7 @@ const cartSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-// Note: userId index is automatically created by unique: true constraint
+// Note: userId index is already created by unique: true above
 cartSchema.index({ 'items.productId': 1 });
 
 // Clean up old carts (optional)
