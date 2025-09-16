@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Trash2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,12 +17,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, isInCart, getAvailableStock, getMaxQuantityCanAdd } = useCart();
+  const { addToCart, isInCart, getAvailableStock, getMaxQuantityCanAdd, removeFromCart } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { translateProduct, t } = useLanguage();
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isRemovingFromCart, setIsRemovingFromCart] = useState(false);
   
   const availableStock = getAvailableStock(product);
   const maxCanAdd = getMaxQuantityCanAdd(product);
@@ -57,18 +58,17 @@ export default function ProductCard({ product }: ProductCardProps) {
   }, [isAuthenticated, product.id]);
 
   const handleAddToCart = async () => {
-    // Check if we can add more items
-    if (maxCanAdd === 0) {
-      if (isOutOfStock) {
-        toast.error('This item is out of stock.');
-      } else {
-        toast.error('Maximum quantity already in cart.');
-      }
+    if (isOutOfStock) {
+      toast.error('This item is out of stock.');
       return;
     }
-    
+
+    if (maxCanAdd === 0) {
+      toast.error('Maximum quantity already in cart.');
+      return;
+    }
+
     setIsAddingToCart(true);
-    
     try {
       await addToCart(product, 1);
       
@@ -83,6 +83,26 @@ export default function ProductCard({ product }: ProductCardProps) {
       toast.error('Failed to add item to cart. Please try again.');
     } finally {
       setIsAddingToCart(false);
+    }
+  };
+
+  const handleRemoveFromCart = async () => {
+    // Show confirmation dialog
+    const isConfirmed = window.confirm(`Are you sure you want to remove "${product.name}" from your cart?`);
+    
+    if (!isConfirmed) {
+      return; // User cancelled, don't proceed with removal
+    }
+
+    setIsRemovingFromCart(true);
+    try {
+      removeFromCart(product.id);
+      toast.success(`${product.name} removed from cart!`);
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      toast.error('Failed to remove item from cart. Please try again.');
+    } finally {
+      setIsRemovingFromCart(false);
     }
   };
 
@@ -146,7 +166,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isProductInCart = isInCart(product.id);
 
   return (
-    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
+    <div className="group bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden flex flex-col h-full transform hover:-translate-y-1">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden flex-shrink-0">
         <Link href={`/product/${product.id}`}>
@@ -167,7 +187,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               e.preventDefault();
               handleWishlist();
             }}
-          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
         >
           <Heart 
             className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
@@ -176,7 +196,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Sale Badge */}
         {product.originalPrice && product.originalPrice > product.price && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+          <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             SALE
           </div>
         )}
@@ -190,21 +210,23 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* In Cart Badge */}
         {isProductInCart && (
-          <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
+          <div className="absolute bottom-3 left-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             IN CART
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50/30">
         {/* Brand */}
-        <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
+        <p className="text-sm font-medium text-primary/70 mb-2 uppercase tracking-wide">{product.brand}</p>
         
         {/* Product Name */}
         <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary transition-colors line-clamp-2 h-12 flex items-start">
-            {translatedProduct.name}
+          <h3 className="font-semibold text-gray-900 mb-3 hover:text-primary transition-colors text-sm leading-tight h-10 overflow-hidden" title={translatedProduct.name}>
+            <span className="block truncate">
+              {translatedProduct.name}
+            </span>
           </h3>
         </Link>
 
@@ -228,21 +250,21 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Price */}
-        <div className="flex items-center mb-3 h-7">
-          <span className="text-lg font-bold text-gray-900">
+        <div className="flex items-center mb-4 h-8">
+          <span className="text-xl font-bold text-gray-900 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             {formatPrice(product.price)}
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-sm text-gray-500 line-through ml-2">
+            <span className="text-sm text-gray-500 line-through ml-3 font-medium">
               {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>
 
         {/* Stock Information */}
-        <div className="mb-2 h-6 flex items-center">
+        <div className="mb-3 h-6 flex items-center">
           {isLowStock && !isOutOfStock && (
-            <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded">
+            <span className="text-xs text-orange-700 font-bold bg-gradient-to-r from-orange-100 to-orange-200 px-3 py-1 rounded-full border border-orange-300">
               Only {availableStock} left!
             </span>
           )}
@@ -253,38 +275,52 @@ export default function ProductCard({ product }: ProductCardProps) {
         {isOutOfStock ? (
               <button
                 disabled
-                className="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-bold cursor-not-allowed flex items-center justify-center space-x-2"
+                className="w-full bg-gray-300 text-gray-500 py-3 px-4 rounded-xl font-bold cursor-not-allowed flex items-center justify-center space-x-2 shadow-md"
               >
-                <ShoppingCart className="w-4 h-4" />
-                <span>{t('common.outOfStock')}</span>
+                <ShoppingCart className="w-5 h-5" />
+                <span className="font-bold">{t('common.outOfStock')}</span>
               </button>
             ) : isInCart(product.id) ? (
-              <button
-                onClick={() => router.push('/cart')}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                <span>In Cart - View Cart</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push('/cart')}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center space-x-1 shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-blue-500 min-w-0"
+                >
+                  <ShoppingCart className="w-4 h-4 flex-shrink-0" />
+                  <span className="whitespace-nowrap text-sm">Go to Cart</span>
+                </button>
+                <button
+                  onClick={handleRemoveFromCart}
+                  disabled={isRemovingFromCart}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Remove from cart"
+                >
+                  {isRemovingFromCart ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Trash2 className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             ) : (
           <button
             onClick={handleAddToCart}
             disabled={isAddingToCart || maxCanAdd === 0}
-            className={`w-full py-2 px-4 rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
+            className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
               maxCanAdd === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'energetic-cta'
+                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
             }`}
           >
             {isAddingToCart ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{t('common.loading')}</span>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-bold">{t('common.loading')}</span>
               </>
             ) : (
               <>
-                <ShoppingCart className="w-4 h-4" />
-                <span>
+                <ShoppingCart className="w-5 h-5" />
+                <span className="font-bold">
                   {maxCanAdd === 0
                     ? 'Max in Cart'
                     : t('common.addToCart')

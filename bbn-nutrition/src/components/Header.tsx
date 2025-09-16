@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,9 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
 
 
   const handleLogout = () => {
@@ -25,6 +28,33 @@ export default function Header() {
     setIsUserMenuOpen(false);
     setIsMenuOpen(false);
   };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setIsLanguageMenuOpen(false);
+      }
+    };
+
+    const handleScroll = () => {
+      setIsUserMenuOpen(false);
+      setIsLanguageMenuOpen(false);
+    };
+
+    if (isUserMenuOpen || isLanguageMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, true);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [isUserMenuOpen, isLanguageMenuOpen]);
 
 
 
@@ -82,7 +112,7 @@ export default function Header() {
             <div className="flex items-center space-x-6 flex-shrink-0">
 
               {/* Account & Lists */}
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -205,7 +235,7 @@ export default function Header() {
               </Link>
               
               {/* Language Switcher */}
-              <div className="relative">
+              <div className="relative" ref={languageMenuRef}>
                 <button
                   onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                   className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal"

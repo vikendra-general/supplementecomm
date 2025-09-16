@@ -153,7 +153,7 @@ router.post('/', optionalAuth, [
     }
 
     const tax = Math.round(subtotal * 0.18); // 18% GST rounded to nearest integer
-    const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
+    const shipping = subtotal >= 3500 ? 0 : 199; // Free shipping over ₹3500
     const total = subtotal + tax + shipping;
 
     const order = new Order({

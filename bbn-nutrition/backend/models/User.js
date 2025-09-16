@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema({
     },
     country: {
       type: String,
-      default: 'United States'
+      default: 'India'
     },
     isDefault: {
       type: Boolean,
@@ -153,7 +153,7 @@ const userSchema = new mongoose.Schema({
     },
     currency: {
       type: String,
-      default: 'USD',
+      default: 'INR',
       enum: ['USD', 'INR', 'EUR']
     },
     language: {

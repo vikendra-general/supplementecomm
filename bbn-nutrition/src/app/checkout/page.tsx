@@ -10,6 +10,7 @@ import { formatINR } from '@/utils/currency';
 import { apiService } from '@/utils/api';
 import { Address } from '@/types';
 import Script from 'next/script';
+import toast from 'react-hot-toast';
 
 // Declare Razorpay for TypeScript
 interface RazorpayOptions {
@@ -248,7 +249,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     let value = e.target.value;
     
     // Special handling for PIN code fields
@@ -263,6 +264,29 @@ export default function CheckoutPage() {
       ...prev,
       [e.target.name]: value
     }));
+
+    // Auto-fill address details when pincode is entered
+    if ((e.target.name === 'pincode' || e.target.name === 'shippingPincode') && value.length === 6) {
+      try {
+        const { apiService } = await import('@/utils/api');
+        const result = await apiService.lookupPincode(value);
+        
+        if (result.success && result.data) {
+          setFormData(prev => ({
+            ...prev,
+            city: result.data!.city,
+            state: result.data!.state,
+            country: result.data!.country
+          }));
+          toast.success(`Location found: ${result.data.city}, ${result.data.state}`);
+        } else {
+          toast.error(result.message || 'Unable to fetch location details');
+        }
+      } catch (error) {
+        console.error('Pincode lookup error:', error);
+        toast.error('Unable to fetch location details');
+      }
+    }
   };
 
   // Validate Indian phone number (10 digits, optionally with +91 prefix)
@@ -549,7 +573,7 @@ export default function CheckoutPage() {
 
   // Use actual cart data
   const subtotal = getCartTotal();
-  const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
+  const shipping = subtotal >= 3500 ? 0 : 199; // Free shipping over ₹3500
   const tax = Math.round(subtotal * 0.18); // 18% GST rounded to nearest integer
   const total = subtotal + shipping + tax;
 

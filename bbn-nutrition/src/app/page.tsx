@@ -94,7 +94,7 @@ const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; ro
         </div>
       </div>
     </div>
-    <p className="text-sm text-gray-700 leading-relaxed">"{testimonial.content}"</p>
+    <p className="text-sm text-gray-700 leading-relaxed">&ldquo;{testimonial.content}&rdquo;</p>
   </div>
 ))
 
@@ -193,7 +193,7 @@ export default function HomePage() {
     {
       icon: Truck,
       title: "Free Shipping",
-      description: "Free shipping on orders over $50",
+      description: "Free shipping on orders over ₹3500",
       bgColor: "bg-green-100",
       iconColor: "text-green-600"
     },
