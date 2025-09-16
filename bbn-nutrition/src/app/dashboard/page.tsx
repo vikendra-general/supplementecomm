@@ -392,11 +392,34 @@ function DashboardContent() {
     setAddressMethod('manual');
   };
 
-  const handleAddressFormChange = (field: string, value: string | boolean) => {
+  const handleAddressFormChange = async (field: string, value: string | boolean) => {
     setAddressForm(prev => ({
       ...prev,
       [field]: value
     }));
+
+    // Auto-fill address details when pincode is entered
+    if (field === 'pinCode' && typeof value === 'string' && value.length === 6) {
+      try {
+        const { apiService } = await import('@/utils/api');
+        const result = await apiService.lookupPincode(value);
+        
+        if (result.success && result.data) {
+          setAddressForm(prev => ({
+            ...prev,
+            city: result.data!.city,
+            state: result.data!.state,
+            country: result.data!.country
+          }));
+          toast.success(`Location found: ${result.data.city}, ${result.data.state}`);
+        } else {
+          toast.error(result.message || 'Unable to fetch location details');
+        }
+      } catch (error) {
+        console.error('Pincode lookup error:', error);
+        toast.error('Unable to fetch location details');
+      }
+    }
   };
 
   // Validate Indian PIN code (6 digits)
@@ -828,7 +851,7 @@ function DashboardContent() {
                               )}
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-gray-900">${order.total.toFixed(2)}</p>
+                              <p className="font-semibold text-gray-900">₹{order.total.toFixed(2)}</p>
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                 {getStatusIcon(order.status)}
                                 <span className="ml-1">{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
@@ -842,16 +865,16 @@ function DashboardContent() {
                                 <span className="text-gray-600">
                                   {item.name} {item.variant && `(${item.variant.name})`} (Qty: {item.quantity})
                                 </span>
-                                <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</span>
                               </div>
                             ))}
                           </div>
                           
                           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
                             <div className="text-sm text-gray-600">
-                              <p>Subtotal: ${order.subtotal.toFixed(2)}</p>
-                              <p>Tax: ${order.tax.toFixed(2)}</p>
-                              <p>Shipping: ${order.shipping.toFixed(2)}</p>
+                              <p>Subtotal: ₹{order.subtotal.toFixed(2)}</p>
+                <p>Tax: ₹{order.tax.toFixed(2)}</p>
+                <p>Shipping: ₹{order.shipping.toFixed(2)}</p>
                             </div>
                             <div className="flex space-x-2">
                               <button className="text-primary hover:text-primary-dark font-medium text-sm">

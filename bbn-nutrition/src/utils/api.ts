@@ -45,17 +45,23 @@ class ApiService {
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
+      signal: controller.signal,
       ...options,
     };
 
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (!response.ok) {
@@ -64,9 +70,17 @@ class ApiService {
 
       return data;
     } catch (error) {
+      clearTimeout(timeoutId);
+      
       if (error instanceof ApiError) {
         throw error;
       }
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('API request timeout:', error);
+        throw new ApiError(0, 'Request timeout - please check your connection and try again');
+      }
+      
       console.error('API request failed:', error);
       throw new ApiError(500, 'Network error - please check your connection');
     }
@@ -555,6 +569,72 @@ class ApiService {
   // Health check
   async healthCheck() {
     return this.request('/health');
+  }
+
+  // Pincode lookup for Indian addresses
+  async lookupPincode(pincode: string): Promise<{
+    success: boolean;
+    data?: {
+      pincode: string;
+      city: string;
+      state: string;
+      country: string;
+      district?: string;
+      region?: string;
+    };
+    message?: string;
+  }> {
+    try {
+      // Validate pincode format (6 digits)
+      if (!/^[0-9]{6}$/.test(pincode)) {
+        return {
+          success: false,
+          message: 'Invalid pincode format. Please enter a 6-digit pincode.'
+        };
+      }
+
+      // Use alternative pincode API that supports CORS
+      const response = await fetch(`https://api.zippopotam.us/in/${pincode}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch pincode data');
+      }
+
+      const data = await response.json();
+      
+      // Check if the API returned valid data (Zippopotamus format)
+      if (data && data.country && data.places && data.places.length > 0) {
+        const place = data.places[0];
+        
+        return {
+          success: true,
+          data: {
+            pincode: pincode,
+            city: place['place name'] || '',
+            state: place['state'] || '',
+            country: data.country || 'India',
+            district: place['place name'] || '',
+            region: place['state abbreviation'] || ''
+          }
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No data found for this pincode. Please check and try again.'
+        };
+      }
+    } catch (error) {
+      console.error('Pincode lookup error:', error);
+      return {
+        success: false,
+        message: 'Unable to fetch location data. Please enter details manually.'
+      };
+    }
   }
 }
 

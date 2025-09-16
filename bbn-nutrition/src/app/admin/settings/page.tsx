@@ -84,7 +84,7 @@ export default function AdminSettingsPage() {
     // E-commerce Settings
     currency: 'INR',
     taxRate: 18,
-    freeShippingThreshold: 2999,
+    freeShippingThreshold: 3500,
     shippingFee: 199,
     
     // Email Settings
@@ -298,8 +298,8 @@ export default function AdminSettingsPage() {
                   className="w-full px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="INR">Indian Rupee (₹)</option>
-                  <option value="USD">US Dollar ($)</option>
                   <option value="EUR">Euro (€)</option>
+                  <option value="USD">US Dollar ($)</option>
                 </select>
               </div>
               <div>

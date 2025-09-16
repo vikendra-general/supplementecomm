@@ -150,11 +150,12 @@ class CartService {
           updatedAt: new Date()
         };
       } else {
-        // Convert ObjectIds to strings for frontend compatibility
+        // Convert to plain object while preserving populated product data
         cart = cart.toObject();
         cart.items = cart.items.map(item => ({
           ...item,
-          productId: item.productId.toString() // Convert ObjectId to string
+          // Keep the populated product data, don't convert to string
+          productId: item.productId
         }));
       }
       return cart;

@@ -39,9 +39,10 @@ export default function CartPage() {
   };
 
   const subtotal = getCartTotal();
-  const freeShippingThreshold = 2999; // Free shipping over ₹2999 (more appropriate for Indian market)
+  const freeShippingThreshold = 3500; // Free shipping over ₹3500
   const shipping = subtotal >= freeShippingThreshold ? 0 : 199; // ₹199 shipping fee
   const total = subtotal + shipping; // No tax calculation
+  const amountNeededForFreeShipping = freeShippingThreshold - subtotal;
 
   if (items.length === 0) {
     return (
@@ -100,7 +101,7 @@ export default function CartPage() {
                           <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                             <Image
                               src={item.product.images[0] || '/images/products/placeholder.svg'}
-                              alt={item.product.name}
+                              alt={item.product.name || 'Product image'}
                               fill
                               className="object-cover"
                             />
@@ -203,18 +204,36 @@ export default function CartPage() {
               </div>
 
               {shipping > 0 && (
-                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700">
-                    {t('cart.add')} {formatPrice(freeShippingThreshold - subtotal)} {t('cart.freeShippingMessage')}
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-blue-800">
+                      Add products worth {formatPrice(amountNeededForFreeShipping)} to be eligible for free delivery!
+                    </p>
+                  </div>
+                  <div className="mt-2 bg-blue-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min((subtotal / freeShippingThreshold) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    {formatPrice(subtotal)} of {formatPrice(freeShippingThreshold)} ({Math.round((subtotal / freeShippingThreshold) * 100)}%)
                   </p>
                 </div>
               )}
               
               {shipping === 0 && subtotal >= freeShippingThreshold && (
-                <div className="mb-6 p-3 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-700">
-                    {t('cart.qualifyFreeShipping')}
-                  </p>
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-green-800">
+                      🎉 Congratulations! You qualify for free delivery!
+                    </p>
+                  </div>
+                  <div className="mt-2 bg-green-200 rounded-full h-2">
+                    <div className="bg-green-600 h-2 rounded-full w-full"></div>
+                  </div>
                 </div>
               )}
 

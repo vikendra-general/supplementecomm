@@ -242,7 +242,7 @@ router.post('/create-payment-intent', protect, [
       });
     }
 
-    const { amount, currency = 'usd', orderId, items } = req.body;
+    const { amount, currency = 'inr', orderId, items } = req.body;
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
