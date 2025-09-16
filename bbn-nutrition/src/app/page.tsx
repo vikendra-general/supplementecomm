@@ -29,13 +29,13 @@ const CategoryCard = memo(({ category, t }: { category: { id: string; name: stri
       <Image
         src={category.image || '/images/categories/placeholder.svg'}
         alt={category.name}
-        width={150}
-        height={150}
+        width={200}
+        height={200}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
       />
     </div>
-    <div className="p-2 text-center">
-      <h3 className="font-semibold text-gray-900 text-xs">{category.name}</h3>
+    <div className="p-4 text-center">
+      <h3 className="font-semibold text-gray-900 text-sm">{category.name}</h3>
     </div>
   </Link>
 ))
@@ -218,8 +218,8 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Categories</h2>
           </div>
           
-          <div className="grid grid-cols-4 gap-3">
-            {categories.slice(0, 8).map((category) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {categories.map((category) => (
               <CategoryCard key={category.id} category={category} t={t} />
             ))}
           </div>
