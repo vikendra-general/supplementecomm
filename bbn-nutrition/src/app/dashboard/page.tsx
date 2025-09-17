@@ -971,7 +971,7 @@ function DashboardContent() {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-gray-500 ml-1">({product.reviews})</span>
+                            <span className="text-sm text-gray-500 ml-1">({product.reviewCount || (Array.isArray(product.reviews) ? product.reviews.length : product.reviews) || 0})</span>
                           </div>
                           
                           {/* Price */}

@@ -492,6 +492,10 @@ class ApiService {
     });
   }
 
+  async getProductReviews(productId: string): Promise<ApiResponse<any[]>> {
+    return this.request(`/products/${productId}/reviews`);
+  }
+
   // Cart operations
   async getCart() {
     return this.request('/cart');

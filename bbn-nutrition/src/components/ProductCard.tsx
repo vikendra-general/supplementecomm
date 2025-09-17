@@ -165,8 +165,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const isProductInCart = isInCart(product.id);
 
+  // Calculate discount percentage
+  const discountPercentage = product.originalPrice && product.originalPrice > product.price 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   return (
-    <div className="group bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden flex flex-col h-full transform hover:-translate-y-1">
+    <div className="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-full">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden flex-shrink-0">
         <Link href={`/product/${product.id}`}>
@@ -187,17 +192,17 @@ export default function ProductCard({ product }: ProductCardProps) {
               e.preventDefault();
               handleWishlist();
             }}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
+          className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white hover:scale-110 transition-all duration-200"
         >
           <Heart 
-            className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+            className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
           />
         </button>
 
-        {/* Sale Badge */}
-        {product.originalPrice && product.originalPrice > product.price && (
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            SALE
+        {/* Discount Badge */}
+        {discountPercentage > 0 && (
+          <div className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+            Upto {discountPercentage}% OFF
           </div>
         )}
 
@@ -210,61 +215,59 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* In Cart Badge */}
         {isProductInCart && (
-          <div className="absolute bottom-3 left-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+          <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
             IN CART
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50/30">
+      <div className="p-3 flex flex-col flex-grow">
         {/* Brand */}
-        <p className="text-sm font-medium text-primary/70 mb-2 uppercase tracking-wide">{product.brand}</p>
-        
-        {/* Product Name */}
-        <Link href={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-3 hover:text-primary transition-colors text-sm leading-tight h-10 overflow-hidden" title={translatedProduct.name}>
-            <span className="block truncate">
-              {translatedProduct.name}
-            </span>
-          </h3>
-        </Link>
+         <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">{product.brand}</p>
+         
+         {/* Product Name */}
+            <Link href={`/product/${product.id}`}>
+              <h3 className="font-normal text-gray-800 mb-2 hover:text-primary transition-colors leading-tight h-10 overflow-hidden font-sans" title={translatedProduct.name} style={{fontSize: '14px'}}>
+                <span className="block line-clamp-2">
+                  {translatedProduct.name}
+                </span>
+              </h3>
+            </Link>
 
-        {/* Rating */}
-        <div className="flex items-center mb-2 h-6">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating)
-                    ? 'text-yellow-400 fill-current'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-sm text-gray-500 ml-1">
-            ({product.reviews})
-          </span>
-        </div>
+         {/* Rating */}
+         <div className="flex items-center mb-2 h-4">
+           <div className="flex items-center">
+             {[...Array(5)].map((_, i) => (
+               <Star
+                 key={i}
+                 className={`w-2.5 h-2.5 ${
+                   i < Math.floor(product.rating)
+                     ? 'text-yellow-400 fill-current'
+                     : 'text-gray-300'
+                 }`}
+               />
+             ))}
+           </div>
+           <span className="text-xs text-gray-500 ml-1">
+             ({product.reviewCount || (Array.isArray(product.reviews) ? product.reviews.length : product.reviews) || 0})
+           </span>
+         </div>
 
-        {/* Price */}
-        <div className="flex items-center mb-4 h-8">
-          <span className="text-xl font-bold text-gray-900 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-sm text-gray-500 line-through ml-3 font-medium">
-              {formatPrice(product.originalPrice)}
-            </span>
-          )}
-        </div>
+         {/* Price */}
+         <div className="flex items-center mb-2 h-5">
+           <span className="text-sm font-bold text-gray-900">
+             {formatPrice(product.price)}
+           </span>
+           <span className="text-xs text-gray-500 line-through ml-2">
+             {product.originalPrice && product.originalPrice > product.price && formatPrice(product.originalPrice)}
+           </span>
+         </div>
 
         {/* Stock Information */}
-        <div className="mb-3 h-6 flex items-center">
+        <div className="mb-2 h-5 flex items-center">
           {isLowStock && !isOutOfStock && (
-            <span className="text-xs text-orange-700 font-bold bg-gradient-to-r from-orange-100 to-orange-200 px-3 py-1 rounded-full border border-orange-300">
+            <span className="text-xs text-orange-700 font-medium bg-orange-50 px-2 py-1 rounded border border-orange-200">
               Only {availableStock} left!
             </span>
           )}
@@ -275,16 +278,16 @@ export default function ProductCard({ product }: ProductCardProps) {
         {isOutOfStock ? (
               <button
                 disabled
-                className="w-full bg-gray-300 text-gray-500 py-3 px-4 rounded-xl font-bold cursor-not-allowed flex items-center justify-center space-x-2 shadow-md"
+                className="w-full bg-gray-200 text-gray-500 py-2.5 px-3 rounded-md font-medium cursor-not-allowed flex items-center justify-center space-x-2"
               >
-                <ShoppingCart className="w-5 h-5" />
-                <span className="font-bold">{t('common.outOfStock')}</span>
+                <ShoppingCart className="w-4 h-4" />
+                <span className="text-sm">{t('common.outOfStock')}</span>
               </button>
             ) : isInCart(product.id) ? (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => router.push('/cart')}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center space-x-1 shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-blue-500 min-w-0"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-md font-medium transition-colors flex items-center justify-center space-x-1 min-w-0"
                 >
                   <ShoppingCart className="w-4 h-4 flex-shrink-0" />
                   <span className="whitespace-nowrap text-sm">Go to Cart</span>
@@ -292,13 +295,13 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <button
                   onClick={handleRemoveFromCart}
                   disabled={isRemovingFromCart}
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-md font-medium transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Remove from cart"
                 >
                   {isRemovingFromCart ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -306,21 +309,21 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={isAddingToCart || maxCanAdd === 0}
-            className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+            className={`w-full py-2.5 px-3 rounded-md font-medium transition-colors flex items-center justify-center space-x-2 ${
               maxCanAdd === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'bg-orange-500 hover:bg-orange-600 text-white'
             }`}
           >
             {isAddingToCart ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span className="font-bold">{t('common.loading')}</span>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">{t('common.loading')}</span>
               </>
             ) : (
               <>
-                <ShoppingCart className="w-5 h-5" />
-                <span className="font-bold">
+                <ShoppingCart className="w-4 h-4" />
+                <span className="text-sm">
                   {maxCanAdd === 0
                     ? 'Max in Cart'
                     : t('common.addToCart')
@@ -334,7 +337,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Anonymous User Message */}
         <div className="mt-2 h-4 flex items-center justify-center">
           {!isAuthenticated && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-gray-400 text-center">
               Sign in to save your cart
             </p>
           )}

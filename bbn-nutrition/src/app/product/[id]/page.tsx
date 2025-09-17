@@ -37,6 +37,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -68,6 +70,27 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     if (id) {
       fetchProduct();
     }
+  }, [id]);
+
+  // Fetch reviews for the product
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!id) return;
+      
+      try {
+        setReviewsLoading(true);
+        const response = await apiService.getProductReviews(id);
+        if (response.success && response.data) {
+          setReviews(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
   }, [id]);
 
   // Check if product is in wishlist when product loads
@@ -265,6 +288,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           setProduct(updatedProduct.data as Product);
         }
         
+        // Refresh reviews list
+        const reviewsResponse = await apiService.getProductReviews(id);
+        if (reviewsResponse.success && reviewsResponse.data) {
+          setReviews(reviewsResponse.data);
+        }
+        
         toast.success('Your review has been submitted successfully!');
         
         // Reset success message after 5 seconds
@@ -373,7 +402,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               ))}
             </div>
             <span className="text-gray-600">
-              {product.rating} ({product.reviewCount || (product.reviews || 0)} reviews)
+              {product.rating} ({product.reviewCount || (Array.isArray(product.reviews) ? product.reviews.length : product.reviews) || 0} reviews)
             </span>
           </div>
 
@@ -719,15 +748,118 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         
         {/* Reviews List */}
         <div className="space-y-6">
-          {/* Since reviews is now a number, we'll show a placeholder message */}
-          <div className="text-center py-8 border border-gray-200 rounded-lg">
-            <p className="text-gray-500">
-              {product.reviews && product.reviews > 0 
-                ? `This product has ${product.reviews} reviews. Review system coming soon!`
-                : 'No reviews yet. Be the first to review this product!'
-              }
-            </p>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Reviews ({reviews.length})
+            </h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">Sort by:</span>
+              <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="rating-high">Highest Rating</option>
+                <option value="rating-low">Lowest Rating</option>
+              </select>
+            </div>
           </div>
+
+          {reviewsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+                      <div className="h-3 bg-gray-300 rounded w-1/6"></div>
+                      <div className="h-4 bg-gray-300 rounded w-full"></div>
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : reviews.length > 0 ? (
+            <div className="space-y-4">
+              {reviews.map((review, index) => (
+                <div key={review._id || index} className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold">
+                        {review.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h4 className="font-medium text-gray-900">
+                            {review.user?.name || 'Anonymous User'}
+                          </h4>
+                          <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                            ✓ Verified Customer
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${
+                                  star <= review.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-medium text-gray-900">
+                            {review.rating}.0
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            • {new Date(review.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed mb-4">
+                          {review.comment}
+                        </p>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <button className="flex items-center space-x-1 text-gray-500 hover:text-gray-700">
+                            <span>👍</span>
+                            <span>Helpful (0)</span>
+                          </button>
+                          <button className="text-gray-500 hover:text-gray-700">
+                            Report
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 border border-gray-200 rounded-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Star className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No reviews yet
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Be the first to review this product and help others make informed decisions.
+              </p>
+              {!isAuthenticated && (
+                <Link
+                  href={`/login?redirect=/product/${id}`}
+                  className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+                >
+                  Login to Write Review
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
