@@ -299,7 +299,7 @@ export default function AdminSettingsPage() {
                 >
                   <option value="INR">Indian Rupee (₹)</option>
                   <option value="EUR">Euro (€)</option>
-                  <option value="USD">US Dollar ($)</option>
+                  <option value="USD">US Dollar (₹)</option>
                 </select>
               </div>
               <div>

@@ -165,20 +165,24 @@ function AdminUsersContent() {
           return;
         }
       } else {
-        // Create new user
-        const newUser: User = {
-          _id: Date.now().toString(),
-          ...userFormData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          stats: {
-            totalOrders: 0,
-            totalSpent: 0
-          },
-          addresses: []
-        };
-        setUsers([...users, newUser]);
-        alert('User created successfully!');
+        // Create new user via API
+        const response = await apiService.createUser(userFormData);
+        if (response.success && response.data) {
+          // Add the new user from API response to local state
+          const newUser: User = {
+            ...response.data as User,
+            stats: {
+              totalOrders: 0,
+              totalSpent: 0
+            },
+            addresses: []
+          };
+          setUsers([...users, newUser]);
+          alert('User created successfully!');
+        } else {
+          alert('Failed to create user: ' + (response.message || 'Unknown error'));
+          return;
+        }
       }
       
       setShowUserForm(false);
