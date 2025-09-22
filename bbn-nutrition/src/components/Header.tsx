@@ -18,6 +18,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   
   const userMenuRef = useRef<HTMLDivElement>(null);
   const languageMenuRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,27 @@ export default function Header() {
     setIsUserMenuOpen(false);
     setIsMenuOpen(false);
   };
+
+  // Handle scroll detection for header styling
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.querySelector('.hero-section') || document.querySelector('[data-hero]');
+      if (heroSection) {
+        const heroBottom = heroSection.getBoundingClientRect().bottom;
+        setIsScrolled(heroBottom <= 0);
+      } else {
+        // Fallback: use scroll position if hero section not found
+        setIsScrolled(window.scrollY > 100);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -40,19 +62,19 @@ export default function Header() {
       }
     };
 
-    const handleScroll = () => {
+    const handleDropdownScroll = () => {
       setIsUserMenuOpen(false);
       setIsLanguageMenuOpen(false);
     };
 
     if (isUserMenuOpen || isLanguageMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('scroll', handleDropdownScroll, true);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('scroll', handleDropdownScroll, true);
     };
   }, [isUserMenuOpen, isLanguageMenuOpen]);
 
@@ -70,9 +92,13 @@ export default function Header() {
 
 
   return (
-    <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white border-b border-gray-100' 
+        : 'bg-black/80 backdrop-blur-md border-b border-white/10'
+    }`}>
       {/* Main Header */}
-      <div className="bg-white">
+      <div className={isScrolled ? 'bg-white' : 'bg-transparent'}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14">
             {/* Logo */}
@@ -90,9 +116,13 @@ export default function Header() {
 
             {/* Location Selector - Only show when user is logged in */}
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-              <div className="hidden md:flex items-center text-text-primary text-sm ml-6">
+              <div className={`hidden md:flex items-center text-sm ml-6 ${
+                isScrolled ? 'text-text-primary' : 'text-white'
+              }`}>
                 <div className="flex flex-col">
-                  <span className="text-text-secondary text-xs">Deliver to</span>
+                  <span className={`text-xs ${
+                    isScrolled ? 'text-text-secondary' : 'text-gray-300'
+                  }`}>Deliver to</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
@@ -116,7 +146,11 @@ export default function Header() {
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
+                    className={`flex flex-col items-start transition-colors ${
+                      isScrolled 
+                        ? 'text-gray-700 hover:text-orange-500' 
+                        : 'text-white hover:text-green-400'
+                    }`}
                   >
                     <span className="text-xs">Hello, {user?.name?.split(' ')[0]}</span>
                     <div className="flex items-center space-x-1">
@@ -127,7 +161,11 @@ export default function Header() {
                 ) : (
                   <Link
                     href="/login"
-                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
+                    className={`flex flex-col items-start transition-colors ${
+                      isScrolled 
+                        ? 'text-gray-700 hover:text-orange-500' 
+                        : 'text-white hover:text-green-400'
+                    }`}
                   >
                     <span className="text-xs">Hello, sign in</span>
                     <div className="flex items-center space-x-1">
@@ -168,7 +206,11 @@ export default function Header() {
               {/* Returns & Orders */}
               <Link
                 href="/orders"
-                className="hidden lg:flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
+                className={`hidden lg:flex flex-col items-start transition-colors ${
+                  isScrolled 
+                    ? 'text-gray-700 hover:text-orange-500' 
+                    : 'text-white hover:text-green-400'
+                }`}
               >
                 <span className="text-xs">Returns</span>
                 <span className="text-sm font-normal">& Orders</span>
@@ -177,7 +219,11 @@ export default function Header() {
               {/* Cart */}
               <Link 
                 href="/cart" 
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors relative"
+                className={`flex items-center space-x-1 transition-colors relative ${
+                  isScrolled 
+                    ? 'text-gray-700 hover:text-orange-500' 
+                    : 'text-white hover:text-green-400'
+                }`}
               >
                 <div className="relative">
                   <ShoppingCart className="w-6 h-6" />
@@ -195,13 +241,21 @@ export default function Header() {
       </div>
 
       {/* Navigation Bar */}
-      <div className="bg-gray-50 border-t border-gray-100">
+      <div className={`transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-gray-50 border-t border-gray-100' 
+          : 'bg-black/20 backdrop-blur-sm border-t border-white/10'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center h-9 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors absolute left-4"
+              className={`lg:hidden flex items-center space-x-1 transition-colors absolute left-4 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}
             >
               <Menu className="w-4 h-4" />
               <span className="text-sm font-normal">All</span>
@@ -209,28 +263,60 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-5">
-              <Link href="/shop" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/shop" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 Shop All
               </Link>
-              <Link href="/deals" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/deals" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.todaysDeals')}
               </Link>
-              <Link href="/best-sellers" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/best-sellers" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.bestSellers')}
               </Link>
-              <Link href="/protein-supplements" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/protein-supplements" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.proteinSupplements')}
               </Link>
-              <Link href="/pre-workout" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/pre-workout" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.preWorkout')}
               </Link>
-              <Link href="/vitamins" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/vitamins" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.vitamins')}
               </Link>
-              <Link href="/about" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/about" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.aboutBBN')}
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/contact" className={`transition-colors text-sm font-normal ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-orange-500' 
+                  : 'text-white hover:text-green-400'
+              }`}>
                 {t('header.customerService')}
               </Link>
               

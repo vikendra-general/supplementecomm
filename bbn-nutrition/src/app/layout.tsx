@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Inter, Poppins } from 'next/font/google';
+import { Plus_Jakarta_Sans, Oswald, Nunito_Sans } from 'next/font/google';
 import './globals.css';
 import dynamic from 'next/dynamic';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -18,14 +18,14 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: 'swap'
 });
 
-const inter = Inter({
+const nunitoSans = Nunito_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-primary',
   display: 'swap'
 });
 
-const poppins = Poppins({
+const oswald = Oswald({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-heading',
@@ -53,7 +53,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${plusJakartaSans.variable} ${inter.variable} ${poppins.variable} font-primary antialiased`}>
+      <body className={`${plusJakartaSans.variable} ${nunitoSans.variable} ${oswald.variable} font-primary antialiased`}>
         <ErrorBoundary>
           <ThemeProvider>
             <LanguageProvider>

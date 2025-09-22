@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       fontFamily: {
         'plus-jakarta-sans': ['var(--font-plus-jakarta-sans)', 'Plus Jakarta Sans', 'sans-serif'],
-        'sans': ['var(--font-primary)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        'heading': ['var(--font-heading)', 'Poppins', 'Inter', 'sans-serif'],
-        'display': ['var(--font-display)', 'Poppins', 'Inter', 'sans-serif'],
+        'sans': ['var(--font-primary)', 'Nunito Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'heading': ['var(--font-heading)', 'Oswald', 'Nunito Sans', 'sans-serif'],
+        'display': ['var(--font-heading)', 'Oswald', 'Nunito Sans', 'sans-serif'],
       },
       colors: {
         // Enhanced Nutrabay-Inspired Professional Palette

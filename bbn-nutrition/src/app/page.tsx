@@ -53,15 +53,15 @@ const FeatureCard = memo(({ icon: Icon, title, description, bgColor, iconColor }
     <div className={`w-12 h-12 ${bgColor} rounded-xl mx-auto mb-3 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300`}>
       <Icon className={`w-6 h-6 ${iconColor}`} />
     </div>
-    <h3 className="text-base font-bold text-gray-900 mb-2">{title}</h3>
-    <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+    <h3 className="text-base font-bold text-green-400 mb-2" style={{color: '#4ade80'}}>{title}</h3>
+    <p className="text-xs text-gray-300 leading-relaxed">{description}</p>
   </div>
 ))
 
 FeatureCard.displayName = 'FeatureCard'
 
 const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; role: string; content: string; rating: number; image: string; verified: boolean } }) => (
-  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 w-80 flex-shrink-0">
     <div className="flex items-center mb-4">
       <div className="relative">
         <div className="w-16 h-16 rounded-full overflow-hidden mr-4">
@@ -73,18 +73,10 @@ const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; ro
             className="object-cover w-full h-full"
           />
         </div>
-        {testimonial.verified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-4 h-4 text-white" />
-          </div>
-        )}
       </div>
       <div className="flex-1">
         <div className="flex items-center justify-between mb-1">
           <h4 className="font-semibold text-gray-900 text-sm">{testimonial.name}</h4>
-          {testimonial.verified && (
-            <span className="text-xs text-green-600 font-medium">✓ Verified customer</span>
-          )}
         </div>
         <p className="text-xs text-gray-500 mb-2">{testimonial.role}</p>
         <div className="flex items-center">
@@ -227,15 +219,15 @@ export default function HomePage() {
       </section>
 
       {/* P1 & P2 Videos Section */}
-      <section className="py-8 bg-white">
+      <section className="py-12 bg-black" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">Product Showcase</h2>
-            <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">Discover our premium supplements in action</p>
+          <div className="text-center mb-12">
+            <h2 className="text-6xl lg:text-12xl font-bold text-green-400 mb-4" style={{color: '#4ade80'}}>Product Showcase</h2>
+            <p className="text-lg lg:text-xl text-white max-w-2xl mx-auto leading-relaxed" style={{color: '#ffffff'}}>Discover how our premium supplements are designed to fuel performance, enhance recovery, and support overall well-being — combining science-backed formulas with uncompromising quality.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <div className="relative rounded-xl overflow-hidden shadow-lg" style={{aspectRatio: '16/10', minHeight: '400px'}}>
               <video 
                 className="w-full h-full object-cover"
                 autoPlay 
@@ -247,7 +239,7 @@ export default function HomePage() {
                 Your browser does not support the video tag.
               </video>
             </div>
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
+            <div className="relative rounded-xl overflow-hidden shadow-lg" style={{aspectRatio: '16/10', minHeight: '400px'}}>
               <video 
                 className="w-full h-full object-cover"
                 autoPlay 
@@ -294,30 +286,29 @@ export default function HomePage() {
       </section>
 
       {/* Shadow Video Section */}
-      <section className="relative overflow-hidden bg-white">
-        <div className="relative">
-          <video 
-            className="w-full h-full object-cover"
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-            style={{ minHeight: '400px' }}
-          >
-            <source src="/videos/Shadow video.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-             <div className="text-center text-white">
-               <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-4">
-                 Experience the
-                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">
-                   Difference
-                 </span>
-               </h1>
-               <p className="text-lg text-gray-200 leading-relaxed max-w-lg mx-auto">Premium quality supplements for peak performance</p>
-             </div>
-           </div>
+      <section className="py-8 bg-black" style={{backgroundColor: '#000000'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-4 text-green-400" style={{color: '#4ade80'}}>
+              Experience the Difference
+            </h1>
+            <p className="text-lg lg:text-xl text-white leading-relaxed max-w-2xl mx-auto" style={{color: '#ffffff'}}>From boosting daily energy to supporting long-term health goals, our supplements are crafted to deliver results you can see, feel, and trust — every step of your journey.</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="relative rounded-xl overflow-hidden shadow-lg" style={{aspectRatio: '21/9', maxWidth: '1200px', width: '100%'}}>
+              <video 
+                className="w-full h-full object-cover"
+                autoPlay 
+                muted 
+                loop 
+                playsInline
+              >
+                <source src="/videos/Shadow video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -342,11 +333,11 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-8 bg-white">
+      <section className="py-8 bg-black" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Why Choose BBN?</h2>
-            <p className="text-sm text-gray-600">Quality, reliability, and results you can trust</p>
+            <h2 className="text-2xl lg:text-3xl font-bold text-green-400 mb-2" style={{color: '#4ade80'}}>Why Choose BBN?</h2>
+            <p className="text-sm text-gray-300" style={{color: '#d1d5db'}}>More than just supplements — we provide trusted solutions built on research, purity, and performance, so you can unlock your body's full potential naturally.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -369,10 +360,12 @@ export default function HomePage() {
             <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">Real testimonials from our satisfied customers who have transformed their fitness journey with BBN Nutrition</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard key={index} testimonial={testimonial} />
-            ))}
+          <div className="relative overflow-hidden max-w-6xl mx-auto">
+            <div className="flex gap-6 animate-scroll">
+              {[...testimonials.slice(0, 3), ...testimonials.slice(0, 3)].map((testimonial, index) => (
+                <TestimonialCard key={index} testimonial={testimonial} />
+              ))}
+            </div>
           </div>
           
           <div className="text-center mt-10">
@@ -385,13 +378,32 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+        
+        <style jsx>{`
+          @keyframes scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+          
+          .animate-scroll {
+            animation: scroll 20s linear infinite;
+          }
+          
+          .animate-scroll:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
       </section>
 
       {/* CTA Section */}
-      <section className="py-8 bg-white">
+      <section className="py-8 bg-black" style={{backgroundColor: '#000000'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Ready to Transform Your Performance?</h2>
-          <p className="text-sm text-gray-600 mb-4">Join thousands of athletes who trust BBN for their supplement needs</p>
+          <h2 className="text-2xl lg:text-3xl font-bold text-green-400 mb-2" style={{color: '#4ade80'}}>Ready to Transform Your Performance?</h2>
+          <p className="text-sm text-gray-300 mb-4" style={{color: '#d1d5db'}}>Join thousands of athletes who trust BBN for their supplement needs</p>
           <Link 
             href="/shop" 
             className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
