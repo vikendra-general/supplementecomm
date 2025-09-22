@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { 
   Package, 
   Clock, 
@@ -942,13 +943,30 @@ function DashboardContent() {
                     {wishlistItems.map((product) => (
                       <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
                         {/* Product Image */}
-                        <div className="relative aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
-                          <div className="text-gray-400 text-sm text-center">
-                            <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-lg flex items-center justify-center">
-                              <span className="text-2xl">📦</span>
-                            </div>
-                            <p>Image placeholder</p>
-                          </div>
+                        <div className="relative aspect-square mb-4 overflow-hidden rounded-lg">
+                          <Image
+                            src={(() => {
+                              // Handle case where images might be a stringified array
+                              let imageUrl = product.images[0] || '/images/products/placeholder.svg';
+                              
+                              // If the imageUrl looks like a stringified array, parse it
+                              if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                                try {
+                                  const parsed = JSON.parse(imageUrl);
+                                  imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                                } catch (e) {
+                                  console.warn('Failed to parse image URL:', imageUrl);
+                                  imageUrl = '/images/products/placeholder.svg';
+                                }
+                              }
+                              
+                              return imageUrl;
+                            })()}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
                         </div>
                         
                         {/* Product Info */}

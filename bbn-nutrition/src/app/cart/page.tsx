@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Trash2, Minus, Plus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,10 +98,30 @@ export default function CartPage() {
                       {/* Product Image */}
                       <div className="flex-shrink-0">
                         <Link href={`/product/${item.product.id}`}>
-                          <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity bg-gray-100 flex items-center justify-center">
-                            <div className="text-gray-400 text-xs text-center">
-                              <span className="text-lg">📦</span>
-                            </div>
+                          <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                            <Image
+                              src={(() => {
+                                // Handle case where images might be a stringified array
+                                let imageUrl = item.product.images[0] || '/images/products/placeholder.svg';
+                                
+                                // If the imageUrl looks like a stringified array, parse it
+                                if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                                  try {
+                                    const parsed = JSON.parse(imageUrl);
+                                    imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                                  } catch (e) {
+                                    console.warn('Failed to parse image URL:', imageUrl);
+                                    imageUrl = '/images/products/placeholder.svg';
+                                  }
+                                }
+                                
+                                return imageUrl;
+                              })()}
+                              alt={item.product.name}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
                           </div>
                         </Link>
                       </div>

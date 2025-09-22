@@ -187,28 +187,41 @@ function ShopPageOld() {
   const brands = [...new Set(allProducts.map((product: Product) => product.brand))];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          {filters.searchQuery ? (
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Search Results for &ldquo;{filters.searchQuery}&rdquo;
-              </h1>
-              <p className="text-gray-600">
-                {filteredProducts.length} products found
-              </p>
-            </div>
-          ) : (
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
-              <p className="text-gray-600">
-                Find the perfect supplements for your fitness goals
-              </p>
-            </div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header Section */}
+      <section className="py-8 bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            {filters.searchQuery ? (
+              <div>
+                <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full mb-6">
+                  <Search className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-800">Search Results</span>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+                  Results for &ldquo;{filters.searchQuery}&rdquo;
+                </h1>
+                <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  {filteredProducts.length} products found matching your search
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full mb-6">
+                  <Grid className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">Product Catalog</span>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">Shop All Products</h1>
+                <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  Find the perfect supplements for your fitness goals from our premium collection
+                </p>
+              </div>
+            )}
+          </div>
         </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Filters and Controls */}
         <div className="flex flex-col lg:flex-row gap-6 mb-8">

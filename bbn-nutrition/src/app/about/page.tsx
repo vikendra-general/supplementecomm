@@ -2,17 +2,30 @@ import { Users, Target, Award, Heart } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      {/* Hero Section */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About BBN</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          We&apos;re passionate about helping athletes and fitness enthusiasts achieve their goals 
-          with premium quality supplements backed by science and results.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header Section */}
+      <section className="py-8 bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full mb-6">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">About Our Company</span>
+            </div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">About BBN</h1>
+            <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              We&apos;re passionate about helping athletes and fitness enthusiasts achieve their goals 
+              with premium quality supplements backed by science and results.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* Story Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+        </div>
+
+        {/* Story Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
@@ -181,6 +194,7 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
-} 
+}
