@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Star, ShoppingCart, Heart, Trash2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
@@ -175,14 +174,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden flex-shrink-0">
         <Link href={`/product/${product.id}`}>
-          <div className="relative w-full h-full">
-            <Image
-              src={product.images[0] || '/images/products/placeholder.svg'}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
+          <div className="relative w-full h-full bg-gray-100 flex items-center justify-center">
+            <div className="text-gray-400 text-sm text-center">
+              <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">📦</span>
+              </div>
+              <p>Image placeholder</p>
+            </div>
           </div>
         </Link>
         

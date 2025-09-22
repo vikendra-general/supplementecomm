@@ -240,6 +240,18 @@ function AdminProductsContent() {
       formData.append('bestSeller', productFormData.bestSeller.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
       
+      // Add nutrition facts
+      formData.append('nutritionFacts', JSON.stringify({
+        servingSize: productFormData.nutritionFacts.servingSize,
+        calories: productFormData.nutritionFacts.calories ? parseFloat(productFormData.nutritionFacts.calories) : undefined,
+        protein: productFormData.nutritionFacts.protein ? parseFloat(productFormData.nutritionFacts.protein) : undefined,
+        carbs: productFormData.nutritionFacts.carbs ? parseFloat(productFormData.nutritionFacts.carbs) : undefined,
+        fat: productFormData.nutritionFacts.fat ? parseFloat(productFormData.nutritionFacts.fat) : undefined,
+        sugar: productFormData.nutritionFacts.sugar ? parseFloat(productFormData.nutritionFacts.sugar) : undefined,
+        sodium: productFormData.nutritionFacts.sodium ? parseFloat(productFormData.nutritionFacts.sodium) : undefined,
+        ingredients: productFormData.nutritionFacts.ingredients ? productFormData.nutritionFacts.ingredients.split(',').map(i => i.trim()).filter(i => i) : []
+      }));
+      
       // Handle existing images (for editing)
       productFormData.images.forEach((image) => {
         formData.append('existingImages', image);
