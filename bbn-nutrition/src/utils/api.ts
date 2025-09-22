@@ -467,6 +467,20 @@ class ApiService {
     });
   }
 
+  async createUser(userData: {
+    name: string;
+    email: string;
+    phone?: string;
+    role: 'user' | 'admin';
+    emailVerified?: boolean;
+    isActive?: boolean;
+  }) {
+    return this.request('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
   async getProductAnalytics() {
     return this.request('/admin/products/analytics');
   }

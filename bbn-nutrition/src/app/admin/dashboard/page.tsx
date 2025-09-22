@@ -240,99 +240,119 @@ export default function AdminDashboard() {
           </div>
 
           {/* All Admin Tools & Features */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+            <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">All Admin Tools & Features</h2>
                 <p className="text-gray-600 mt-1">Complete access to all administrative functions</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* PRODUCT OPERATIONS */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">PRODUCT OPERATIONS</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/products" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> View All Products
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">PRODUCT OPERATIONS</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/products" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">View All Products</span>
                   </Link>
-                  <Link href="/admin/products?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Add New Product
+                  <Link href="/admin/products?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Add New Product</span>
                   </Link>
-                  <Link href="/admin/products?view=inventory" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Manage Inventory
+                  <Link href="/admin/products?view=inventory" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Manage Inventory</span>
                   </Link>
-                  <Link href="/admin/products?view=categories" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Product Categories
+                  <Link href="/admin/products?view=categories" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Product Categories</span>
                   </Link>
-                  <Link href="/admin/products?view=bulk" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Bulk Operations
+                  <Link href="/admin/products?view=bulk" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Bulk Operations</span>
                   </Link>
                 </div>
               </div>
 
               {/* ORDER MANAGEMENT */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">ORDER MANAGEMENT</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/orders" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> All Orders
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">ORDER MANAGEMENT</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/orders" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">All Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=pending" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Pending Orders
+                  <Link href="/admin/orders?status=pending" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Pending Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=processing" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Processing Orders
+                  <Link href="/admin/orders?status=processing" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Processing Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=shipped" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Shipped Orders
+                  <Link href="/admin/orders?status=shipped" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Shipped Orders</span>
                   </Link>
-                  <Link href="/admin/orders?view=refunds" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Refunds & Returns
+                  <Link href="/admin/orders?view=refunds" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Refunds & Returns</span>
                   </Link>
                 </div>
               </div>
 
               {/* USER MANAGEMENT */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">USER MANAGEMENT</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> All Users
+              <div className="space-y-4 h-full mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">USER MANAGEMENT</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">All Users</span>
                   </Link>
-                  <Link href="/admin/users?role=customer" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Customers
+                  <Link href="/admin/users?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Add New User</span>
                   </Link>
-                  <Link href="/admin/users?role=admin" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Admin Users
+                  <Link href="/admin/users?role=customer" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Customers</span>
                   </Link>
-                  <Link href="/admin/users?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Add New User
+                  <Link href="/admin/users?role=admin" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Admin Users</span>
                   </Link>
-                  <Link href="/admin/users?view=permissions" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> User Permissions
+                  <Link href="/admin/users?view=permissions" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">User Permissions</span>
                   </Link>
                 </div>
               </div>
 
               {/* ANALYTICS & REPORTS */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">ANALYTICS & REPORTS</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/analytics" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Analytics Dashboard
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">ANALYTICS & REPORTS</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/analytics" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Analytics Dashboard</span>
                   </Link>
-                  <Link href="/admin/analytics?view=sales" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Sales Reports
+                  <Link href="/admin/analytics?view=sales" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Sales Reports</span>
                   </Link>
-                  <Link href="/admin/analytics?view=performance" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Product Performance
+                  <Link href="/admin/analytics?view=performance" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Product Performance</span>
                   </Link>
-                  <Link href="/admin/analytics?view=customers" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Customer Analytics
+                  <Link href="/admin/analytics?view=customers" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Customer Analytics</span>
                   </Link>
-                  <Link href="/admin/analytics?action=export" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Export Reports
+                  <Link href="/admin/analytics?action=export" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Export Reports</span>
                   </Link>
                 </div>
               </div>

@@ -15,6 +15,112 @@ const router = express.Router();
 // All routes require admin authorization
 router.use(protect, authorize('admin'));
 
+// @desc    Create new user (Admin only)
+// @route   POST /api/admin/users
+// @access  Private/Admin
+router.post('/users', [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('phone')
+    .optional()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+  body('role')
+    .isIn(['user', 'admin'])
+    .withMessage('Invalid role'),
+  body('emailVerified')
+    .optional()
+    .isBoolean()
+    .withMessage('Email verified must be a boolean'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('Is active must be a boolean')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { name, email, phone, role, emailVerified, isActive } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // Generate a temporary password (user will need to reset it)
+    const tempPassword = 'TempPass123!';
+
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      phone: phone || '',
+      password: tempPassword,
+      role: role || 'user',
+      emailVerified: emailVerified || false,
+      isActive: isActive !== undefined ? isActive : true
+    });
+
+    // Remove password from response
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      emailVerified: user.emailVerified,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: userResponse
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: validationErrors
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/dashboard
 // @access  Private/Admin

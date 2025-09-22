@@ -33,6 +33,31 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Get translated product data
   const translatedProduct = translateProduct(product);
   
+  // Validate and get safe image URL
+  const getSafeImageUrl = (images: string[] | undefined): string => {
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return '/images/products/placeholder.svg';
+    }
+    
+    const firstImage = images[0];
+    if (!firstImage || typeof firstImage !== 'string' || firstImage.trim() === '') {
+      return '/images/products/placeholder.svg';
+    }
+    
+    // Additional validation for URL format
+    try {
+      // Check if it's a relative path or absolute URL
+      if (firstImage.startsWith('/') || firstImage.startsWith('http')) {
+        return firstImage;
+      }
+      // If it's not a valid format, use placeholder
+      return '/images/products/placeholder.svg';
+    } catch (error) {
+      console.warn('Invalid image URL for product:', product.id, firstImage);
+      return '/images/products/placeholder.svg';
+    }
+  };
+  
   // Check if product is in wishlist on component mount
   useEffect(() => {
     if (isAuthenticated) {
@@ -177,7 +202,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Link href={`/product/${product.id}`}>
           <div className="relative w-full h-full">
             <Image
-              src={product.images[0] || '/images/products/placeholder.svg'}
+              src={getSafeImageUrl(product.images)}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
