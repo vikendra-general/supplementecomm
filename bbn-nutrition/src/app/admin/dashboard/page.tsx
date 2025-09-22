@@ -169,18 +169,18 @@ export default function AdminDashboard() {
       <AdminLayout>
         <div className="space-y-6">
           {/* Admin Mode Banner */}
-          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-4 mb-6">
+          <div className="bg-green-50 rounded-lg p-4 mb-6 border border-green-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="bg-white bg-opacity-20 rounded-full p-2">
-                  <Settings className="w-6 h-6 text-white" />
+                <div className="bg-green-100 rounded-full p-2">
+                  <Settings className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-lg">Administrator Dashboard</h2>
-                  <p className="text-green-100 text-sm">You are logged in as an administrator - manage your website, not place orders</p>
+                  <h2 className="text-green-900 font-semibold text-lg">Administrator Dashboard</h2>
+                  <p className="text-green-700 text-sm">You are logged in as an administrator - manage your website, not place orders</p>
                 </div>
               </div>
-              <div className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                 Admin Mode
               </div>
             </div>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Website Management Dashboard</h1>
+              <h1 className="text-2xl font-bold text-black">Website Management Dashboard</h1>
               <p className="text-gray-600 mt-1">Welcome back, {user?.name} - Manage your BBN Nutrition website</p>
             </div>
             <div className="flex items-center space-x-3">
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
                 <option value="30days">Last 30 days</option>
                 <option value="90days">Last 90 days</option>
               </select>
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+              <button className="px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 Export Report
               </button>
             </div>
@@ -215,27 +215,27 @@ export default function AdminDashboard() {
               value={formatCurrency(stats?.totalRevenue || 0)}
               icon={DollarSign}
               growth={stats?.revenueGrowth}
-              color="bg-gradient-to-r from-green-500 to-green-600"
+              color="bg-green-50"
             />
             <StatCard
               title="Total Orders"
               value={stats?.totalOrders || 0}
               icon={ShoppingCart}
               growth={stats?.ordersGrowth}
-              color="bg-gradient-to-r from-blue-500 to-blue-600"
+              color="bg-blue-50"
             />
             <StatCard
               title="Total Users"
               value={stats?.totalUsers || 0}
               icon={Users}
               growth={stats?.usersGrowth}
-              color="bg-gradient-to-r from-purple-500 to-purple-600"
+              color="bg-purple-50"
             />
             <StatCard
               title="Total Products"
               value={stats?.totalProducts || 0}
               icon={Package}
-              color="bg-gradient-to-r from-orange-500 to-orange-600"
+              color="bg-orange-50"
             />
           </div>
 

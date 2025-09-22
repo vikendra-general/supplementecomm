@@ -135,12 +135,12 @@ function AdminOrdersContent() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
+              <h1 className="text-3xl font-bold text-black">Order Management</h1>
               <p className="text-gray-600 mt-1">Manage customer orders and track deliveries</p>
             </div>
             <Link
               href="/admin/dashboard"
-              className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="bg-blue-50 text-black border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-all flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Dashboard</span>
@@ -217,7 +217,7 @@ function AdminOrdersContent() {
               <p className="text-red-600">{error}</p>
               <button
                 onClick={fetchOrders}
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="mt-4 px-4 py-2 bg-green-50 text-black border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
               >
                 Retry
               </button>
@@ -230,27 +230,27 @@ function AdminOrdersContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-blue-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Order
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Payment
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -312,7 +312,7 @@ function AdminOrdersContent() {
                             // Order details functionality can be implemented later
                             console.log('View order:', order._id);
                           }}
-                          className="text-green-600 hover:text-green-900 mr-3"
+                          className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded hover:bg-blue-100 transition-all mr-3"
                         >
                           <Eye className="w-4 h-4" />
                         </button>

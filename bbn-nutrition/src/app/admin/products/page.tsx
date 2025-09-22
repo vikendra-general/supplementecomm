@@ -425,7 +425,7 @@ function AdminProductsContent() {
               <button
                 onClick={fetchProducts}
                 disabled={loading}
-                className="bg-dark-gray text-dark-text px-4 py-2 rounded-lg hover:bg-hover-subtle hover:bg-opacity-50 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
@@ -433,7 +433,7 @@ function AdminProductsContent() {
               <button
                 onClick={() => setShowProductForm(true)}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-3 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 px-6 py-3 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50 font-semibold"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Product</span>
@@ -558,24 +558,24 @@ function AdminProductsContent() {
         <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-dark-gray">
+              <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -635,7 +635,7 @@ function AdminProductsContent() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEditProduct(product)}
-                          className="text-primary hover:text-primary-dark transition-colors"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -1092,7 +1092,7 @@ function AdminProductsContent() {
               <button
                 onClick={handleSaveProduct}
                 disabled={loading}
-                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 font-semibold px-6 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Saving...' : 'Save Product'}</span>
