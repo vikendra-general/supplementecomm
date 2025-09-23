@@ -24,9 +24,16 @@ function LoginPageContent() {
     confirmPassword: ''
   });
   
-  // Pre-fill admin credentials for demo purposes
+  // Handle mode parameter and pre-fill admin credentials for demo purposes
   useEffect(() => {
+    const mode = searchParams.get('mode');
     const isAdminLogin = searchParams.get('admin') === 'true';
+    
+    // Set register mode if specified in URL
+    if (mode === 'register') {
+      setIsLogin(false);
+    }
+    
     if (isAdminLogin && isLogin) {
       setFormData(prev => ({
         ...prev,
