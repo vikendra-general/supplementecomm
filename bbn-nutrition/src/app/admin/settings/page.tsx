@@ -445,7 +445,7 @@ export default function AdminSettingsPage() {
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Website Theme Control</h3>
+                  <h3 className="text-lg font-semibold text-black">Website Theme Control</h3>
                   <p className="text-sm text-gray-600">Customize your website&apos;s appearance and branding</p>
                 </div>
                 <div className="flex space-x-3">
@@ -471,7 +471,7 @@ export default function AdminSettingsPage() {
 
             {/* Brand Colors */}
              <div className="bg-white rounded-lg border border-gray-200 p-6">
-               <h4 className="text-md font-semibold text-gray-900 mb-6">Brand Colors</h4>
+               <h4 className="text-md font-semibold text-black mb-6">Brand Colors</h4>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  {/* Primary Brand Color */}
@@ -559,7 +559,7 @@ export default function AdminSettingsPage() {
 
              {/* Background Colors */}
              <div className="bg-white rounded-lg border border-gray-200 p-6">
-               <h4 className="text-md font-semibold text-gray-900 mb-6">Background Colors</h4>
+               <h4 className="text-md font-semibold text-black mb-6">Background Colors</h4>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  {/* Page Background */}
@@ -674,7 +674,7 @@ export default function AdminSettingsPage() {
 
              {/* Text Colors */}
              <div className="bg-white rounded-lg border border-gray-200 p-6">
-               <h4 className="text-md font-semibold text-gray-900 mb-6">Text Colors</h4>
+               <h4 className="text-md font-semibold text-black mb-6">Text Colors</h4>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  {/* Primary Text */}
@@ -789,7 +789,7 @@ export default function AdminSettingsPage() {
 
              {/* Form Colors */}
              <div className="bg-white rounded-lg border border-gray-200 p-6">
-               <h4 className="text-md font-semibold text-gray-900 mb-6">Form & Input Colors</h4>
+               <h4 className="text-md font-semibold text-black mb-6">Form & Input Colors</h4>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  {/* Input Background */}
@@ -904,7 +904,7 @@ export default function AdminSettingsPage() {
 
              {/* UI Element Colors */}
              <div className="bg-white rounded-lg border border-gray-200 p-6">
-               <h4 className="text-md font-semibold text-gray-900 mb-6">UI Element Colors</h4>
+               <h4 className="text-md font-semibold text-black mb-6">UI Element Colors</h4>
                
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  {/* Border Color */}
@@ -1019,12 +1019,12 @@ export default function AdminSettingsPage() {
 
             {/* Live Preview */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h4 className="text-md font-semibold text-gray-900 mb-4">Live Preview</h4>
+              <h4 className="text-md font-semibold text-black mb-4">Live Preview</h4>
               <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
                 <div className="space-y-4">
                   {/* Sample Header */}
                   <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm">
-                    <h5 className="font-semibold text-gray-900">BBN Nutrition</h5>
+                    <h5 className="font-semibold text-black">BBN Nutrition</h5>
                     <div className="flex space-x-2">
                       <button 
                         className="px-4 py-2 rounded-lg text-white font-medium transition-colors"
@@ -1044,7 +1044,7 @@ export default function AdminSettingsPage() {
                   {/* Sample Product Card */}
                   <div className="bg-white rounded-lg shadow-sm p-4">
                     <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
-                    <h6 className="font-medium text-gray-900 mb-2">Sample Product</h6>
+                    <h6 className="font-medium text-black mb-2">Sample Product</h6>
                     <p className="text-gray-600 text-sm mb-3">Premium quality supplement for fitness enthusiasts</p>
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-gray-900">₹2,999</span>
@@ -1062,7 +1062,7 @@ export default function AdminSettingsPage() {
 
             {/* Branding Assets */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h4 className="text-md font-semibold text-gray-900 mb-6">Branding Assets</h4>
+              <h4 className="text-md font-semibold text-black mb-6">Branding Assets</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
@@ -1091,7 +1091,7 @@ export default function AdminSettingsPage() {
 
             {/* Quick Theme Presets */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h4 className="text-md font-semibold text-gray-900 mb-4">Quick Theme Presets</h4>
+              <h4 className="text-md font-semibold text-black mb-4">Quick Theme Presets</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button
                   onClick={() => {

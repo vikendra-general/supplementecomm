@@ -234,7 +234,7 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">Authentication Required</h1>
           <p className="text-gray-600 mb-6">
             Please log in to your account to proceed with checkout.
           </p>
@@ -585,7 +585,7 @@ export default function CheckoutPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Cart
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+        <h1 className="text-3xl font-bold text-black">Checkout</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -622,12 +622,12 @@ export default function CheckoutPage() {
             {/* Step 1: Billing Information */}
             {step === 1 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Billing Information</h2>
                 
                 {/* Address Selection */}
                 {addresses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Billing Address</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Select Billing Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {addresses.map((address) => (
                         <div
@@ -691,7 +691,7 @@ export default function CheckoutPage() {
                   <div>
                     {addresses.length > 0 && (
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Add New Address</h3>
+                        <h3 className="text-lg font-semibold text-black">Add New Address</h3>
                         <button
                           type="button"
                           onClick={() => setShowAddressForm(false)}
@@ -894,7 +894,7 @@ export default function CheckoutPage() {
             {/* Step 2: Shipping Information */}
             {step === 2 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Shipping Information</h2>
                 
                 {/* Same as Billing Option */}
                 <div className="mb-6">
@@ -917,7 +917,7 @@ export default function CheckoutPage() {
                 {/* Address Selection for Shipping */}
                 {!formData.sameAsBilling && addresses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Shipping Address</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Select Shipping Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {addresses.map((address) => (
                         <div
@@ -979,7 +979,7 @@ export default function CheckoutPage() {
                    <div>
                      {addresses.length > 0 && (
                        <div className="flex items-center justify-between mb-4">
-                         <h3 className="text-lg font-semibold text-gray-900">Add New Shipping Address</h3>
+                         <h3 className="text-lg font-semibold text-black">Add New Shipping Address</h3>
                          <button
                            type="button"
                            onClick={() => setShowAddressForm(false)}
@@ -1146,7 +1146,7 @@ export default function CheckoutPage() {
             {/* Step 3: Payment Information */}
             {step === 3 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Payment Information</h2>
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1218,7 +1218,7 @@ export default function CheckoutPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+            <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
             
             {/* Order Items */}
             <div className="space-y-3 mb-6">

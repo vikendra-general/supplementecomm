@@ -198,7 +198,7 @@ function ShopPageOld() {
                   <Search className="w-4 h-4 text-blue-600" />
                   <span className="text-sm font-medium text-blue-800">Search Results</span>
                 </div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-2xl lg:text-3xl font-bold text-black mb-3">
                   Results for &ldquo;{filters.searchQuery}&rdquo;
                 </h1>
                 <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
@@ -211,7 +211,7 @@ function ShopPageOld() {
                   <Grid className="w-4 h-4 text-green-600" />
                   <span className="text-sm font-medium text-green-800">Product Catalog</span>
                 </div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">Shop All Products</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-black mb-3">Shop All Products</h1>
                 <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
                   Find the perfect supplements for your fitness goals from our premium collection
                 </p>
@@ -266,7 +266,7 @@ function ShopPageOld() {
           <div className={`lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                <h3 className="text-lg font-semibold text-black">Filters</h3>
                 <button
                   onClick={clearFilters}
                   className="text-sm text-primary hover:text-accent-2"
@@ -277,7 +277,7 @@ function ShopPageOld() {
 
               {/* Category Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Category</h4>
+                <h4 className="font-medium text-black mb-3">Category</h4>
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -311,7 +311,7 @@ function ShopPageOld() {
 
               {/* Brand Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Brand</h4>
+                <h4 className="font-medium text-black mb-3">Brand</h4>
                 <select
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
@@ -326,7 +326,7 @@ function ShopPageOld() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
+                <h4 className="font-medium text-black mb-3">Price Range</h4>
                 <div className="space-y-2">
                   <input
                     type="number"
@@ -377,7 +377,7 @@ function ShopPageOld() {
 
               {/* Rating Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Minimum Rating</h4>
+                <h4 className="font-medium text-black mb-3">Minimum Rating</h4>
                 <select
                   value={filters.rating}
                   onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
@@ -407,7 +407,7 @@ function ShopPageOld() {
                 <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                <h3 className="text-lg font-semibold text-black mb-2">No products found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your filters or search terms.</p>
                 <button
                   onClick={clearFilters}
@@ -628,7 +628,7 @@ function ShopContent() {
         <div className="mb-8">
           {filters.searchQuery ? (
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-black mb-2">
                 Search Results for &ldquo;{filters.searchQuery}&rdquo;
               </h1>
               <p className="text-gray-600">
@@ -637,7 +637,7 @@ function ShopContent() {
             </div>
           ) : (
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
+              <h1 className="text-3xl font-bold text-black mb-2">Shop</h1>
               <p className="text-gray-600">
                 Find the perfect supplements for your fitness goals
               </p>
@@ -688,7 +688,7 @@ function ShopContent() {
           <div className={`lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                <h3 className="text-lg font-semibold text-black">Filters</h3>
                 <button
                   onClick={clearFilters}
                   className="text-sm text-primary hover:text-accent-2"
@@ -699,7 +699,7 @@ function ShopContent() {
 
               {/* Category Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Category</h4>
+                <h4 className="font-medium text-black mb-3">Category</h4>
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -733,7 +733,7 @@ function ShopContent() {
 
               {/* Brand Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Brand</h4>
+                <h4 className="font-medium text-black mb-3">Brand</h4>
                 <select
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
@@ -748,7 +748,7 @@ function ShopContent() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
+                <h4 className="font-medium text-black mb-3">Price Range</h4>
                 <div className="space-y-2">
                   <input
                     type="number"
@@ -799,7 +799,7 @@ function ShopContent() {
 
               {/* Rating Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Minimum Rating</h4>
+                <h4 className="font-medium text-black mb-3">Minimum Rating</h4>
                 <select
                   value={filters.rating}
                   onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
@@ -829,7 +829,7 @@ function ShopContent() {
                 <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                <h3 className="text-lg font-semibold text-black mb-2">No products found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your filters or search terms.</p>
                 <button
                   onClick={clearFilters}

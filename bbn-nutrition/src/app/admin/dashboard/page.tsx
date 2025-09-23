@@ -243,7 +243,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">All Admin Tools & Features</h2>
+                <h2 className="text-2xl font-bold text-black">All Admin Tools & Features</h2>
                 <p className="text-gray-600 mt-1">Complete access to all administrative functions</p>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* PRODUCT OPERATIONS */}
               <div className="space-y-4 h-full">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">PRODUCT OPERATIONS</h3>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">PRODUCT OPERATIONS</h3>
                 <div className="space-y-3 flex-1">
                   <Link href="/admin/products" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
                     <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
 
               {/* ORDER MANAGEMENT */}
               <div className="space-y-4 h-full">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">ORDER MANAGEMENT</h3>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">ORDER MANAGEMENT</h3>
                 <div className="space-y-3 flex-1">
                   <Link href="/admin/orders" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
                     <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
 
               {/* USER MANAGEMENT */}
               <div className="space-y-4 h-full mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">USER MANAGEMENT</h3>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">USER MANAGEMENT</h3>
                 <div className="space-y-3 flex-1">
                   <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
                     <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
 
               {/* ANALYTICS & REPORTS */}
               <div className="space-y-4 h-full">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4">ANALYTICS & REPORTS</h3>
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">ANALYTICS & REPORTS</h3>
                 <div className="space-y-3 flex-1">
                   <Link href="/admin/analytics" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
                     <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                  <h3 className="text-lg font-semibold text-black">Recent Orders</h3>
                   <Link
                     href="/admin/orders"
                     className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
@@ -423,7 +423,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
+                  <h3 className="text-lg font-semibold text-black">Top Products</h3>
                   <Link
                     href="/admin/products"
                     className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
@@ -477,7 +477,7 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-black mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/admin/products"

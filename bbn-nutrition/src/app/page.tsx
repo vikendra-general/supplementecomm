@@ -35,7 +35,7 @@ const CategoryCard = memo(({ category, t }: { category: { id: string; name: stri
       />
     </div>
     <div className="p-4 text-center">
-      <h3 className="font-semibold text-gray-900 text-sm">{category.name}</h3>
+      <h3 className="font-semibold text-black text-sm">{category.name}</h3>
     </div>
   </Link>
 ))
@@ -76,7 +76,7 @@ const TestimonialCard = memo(({ testimonial }: { testimonial: { name: string; ro
       </div>
       <div className="flex-1">
         <div className="flex items-center justify-between mb-1">
-          <h4 className="font-semibold text-gray-900 text-sm">{testimonial.name}</h4>
+          <h4 className="font-semibold text-black text-sm">{testimonial.name}</h4>
         </div>
         <p className="text-xs text-gray-500 mb-2">{testimonial.role}</p>
         <div className="flex items-center">
@@ -207,7 +207,7 @@ export default function HomePage() {
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Categories</h2>
+            <h2 className="text-2xl font-bold text-black mb-6">Categories</h2>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -263,7 +263,7 @@ export default function HomePage() {
               <Star className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-800">{t('home.featuredTitle')}</span>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">{t('home.featuredTitle')}</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-black mb-3">{t('home.featuredTitle')}</h2>
             <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">{t('home.featuredSubtitle')}</p>
           </div>
           
@@ -320,7 +320,7 @@ export default function HomePage() {
               <TrendingUp className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-800">Trending Now</span>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">Top Sellers</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-black mb-3">Top Sellers</h2>
             <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">Most popular products chosen by our fitness community</p>
           </div>
           
@@ -356,7 +356,7 @@ export default function HomePage() {
               <Users className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-800">Customer Reviews</span>
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">What customers say</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-black mb-3">What customers say</h2>
             <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">Real testimonials from our satisfied customers who have transformed their fitness journey with BBN Nutrition</p>
           </div>
           

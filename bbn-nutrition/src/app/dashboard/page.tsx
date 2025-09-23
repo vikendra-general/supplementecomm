@@ -604,9 +604,9 @@ function DashboardContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {user?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
-          </h1>
+          <h1 className="text-3xl font-bold text-black mb-2">
+             {user?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
+           </h1>
           <p className="text-gray-600 mb-6">
             {user?.role === 'admin' 
               ? 'Welcome to the admin panel! Manage your store, products, orders, and users from here.'
@@ -624,7 +624,7 @@ function DashboardContent() {
                 <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg ring-4 ring-primary/20">
                   <span className="text-white font-bold text-xl">{user?.name?.charAt(0) || 'U'}</span>
                 </div>
-                <h3 className="font-semibold text-gray-900">{user?.name}</h3>
+                <h3 className="font-semibold text-black">{user?.name}</h3>
                 <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
 
@@ -665,7 +665,7 @@ function DashboardContent() {
             {/* Admin Overview Tab */}
             {activeTab === 'overview' && user?.role === 'admin' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Admin Overview</h2>
+                <h2 className="text-2xl font-bold text-black">Admin Overview</h2>
                 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -712,7 +712,7 @@ function DashboardContent() {
                 
                 {/* Quick Actions */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link href="/admin/products" className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                       <ShoppingBag className="w-6 h-6 text-primary" />
@@ -737,7 +737,7 @@ function DashboardContent() {
             {activeTab === 'products' && user?.role === 'admin' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Products</h2>
+                  <h2 className="text-2xl font-bold text-black">Manage Products</h2>
                   <Link href="/admin/products" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                     Go to Product Management
                   </Link>
@@ -760,7 +760,7 @@ function DashboardContent() {
             {activeTab === 'users' && user?.role === 'admin' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Users</h2>
+                  <h2 className="text-2xl font-bold text-black">Manage Users</h2>
                   <Link href="/admin/users" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                     Go to User Management
                   </Link>
@@ -781,11 +781,11 @@ function DashboardContent() {
             {/* Admin Reports Tab */}
             {activeTab === 'reports' && user?.role === 'admin' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
+                <h2 className="text-2xl font-bold text-black">Reports & Analytics</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Reports</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Sales Reports</h3>
                     <p className="text-gray-600 mb-4">View detailed sales analytics and revenue reports.</p>
                     <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                       View Sales Reports
@@ -793,7 +793,7 @@ function DashboardContent() {
                   </div>
                   
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Analytics</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Product Analytics</h3>
                     <p className="text-gray-600 mb-4">Analyze product performance and inventory trends.</p>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                       View Product Analytics
@@ -807,7 +807,7 @@ function DashboardContent() {
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-black">
                     {user?.role === 'admin' ? 'All Orders' : 'My Orders'}
                   </h2>
                 </div>
@@ -826,7 +826,7 @@ function DashboardContent() {
                 ) : orders.length === 0 ? (
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
                     <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+                    <h3 className="text-lg font-medium text-black mb-2">No orders found</h3>
                     <p className="text-gray-600 mb-4">You haven&apos;t placed any orders yet.</p>
                     <Link 
                       href="/shop"
@@ -841,7 +841,7 @@ function DashboardContent() {
                         <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="font-semibold text-gray-900">Order #{order.orderNumber}</h3>
+                              <h3 className="font-semibold text-black">Order #{order.orderNumber}</h3>
                               <p className="text-sm text-gray-600">
                                 Placed on {new Date(order.createdAt).toLocaleDateString()}
                               </p>
@@ -918,7 +918,7 @@ function DashboardContent() {
             {activeTab === 'wishlist' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">My Wishlist</h2>
+                  <h2 className="text-2xl font-bold text-black">My Wishlist</h2>
                 </div>
                 
                 {wishlistLoading ? (
@@ -929,7 +929,7 @@ function DashboardContent() {
                 ) : wishlistItems.length === 0 ? (
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
                     <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
+                    <h3 className="text-lg font-medium text-black mb-2">Your wishlist is empty</h3>
                     <p className="text-gray-600 mb-4">Start adding products to your wishlist to see them here.</p>
                     <Link 
                       href="/shop"
@@ -972,7 +972,7 @@ function DashboardContent() {
                         {/* Product Info */}
                         <div className="space-y-2">
                           <p className="text-sm text-gray-500">{product.brand}</p>
-                          <h3 className="font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
+                          <h3 className="font-semibold text-black">{product.name}</h3>
                           
                           {/* Rating */}
                           <div className="flex items-center">
@@ -1036,7 +1036,7 @@ function DashboardContent() {
             {activeTab === 'addresses' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
+                  <h2 className="text-2xl font-bold text-black">My Addresses</h2>
                   <button 
                     onClick={handleAddAddress}
                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center space-x-2"
@@ -1057,7 +1057,7 @@ function DashboardContent() {
                       addresses.map((address) => (
                         <div key={address._id} className="bg-white border border-gray-200 rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-black">
                               {address.type.charAt(0).toUpperCase() + address.type.slice(1)} Address
                               {address.isDefault && (
                                 <span className="ml-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded">
@@ -1082,7 +1082,7 @@ function DashboardContent() {
                     ) : (
                       <div className="col-span-full bg-white border border-gray-200 rounded-lg p-8 text-center">
                         <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="font-semibold text-gray-900 mb-2">No addresses yet</h3>
+                        <h3 className="font-semibold text-black mb-2">No addresses yet</h3>
                         <p className="text-gray-600 mb-6">Add your first shipping address to get started</p>
                         <button 
                           onClick={handleAddAddress}
@@ -1101,7 +1101,7 @@ function DashboardContent() {
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Account Settings</h2>
+                <h2 className="text-2xl font-bold text-black">Account Settings</h2>
                 
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <form onSubmit={handleSaveProfile} className="space-y-6">
@@ -1184,7 +1184,7 @@ function DashboardContent() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-black">
                   {editingAddress ? 'Edit Address' : 'Add New Address'}
                 </h2>
                 <button
@@ -1212,7 +1212,7 @@ function DashboardContent() {
                       )}
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-black">
                         {locationLoading ? 'Getting Location...' : 'Use Current Location'}
                       </h3>
                       <p className="text-sm text-gray-600">
@@ -1229,7 +1229,7 @@ function DashboardContent() {
                       <Edit3 className="w-6 h-6 text-gray-600" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-gray-900">Enter Manually</h3>
+                      <h3 className="font-semibold text-black">Enter Manually</h3>
                       <p className="text-sm text-gray-600">Type your address details</p>
                     </div>
                   </button>

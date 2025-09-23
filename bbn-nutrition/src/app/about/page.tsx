@@ -11,7 +11,7 @@ export default function AboutPage() {
               <Users className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-800">About Our Company</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">About BBN</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-black mb-3">About BBN</h1>
             <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
               We&apos;re passionate about helping athletes and fitness enthusiasts achieve their goals 
               with premium quality supplements backed by science and results.
@@ -81,13 +81,13 @@ export default function AboutPage() {
 
       {/* Values */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Our Values</h2>
+        <h2 className="text-3xl font-bold text-black text-center mb-12">Our Values</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Heart className="w-8 h-8 text-blue-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Quality First</h3>
+            <h3 className="text-xl font-semibold text-black mb-2">Quality First</h3>
             <p className="text-gray-600">
               Every product we create undergoes rigorous testing to ensure the highest 
               quality standards and maximum effectiveness.
@@ -98,7 +98,7 @@ export default function AboutPage() {
             <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Target className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Science-Based</h3>
+            <h3 className="text-xl font-semibold text-black mb-2">Science-Based</h3>
             <p className="text-gray-600">
               Our formulations are backed by scientific research and developed by 
               nutrition experts to deliver proven results.
@@ -109,7 +109,7 @@ export default function AboutPage() {
             <div className="w-16 h-16 bg-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Users className="w-8 h-8 text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Customer Focused</h3>
+            <h3 className="text-xl font-semibold text-black mb-2">Customer Focused</h3>
             <p className="text-gray-600">
               We put our customers first, providing exceptional service and support 
               to help you achieve your fitness goals.

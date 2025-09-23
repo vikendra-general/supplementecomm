@@ -336,7 +336,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           {/* Brand and Name */}
           <div>
             <p className="text-sm text-gray-500 mb-2">{product.brand}</p>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            <h1 className="text-3xl font-bold text-black mb-4">{product.name}</h1>
           </div>
 
           {/* Rating */}
@@ -377,14 +377,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           {/* Description */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">Description</h3>
             <p className="text-gray-600 leading-relaxed">{product.description}</p>
           </div>
 
           {/* Variants */}
           {product.variants && product.variants.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Flavor</h3>
+              <h3 className="text-lg font-semibold text-black mb-2">Flavor</h3>
               <div className="flex space-x-2">
                 {product.variants.map((variant) => (
                   <button
@@ -409,7 +409,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           {/* Quantity */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Quantity</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">Quantity</h3>
             {(() => {
               const variant = product.variants?.find(v => v.id === selectedVariant);
               const availableStock = getAvailableStock(product, variant);
@@ -572,11 +572,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       {/* Nutrition Facts */}
       {product.nutritionFacts && (
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Nutrition Facts</h2>
+          <h2 className="text-2xl font-bold text-black mb-6">Nutrition Facts</h2>
           <div className="bg-gray-50 rounded-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Per Serving</h3>
+                <h3 className="font-semibold text-black mb-4">Per Serving</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Serving Size</span>
@@ -609,7 +609,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Ingredients</h3>
+                <h3 className="font-semibold text-black mb-4">Ingredients</h3>
                 <ul className="space-y-1">
                   {product.nutritionFacts.ingredients.map((ingredient, index) => (
                     <li key={index} className="text-gray-600">• {ingredient}</li>
@@ -623,12 +623,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
       {/* Reviews Section */}
       <div className="mt-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
+        <h2 className="text-2xl font-bold text-black mb-6">Customer Reviews</h2>
         
         {/* Write a Review Form */}
         {isAuthenticated ? (
           <div className="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Write a Review</h3>
+            <h3 className="text-xl font-semibold text-black mb-4">Write a Review</h3>
             <form onSubmit={handleSubmitReview} className="space-y-4">
               <div>
                 <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
@@ -701,7 +701,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         {/* Reviews List */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-black">
               Reviews ({reviews.length})
             </h3>
             <div className="flex items-center space-x-2">
@@ -742,7 +742,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h4 className="font-medium text-gray-900">
+                          <h4 className="font-medium text-black">
                             {review.user?.name || 'Anonymous User'}
                           </h4>
                           <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
@@ -796,7 +796,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Star className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-black mb-2">
                 No reviews yet
               </h3>
               <p className="text-gray-500 mb-4">

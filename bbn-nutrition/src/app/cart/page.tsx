@@ -16,10 +16,10 @@ export default function CartPage() {
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const handleQuantityChange = async (productId: string, newQuantity: number) => {
+  const handleQuantityChange = async (productId: string, newQuantity: number, variant?: any) => {
     setIsUpdating(productId);
     try {
-      updateQuantity(productId, newQuantity);
+      await updateQuantity(productId, newQuantity, variant);
       toast.success('Cart updated');
     } catch {
       toast.error('Failed to update cart');
@@ -28,8 +28,8 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = (productId: string) => {
-    removeFromCart(productId);
+  const handleRemoveItem = (productId: string, variant?: any) => {
+    removeFromCart(productId, variant);
     toast.success('Item removed from cart');
   };
 
@@ -51,7 +51,7 @@ export default function CartPage() {
           <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
             <ShoppingBag className="w-12 h-12 text-gray-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('cart.emptyTitle')}</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">{t('cart.emptyTitle')}</h1>
           <p className="text-gray-600 mb-8">{t('cart.emptyMessage')}</p>
           <Link
             href="/shop"
@@ -69,7 +69,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cart.title')}</h1>
+          <h1 className="text-3xl font-bold text-black mb-2">{t('cart.title')}</h1>
           <p className="text-gray-600">
             {items.length} {items.length !== 1 ? 'products' : 'product'}
           </p>
@@ -81,7 +81,7 @@ export default function CartPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">{t('cart.cartItems')}</h2>
+                  <h2 className="text-lg font-semibold text-black">{t('cart.cartItems')}</h2>
                   <button
                     onClick={handleClearCart}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
@@ -131,7 +131,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <Link href={`/product/${item.product.id}`}>
-                              <h3 className="text-lg font-semibold text-gray-900 hover:text-primary transition-colors cursor-pointer">
+                              <h3 className="text-lg font-semibold text-black hover:text-primary transition-colors cursor-pointer">
                                 {item.product.name}
                               </h3>
                             </Link>
@@ -157,7 +157,7 @@ export default function CartPage() {
                           <div className="flex flex-col space-y-2">
                             <div className="flex items-center space-x-2">
                               <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1, item.variant)}
                                 disabled={isUpdating === item.product.id || item.quantity <= 1}
                                 className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
@@ -167,7 +167,7 @@ export default function CartPage() {
                                 {isUpdating === item.product.id ? '...' : item.quantity}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1, item.variant)}
                                 disabled={isUpdating === item.product.id || item.quantity >= getAvailableStock(item.product, item.variant)}
                                 className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={item.quantity >= getAvailableStock(item.product, item.variant) ? 'Maximum stock reached' : 'Increase quantity'}
@@ -182,7 +182,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <button
-                            onClick={() => handleRemoveItem(item.product.id)}
+                            onClick={() => handleRemoveItem(item.product.id, item.variant)}
                             className="text-red-600 hover:text-red-700 p-2"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -199,7 +199,7 @@ export default function CartPage() {
           {/* Order Summary */}
           <div className="lg:w-80">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">

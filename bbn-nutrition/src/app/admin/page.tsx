@@ -32,7 +32,7 @@ export default function AdminRedirect() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center bg-white p-8 rounded-lg shadow-lg border border-red-200">
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-8">You need admin privileges to access this page.</p>
           <Link 
             href="/login?redirect=/admin" 
