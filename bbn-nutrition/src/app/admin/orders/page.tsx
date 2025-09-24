@@ -3,13 +3,17 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiService } from '@/utils/api';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { 
   ArrowLeft,
   Search,
   Eye,
-  Package
+  Package,
+  Edit,
+  Trash2,
+  Save,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -63,6 +67,7 @@ export default function AdminOrdersPage() {
 
 function AdminOrdersContent() {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +78,10 @@ function AdminOrdersContent() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [updating, setUpdating] = useState(false);
   const [currentView, setCurrentView] = useState('orders');
+  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<'status' | 'payment' | null>(null);
+  const [tempStatus, setTempStatus] = useState('');
+  const [tempPaymentStatus, setTempPaymentStatus] = useState('');
 
   // Handle URL parameters for filtering
   useEffect(() => {
@@ -127,6 +136,125 @@ function AdminOrdersContent() {
     
     return matchesSearch && matchesStatus && matchesPayment;
   });
+
+  // Update order status
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      setUpdating(true);
+      const response = await apiService.updateOrderStatus(orderId, newStatus);
+      
+      if (response.success) {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === orderId 
+              ? { ...order, status: newStatus }
+              : order
+          )
+        );
+        setEditingOrder(null);
+        setEditingField(null);
+      } else {
+        console.error('Failed to update order status:', response.message);
+        alert('Failed to update order status');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Error updating order status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Update payment status
+  const updatePaymentStatus = async (orderId: string, newPaymentStatus: string) => {
+    try {
+      setUpdating(true);
+      const response = await apiService.updatePaymentStatus(orderId, newPaymentStatus);
+      
+      if (response.success) {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === orderId 
+              ? { ...order, paymentStatus: newPaymentStatus }
+              : order
+          )
+        );
+        setEditingOrder(null);
+        setEditingField(null);
+      } else {
+        console.error('Failed to update payment status:', response.message);
+        alert('Failed to update payment status');
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      alert('Error updating payment status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Handle edit start
+  const startEdit = (orderId: string, field: 'status' | 'payment', currentValue: string) => {
+    setEditingOrder(orderId);
+    setEditingField(field);
+    if (field === 'status') {
+      setTempStatus(currentValue);
+    } else {
+      setTempPaymentStatus(currentValue);
+    }
+  };
+
+  // Handle edit cancel
+  const cancelEdit = () => {
+    setEditingOrder(null);
+    setEditingField(null);
+    setTempStatus('');
+    setTempPaymentStatus('');
+  };
+
+  // Handle order actions
+  const handleViewOrder = (orderId: string) => {
+    // Navigate to order details page or open modal
+    router.push(`/admin/orders/${orderId}`);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Note: You may need to implement delete order API endpoint
+      // await apiService.deleteOrder(orderId);
+      
+      // For now, just remove from local state
+      setOrders(orders.filter(order => order._id !== orderId));
+      
+      // Show success message (you can implement toast notifications)
+      alert('Order deleted successfully');
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Failed to delete order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle edit save
+  const saveEdit = async (field?: 'status' | 'payment') => {
+    if (!editingOrder) return;
+    
+    const fieldToUpdate = field || editingField;
+    
+    if (fieldToUpdate === 'status') {
+      await updateOrderStatus(editingOrder, tempStatus);
+    } else if (fieldToUpdate === 'payment') {
+      await updatePaymentStatus(editingOrder, tempPaymentStatus);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -279,26 +407,98 @@ function AdminOrdersContent() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'confirmed' ? 'bg-purple-100 text-purple-800' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
+                        {editingOrder === order._id && editingField === 'status' ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={tempStatus}
+                              onChange={(e) => setTempStatus(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded text-sm"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button
+                               onClick={() => saveEdit('status')}
+                               className="text-green-600 hover:text-green-800"
+                             >
+                               <Save size={16} />
+                             </button>
+                            <button
+                              onClick={cancelEdit}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                              order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                              order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                              order.status === 'confirmed' ? 'bg-purple-100 text-purple-800' :
+                              order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                            <button
+                              onClick={() => startEdit(order._id, 'status', order.status)}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <Edit size={14} />
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
-                          order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                          order.paymentStatus === 'refunded' ? 'bg-orange-100 text-orange-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.paymentStatus}
-                        </span>
+                        {editingOrder === order._id && editingField === 'payment' ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={tempPaymentStatus}
+                              onChange={(e) => setTempPaymentStatus(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded text-sm"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="paid">Paid</option>
+                              <option value="failed">Failed</option>
+                              <option value="refunded">Refunded</option>
+                            </select>
+                            <button
+                               onClick={() => saveEdit('payment')}
+                               className="text-green-600 hover:text-green-800"
+                             >
+                               <Save size={16} />
+                             </button>
+                            <button
+                              onClick={cancelEdit}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                              order.paymentStatus === 'refunded' ? 'bg-orange-100 text-orange-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.paymentStatus}
+                            </span>
+                            <button
+                              onClick={() => startEdit(order._id, 'payment', order.paymentStatus)}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <Edit size={14} />
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ₹{order.total.toFixed(2)}
@@ -307,15 +507,22 @@ function AdminOrdersContent() {
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => {
-                            // Order details functionality can be implemented later
-                            console.log('View order:', order._id);
-                          }}
-                          className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded hover:bg-blue-100 transition-all mr-3"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleViewOrder(order._id)}
+                            className="text-blue-600 hover:text-blue-900 flex items-center space-x-1"
+                          >
+                            <Eye size={16} />
+                            <span>View</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOrder(order._id)}
+                            className="text-red-600 hover:text-red-900 flex items-center space-x-1"
+                          >
+                            <Trash2 size={16} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

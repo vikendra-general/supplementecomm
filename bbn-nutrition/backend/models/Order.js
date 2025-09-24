@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'],
+    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned', 'return_requested'],
     default: 'pending'
   },
   paymentStatus: {
@@ -154,7 +154,7 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order number before saving
+// Generate order number and tracking number before saving
 orderSchema.pre('save', async function(next) {
   if (this.isNew) {
     const date = new Date();
@@ -174,6 +174,11 @@ orderSchema.pre('save', async function(next) {
       timestamp: new Date(),
       note: 'Order created'
     });
+  }
+
+  // Generate tracking number when order is created or status changes to shipped/processing
+  if (!this.trackingNumber && (this.isNew || (this.isModified('status') && ['processing', 'shipped', 'delivered'].includes(this.status)))) {
+    this.trackingNumber = `TRK${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
   }
   
   next();

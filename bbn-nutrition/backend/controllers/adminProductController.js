@@ -92,9 +92,8 @@ exports.createProduct = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       productData.images = req.files.map(file => {
-        // Convert full path to relative URL path
-        const relativePath = file.path.replace(/\\/g, '/').split('/uploads/')[1];
-        return `/uploads/${relativePath}`;
+        // Cloudinary returns the secure_url directly
+        return file.path; // This is the Cloudinary URL
       });
     }
 
@@ -192,9 +191,8 @@ exports.updateProduct = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       productData.images = req.files.map(file => {
-        // Convert full path to relative URL path
-        const relativePath = file.path.replace(/\\/g, '/').split('/uploads/')[1];
-        return `/uploads/${relativePath}`;
+        // Cloudinary returns the secure_url directly
+        return file.path; // This is the Cloudinary URL
       });
     }
 

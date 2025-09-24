@@ -586,9 +586,33 @@ function AdminProductsContent() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
-                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
-                            <Package className="w-6 h-6 text-gray-400" />
-                          </div>
+                          {(() => {
+                            let imageUrl = '/images/products/placeholder.jpg';
+                            
+                            if (product.images && product.images.length > 0) {
+                              const firstImage = product.images[0];
+                              if (typeof firstImage === 'string') {
+                                try {
+                                  const parsed = JSON.parse(firstImage);
+                                  imageUrl = Array.isArray(parsed) ? parsed[0] : firstImage;
+                                } catch {
+                                  imageUrl = firstImage;
+                                }
+                              }
+                            }
+                            
+                            return (
+                              <img 
+                                src={imageUrl} 
+                                alt={product.name}
+                                className="h-12 w-12 rounded-lg object-cover border border-gray-300"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/images/products/placeholder.jpg';
+                                }}
+                              />
+                            );
+                          })()}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-dark-text">{product.name}</div>

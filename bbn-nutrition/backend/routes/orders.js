@@ -256,6 +256,206 @@ router.put('/:id/cancel', protect, async (req, res) => {
 // @desc    Request return
 // @route   PUT /api/orders/:id/return
 // @access  Private
+// @desc    Get order tracking by tracking number
+// @route   GET /api/orders/track/:trackingNumber
+// @access  Public
+router.get('/track/:trackingNumber', async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      trackingNumber: req.params.trackingNumber
+    }).populate('items.product', 'name images');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tracking number not found'
+      });
+    }
+
+    // Generate realistic tracking steps based on order status and dates
+    const trackingSteps = [];
+    const orderDate = new Date(order.createdAt);
+    
+    trackingSteps.push({
+      status: 'Order Placed',
+      date: orderDate.toLocaleDateString(),
+      completed: true,
+      description: 'Your order has been received and is being processed.'
+    });
+
+    const processingDate = new Date(orderDate.getTime() + 24 * 60 * 60 * 1000);
+    trackingSteps.push({
+      status: 'Processing',
+      date: processingDate.toLocaleDateString(),
+      completed: true,
+      description: 'Your order is being prepared for shipment.'
+    });
+
+    const shippedDate = new Date(orderDate.getTime() + 2 * 24 * 60 * 60 * 1000);
+    trackingSteps.push({
+      status: 'Shipped',
+      date: shippedDate.toLocaleDateString(),
+      completed: order.status !== 'processing' && order.status !== 'pending',
+      description: 'Your order has been shipped and is on its way.'
+    });
+
+    const outForDeliveryDate = new Date(orderDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+    trackingSteps.push({
+      status: 'Out for Delivery',
+      date: outForDeliveryDate.toLocaleDateString(),
+      completed: order.status === 'delivered',
+      description: 'Your order is out for delivery and will arrive soon.'
+    });
+
+    const deliveredDate = new Date(orderDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+    trackingSteps.push({
+      status: 'Delivered',
+      date: deliveredDate.toLocaleDateString(),
+      completed: order.status === 'delivered',
+      description: 'Your order has been successfully delivered.'
+    });
+
+    res.json({
+      success: true,
+      tracking: {
+        orderNumber: order.orderNumber,
+        status: order.status,
+        trackingNumber: order.trackingNumber,
+        estimatedDelivery: order.estimatedDelivery,
+        trackingSteps,
+        items: order.items
+      }
+    });
+  } catch (error) {
+    console.error('Track order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Submit return request
+// @route   POST /api/orders/:id/return
+// @access  Private
+router.post('/:id/return', protect, [
+  body('reason').notEmpty().withMessage('Return reason is required'),
+  body('description').optional().isString()
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (order.status !== 'delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Can only return delivered orders'
+      });
+    }
+
+    // Check if return is within 30 days
+    const deliveryDate = new Date(order.estimatedDelivery || order.updatedAt);
+    const daysSinceDelivery = (new Date() - deliveryDate) / (1000 * 60 * 60 * 24);
+    
+    if (daysSinceDelivery > 30) {
+      return res.status(400).json({
+        success: false,
+        message: 'Returns must be requested within 30 days of delivery'
+      });
+    }
+
+    const { reason, description } = req.body;
+
+    // Add return request to status history
+    order.statusHistory.push({
+      status: 'return_requested',
+      timestamp: new Date(),
+      note: `Return requested - Reason: ${reason}${description ? `, Description: ${description}` : ''}`
+    });
+
+    order.status = 'return_requested';
+    order.notes = `Return requested: ${reason}${description ? ` - ${description}` : ''}`;
+    await order.save();
+
+    res.json({
+      success: true,
+      message: 'Return request submitted successfully. You will receive a return shipping label via email within 24 hours.',
+      order: {
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        returnReason: reason,
+        returnDescription: description
+      }
+    });
+  } catch (error) {
+    console.error('Return order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during return request'
+    });
+  }
+});
+
+// @desc    Get return status
+// @route   GET /api/orders/:id/return-status
+// @access  Private
+router.get('/:id/return-status', protect, async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    const returnHistory = order.statusHistory.filter(h => 
+      h.status.includes('return') || h.status === 'refunded'
+    );
+
+    res.json({
+      success: true,
+      returnStatus: {
+        orderNumber: order.orderNumber,
+        currentStatus: order.status,
+        canReturn: order.status === 'delivered' && 
+                  (new Date() - new Date(order.estimatedDelivery || order.updatedAt)) / (1000 * 60 * 60 * 24) <= 30,
+        returnHistory
+      }
+    });
+  } catch (error) {
+    console.error('Get return status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 router.put('/:id/return', protect, [
   body('reason').notEmpty().withMessage('Return reason is required'),
   body('items').isArray().withMessage('Items to return must be an array')

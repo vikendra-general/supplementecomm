@@ -440,6 +440,13 @@ class ApiService {
     });
   }
 
+  async updatePaymentStatus(orderId: string, paymentStatus: string, note?: string): Promise<ApiResponse<Order>> {
+    return this.request(`/admin/orders/${orderId}/payment`, {
+      method: 'PUT',
+      body: JSON.stringify({ paymentStatus, notes: note }),
+    });
+  }
+
   async getAdminUsers(params?: {
     page?: number;
     limit?: number;

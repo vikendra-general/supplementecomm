@@ -24,25 +24,18 @@ function LoginPageContent() {
     confirmPassword: ''
   });
   
+  // Check if this is an admin login request
+  const isAdminLogin = searchParams.get('admin') === 'true';
+  
   // Handle mode parameter and pre-fill admin credentials for demo purposes
   useEffect(() => {
     const mode = searchParams.get('mode');
-    const isAdminLogin = searchParams.get('admin') === 'true';
     
     // Set register mode if specified in URL
     if (mode === 'register') {
       setIsLogin(false);
     }
-    
-    if (isAdminLogin && isLogin) {
-      setFormData(prev => ({
-        ...prev,
-        email: 'admin@bbn-nutrition.com',
-        password: 'Admin123!'
-      }));
-      showNotification('info', 'Admin credentials pre-filled for demo purposes');
-    }
-  }, [searchParams, isLogin, showNotification]);
+  }, [searchParams, isLogin]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -178,11 +171,23 @@ function LoginPageContent() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isAdminLogin ? 'Admin Login' : isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
           <p className="text-gray-600">
-            {isLogin ? 'Sign in to your account' : 'Join BBN for premium supplements'}
+            {isAdminLogin 
+              ? 'Sign in with your admin credentials' 
+              : isLogin 
+                ? 'Sign in to your account' 
+                : 'Join BBN for premium supplements'
+            }
           </p>
+          {isAdminLogin && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Admin Access:</strong> Please enter your administrator credentials to access the admin panel.
+              </p>
+            </div>
+          )}
         </div>
 
         {error && (

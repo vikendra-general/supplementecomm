@@ -99,13 +99,13 @@ class CartService {
 
   async updateItemQuantity(userId, productId, quantity, variant = null) {
     try {
-      const cart = this.carts.get(userId);
+      const cart = await Cart.findOne({ userId });
       if (!cart) {
         throw new Error('Cart not found');
       }
 
       const itemIndex = cart.items.findIndex(item => 
-        item.productId === productId && 
+        item.productId.toString() === productId && 
         (!variant || item.variant?.id === variant?.id)
       );
 
@@ -130,7 +130,7 @@ class CartService {
       }
 
       cart.updatedAt = new Date();
-      this.carts.set(userId, cart);
+      await cart.save();
 
       console.log(`✅ Updated cart item quantity for user ${userId}`);
       return cart;

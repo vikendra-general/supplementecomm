@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
@@ -340,6 +340,69 @@ router.put('/orders/:id/status', [
     });
   } catch (error) {
     console.error('Update order status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Update order payment status
+// @route   PUT /api/admin/orders/:id/payment
+// @access  Private/Admin
+router.put('/orders/:id/payment', [
+  body('paymentStatus')
+    .isIn(['pending', 'paid', 'failed', 'refunded'])
+    .withMessage('Invalid payment status'),
+  body('notes')
+    .optional()
+    .isString()
+    .withMessage('Notes must be a string')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { paymentStatus, notes } = req.body;
+
+    const updateData = {
+      paymentStatus,
+      $push: {
+        statusHistory: {
+          status: `payment_${paymentStatus}`,
+          timestamp: new Date(),
+          note: notes || `Payment status changed to ${paymentStatus}`
+        }
+      }
+    };
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).populate('user', 'name email');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment status updated successfully',
+      data: order
+    });
+  } catch (error) {
+    console.error('Update payment status error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

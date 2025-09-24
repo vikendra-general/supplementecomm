@@ -304,7 +304,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* USER MANAGEMENT */}
-              <div className="space-y-4 h-full mt-6">
+              <div className="space-y-4 h-full">
                 <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">USER MANAGEMENT</h3>
                 <div className="space-y-3 flex-1">
                   <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
