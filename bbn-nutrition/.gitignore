@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Backend configuration files
+backend/config.env
+backend/.env*
+
 # vercel
 .vercel
 
