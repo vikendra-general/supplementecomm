@@ -14,7 +14,6 @@ export default function ResetPasswordPage() {
 }
 
 function ResetPasswordContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     password: '',
@@ -101,7 +100,7 @@ function ResetPasswordContent() {
       } else {
         setError(data.message || 'Failed to reset password');
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);

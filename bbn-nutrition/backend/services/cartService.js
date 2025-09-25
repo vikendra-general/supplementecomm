@@ -74,7 +74,12 @@ class CartService {
     try {
       const cart = await Cart.findOne({ userId });
       if (!cart) {
-        throw new Error('Cart not found');
+        // If cart doesn't exist, there's nothing to remove
+        return {
+          userId,
+          items: [],
+          updatedAt: new Date()
+        };
       }
 
       const itemIndex = cart.items.findIndex(item => 
@@ -83,7 +88,8 @@ class CartService {
       );
 
       if (itemIndex === -1) {
-        throw new Error('Item not found in cart');
+        // If item doesn't exist in cart, just return the cart as is
+        return cart;
       }
 
       const removedItem = cart.items.splice(itemIndex, 1)[0];
@@ -99,9 +105,13 @@ class CartService {
 
   async updateItemQuantity(userId, productId, quantity, variant = null) {
     try {
-      const cart = await Cart.findOne({ userId });
+      let cart = await Cart.findOne({ userId });
       if (!cart) {
-        throw new Error('Cart not found');
+        // Create a new cart if it doesn't exist
+        cart = new Cart({
+          userId,
+          items: []
+        });
       }
 
       const itemIndex = cart.items.findIndex(item => 
@@ -110,23 +120,49 @@ class CartService {
       );
 
       if (itemIndex === -1) {
-        throw new Error('Item not found in cart');
-      }
+        // If item doesn't exist in cart and quantity is positive, add it
+        if (quantity > 0) {
+          const product = await Product.findById(productId);
+          if (!product) {
+            throw new Error('Product not found');
+          }
 
-      if (quantity <= 0) {
-        // Remove item if quantity is 0 or negative
-        cart.items.splice(itemIndex, 1);
-      } else {
-        // Check stock availability
-        const product = await Product.findById(productId);
-        const availableStock = this.getAvailableStock(product, variant);
-        
-        if (quantity > availableStock) {
-          throw new Error(`Only ${availableStock} items available in stock`);
+          const availableStock = this.getAvailableStock(product, variant);
+          if (quantity > availableStock) {
+            throw new Error(`Only ${availableStock} items available in stock`);
+          }
+
+          const cartItem = {
+            productId,
+            productName: product.name,
+            price: variant ? variant.price : product.price,
+            quantity,
+            variant: variant || null,
+            addedAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          cart.items.push(cartItem);
+        } else {
+          // If quantity is 0 or negative and item doesn't exist, just return the cart
+          return cart;
         }
+      } else {
+        if (quantity <= 0) {
+          // Remove item if quantity is 0 or negative
+          cart.items.splice(itemIndex, 1);
+        } else {
+          // Check stock availability
+          const product = await Product.findById(productId);
+          const availableStock = this.getAvailableStock(product, variant);
+          
+          if (quantity > availableStock) {
+            throw new Error(`Only ${availableStock} items available in stock`);
+          }
 
-        cart.items[itemIndex].quantity = quantity;
-        cart.items[itemIndex].updatedAt = new Date();
+          cart.items[itemIndex].quantity = quantity;
+          cart.items[itemIndex].updatedAt = new Date();
+        }
       }
 
       cart.updatedAt = new Date();

@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, User, Menu, X, Heart, LogOut, MapPin, ChevronDown, Globe } from 'lucide-react';
+
+import { ShoppingCart, Menu, MapPin, ChevronDown, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,12 +13,10 @@ import AmazonStyleSearch from './AmazonStyleSearch';
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
-  const { language, setLanguage, t } = useLanguage();
-  const router = useRouter();
+  const { language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -41,14 +39,7 @@ export default function Header() {
     if (!isHydrated) return;
 
     const handleScroll = () => {
-      const heroSection = document.querySelector('.hero-section') || document.querySelector('[data-hero]');
-      if (heroSection) {
-        const heroBottom = heroSection.getBoundingClientRect().bottom;
-        setIsScrolled(heroBottom <= 0);
-      } else {
-        // Fallback: use scroll position if hero section not found
-        setIsScrolled(window.scrollY > 100);
-      }
+      // Scroll handling logic removed as isScrolled is not used
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -244,7 +235,7 @@ export default function Header() {
                 Shop All
               </Link>
               <Link href="/deals" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Today's Deals
+                Today&apos;s Deals
               </Link>
               <Link href="/best-sellers" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
                 Best Sellers
@@ -272,13 +263,12 @@ export default function Header() {
                   className="flex items-center space-x-1 text-gray-900 hover:text-orange-500 transition-colors text-sm font-normal"
                   style={{color: '#111827'}}
                 >
-                  <img 
+                  <Image 
                     src={language === 'hi' ? '/images/flags/in.svg' : '/images/flags/us.svg'} 
                     alt={language === 'hi' ? 'Hindi' : 'English'}
+                    width={16}
+                    height={16}
                     className="w-4 h-4 rounded-sm"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
                   />
                   <Globe className="w-3 h-3" />
                   <span className="uppercase text-xs">{language}</span>
@@ -294,13 +284,12 @@ export default function Header() {
                           language === 'en' ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
                         }`}
                       >
-                        <img 
+                        <Image 
                           src="/images/flags/us.svg" 
                           alt="English"
+                          width={16}
+                          height={16}
                           className="w-4 h-4 rounded-sm"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
                         <span>English</span>
                       </button>
@@ -310,13 +299,12 @@ export default function Header() {
                           language === 'hi' ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
                         }`}
                       >
-                        <img 
+                        <Image 
                           src="/images/flags/in.svg" 
                           alt="Hindi"
+                          width={16}
+                          height={16}
                           className="w-4 h-4 rounded-sm"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
                         <span>हिंदी</span>
                       </button>
@@ -354,7 +342,7 @@ export default function Header() {
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Today's Deals
+                Today&apos;s Deals
               </Link>
               <Link 
                 href="/best-sellers" 

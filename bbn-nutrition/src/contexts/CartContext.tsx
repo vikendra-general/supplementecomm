@@ -18,7 +18,7 @@ interface CartItem {
 }
 
 interface ServerCartItem {
-  productId: string;
+  productId: Product | string;
   productName: string;
   price: number;
   quantity: number;
@@ -81,20 +81,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // Load cart from server for authenticated users
   const loadCartFromServer = useCallback(async () => {
     if (!isAuthenticated || !user?.id) {
+      setItems([]);
       return;
     }
 
     try {
       const response = await apiService.getCart();
       
-      if (response && response.success && (response as any).cart) {
-        const serverCart = (response as any).cart;
+      if (response && response.success && (response as CartApiResponse).cart) {
+        const serverCart = (response as CartApiResponse).cart;
         const serverItems = serverCart.items || [];
 
         // Convert server cart items to our format
-        const cartItems = serverItems.map((serverItem: any) => {
+        const cartItems = serverItems.map((serverItem: ServerCartItem) => {
           // The backend populates productId with the full product data
-          const product = serverItem.productId;
+          const product = typeof serverItem.productId === 'string' ? null : serverItem.productId;
           
           if (!product) {
             console.warn('Cart item missing product data:', serverItem);
@@ -103,8 +104,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           
           return {
             product: {
-              id: product._id || product.id,
+              id: product.id,
               name: product.name,
+              description: product.description || '',
               price: product.price,
               images: product.images || [],
               category: product.category,
@@ -117,14 +119,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
               tags: product.tags || []
             },
             quantity: serverItem.quantity,
-            variant: serverItem.variant || null
-          };
-        }).filter(Boolean); // Remove any null items
+            variant: serverItem.variant
+          } as CartItem;
+        }).filter((item): item is NonNullable<typeof item> => item !== null);
 
         setItems(cartItems);
       }
     } catch (error) {
-      // Silently handle error
+      console.error('Failed to load cart:', error);
     }
   }, [isAuthenticated, user?.id]);
 
@@ -148,7 +150,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         keysToRemove.forEach(key => {
           try {
             localStorage.removeItem(key);
-          } catch (error) {
+          } catch {
             // Ignore localStorage errors
           }
         });
@@ -157,7 +159,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         try {
           const savedCart = JSON.parse(localStorage.getItem('anonymous_cart_items') || '[]');
           setItems(savedCart);
-        } catch (error) {
+        } catch {
           setItems([]);
         }
       }
@@ -189,7 +191,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       // Save to localStorage for anonymous users
       try {
         localStorage.setItem('anonymous_cart_items', JSON.stringify(items));
-      } catch (error) {
+      } catch {
         // Ignore localStorage errors
       }
     }
@@ -219,7 +221,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       keysToRemove.forEach(key => {
         try {
           localStorage.removeItem(key);
-        } catch (error) {
+        } catch {
           // Ignore localStorage errors
         }
       });
@@ -239,11 +241,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         
         if (response && response.success) {
           const updatedCart = await apiService.getCart();
-          if (updatedCart && updatedCart.success && (updatedCart as any).cart) {
-            const serverItems = (updatedCart as any).cart.items || [];
-            const cartItems = serverItems.map((serverItem: any) => {
+          if (updatedCart && updatedCart.success && (updatedCart as CartApiResponse).cart) {
+            const serverItems = (updatedCart as CartApiResponse).cart.items || [];
+            const cartItems = serverItems.map((serverItem: ServerCartItem) => {
               // The backend populates productId with the full product data
-              const product = serverItem.productId;
+              const product = typeof serverItem.productId === 'string' ? null : serverItem.productId;
               
               if (!product) {
                 console.warn('Cart item missing product data:', serverItem);
@@ -252,8 +254,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
               
               return {
                 product: {
-                  id: product._id || product.id,
+                  id: product.id,
                   name: product.name,
+                  description: product.description || '',
                   price: product.price,
                   images: product.images || [],
                   category: product.category,
@@ -266,15 +269,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
                   tags: product.tags || []
                 },
                 quantity: serverItem.quantity,
-                variant: serverItem.variant || null
-              };
-            }).filter(Boolean); // Remove any null items
+                variant: serverItem.variant
+              } as CartItem;
+            }).filter((item): item is NonNullable<typeof item> => item !== null);
             setItems(cartItems);
           }
           return;
         }
       } catch (error) {
-        // Fall back to localStorage
+        console.error('Failed to add to cart:', error);
       }
     }
 
@@ -321,7 +324,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const storageKey = 'anonymous_cart_items';
     try {
       localStorage.setItem(storageKey, JSON.stringify(currentItems));
-    } catch (error) {
+    } catch {
       // Ignore localStorage errors
     }
   }, [isAuthenticated, user?.id, items]);
@@ -336,7 +339,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         await loadCartFromServer();
         return;
       } catch (error) {
-        // Fall back to localStorage
+        console.error('Failed to remove from cart:', error);
       }
     }
 
@@ -363,7 +366,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         await loadCartFromServer();
         return;
       } catch (error) {
-        // Fall back to localStorage
+        console.error('Failed to update cart quantity:', error);
       }
     }
 
@@ -383,7 +386,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         setItems([]);
         return;
       } catch (error) {
-        // Fall back to localStorage
+        console.error('Failed to clear cart:', error);
       }
     }
 

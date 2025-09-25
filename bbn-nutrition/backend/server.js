@@ -28,8 +28,12 @@ const app = express();
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  fs.accessSync(uploadsDir);
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
 }
 
 // Security middleware

@@ -45,7 +45,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshUser } = useAuth();
   const { orders, isLoading, error, cancelOrder, requestReturn } = useOrders();
   const { addToCart } = useCart();
   const router = useRouter();
@@ -128,9 +128,9 @@ function DashboardContent() {
   // Initialize profile form with user data
   useEffect(() => {
     if (user) {
-      const nameParts = user.name?.split(' ') || [''];
+      const nameParts = user.name?.trim().split(' ').filter(part => part.length > 0) || [];
       setProfileForm({
-        firstName: nameParts[0] || '',
+        firstName: nameParts[0] || user.name || '',
         lastName: nameParts.slice(1).join(' ') || '',
         email: user.email || '',
         phone: user.phone || ''
@@ -502,7 +502,7 @@ function DashboardContent() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!profileForm.firstName || !profileForm.email) {
+    if (!profileForm.firstName?.trim() || !profileForm.email?.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -535,10 +535,8 @@ function DashboardContent() {
 
       if (response.ok && result.success) {
         toast.success('Profile updated successfully!');
-        // Update the user context if available
-        if (result.user) {
-          // The AuthContext should handle this update
-        }
+        // Refresh user data to reflect changes immediately
+        await refreshUser();
       } else {
         toast.error(result.message || 'Failed to update profile');
       }

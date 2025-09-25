@@ -2,6 +2,7 @@
 
 import { useState, use, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star, ShoppingCart, Heart, Truck, Shield, Clock } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -129,7 +130,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         setQuantity(Math.min(quantity, availableStock));
       }
     }
-  }, [selectedVariant, product, getAvailableStock]);
+  }, [selectedVariant, product, getAvailableStock, quantity]);
 
   if (loading) {
     return (
@@ -319,16 +320,63 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Images */}
         <div className="space-y-4">
-          {/* Main Image Placeholder */}
-          <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-            <div className="text-gray-400 text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-4xl">📦</span>
-              </div>
-              <p className="text-lg font-medium">Product Image</p>
-              <p className="text-sm">Add manually</p>
-            </div>
+          {/* Main Image */}
+          <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <Image
+              src={(() => {
+                // Handle case where images might be a stringified array
+                let imageUrl = product.images?.[0] || '/images/products/placeholder.svg';
+                
+                // If the imageUrl looks like a stringified array, parse it
+                if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                  try {
+                    const parsed = JSON.parse(imageUrl);
+                    imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                  } catch {
+                    console.warn('Failed to parse image URL:', imageUrl);
+                    imageUrl = '/images/products/placeholder.svg';
+                  }
+                }
+                
+                return imageUrl;
+              })()}
+              alt={product.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           </div>
+          
+          {/* Thumbnail Images */}
+          {product.images && product.images.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {product.images.slice(0, 4).map((image, index) => {
+                let imageUrl = image;
+                
+                // Handle stringified array case
+                if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                  try {
+                    const parsed = JSON.parse(imageUrl);
+                    imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                  } catch {
+                    imageUrl = '/images/products/placeholder.svg';
+                  }
+                }
+                
+                return (
+                  <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-75 transition-opacity">
+                    <Image
+                      src={imageUrl}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 25vw, 12.5vw"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Product Info */}

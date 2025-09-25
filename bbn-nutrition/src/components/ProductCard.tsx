@@ -55,7 +55,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         console.error('Error checking wishlist status:', error);
       }
     }
-  }, [isAuthenticated, product.id]);
+  }, [isAuthenticated, product.id, user?.id]);
 
   const handleAddToCart = async () => {
     if (isOutOfStock) {
@@ -185,7 +185,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 try {
                   const parsed = JSON.parse(imageUrl);
                   imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
-                } catch (e) {
+                } catch {
                   console.warn('Failed to parse image URL:', imageUrl);
                   imageUrl = '/images/products/placeholder.svg';
                 }

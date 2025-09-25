@@ -172,7 +172,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const primaryDark = darkenColor(colors.primaryColor, 20);
     
     root.style.setProperty('--primary-green-light', primaryLight);
+    root.style.setProperty('--primary-green-dark', primaryDark);
     root.style.setProperty('--color-primary-light', primaryLight);
+    root.style.setProperty('--color-primary-dark', primaryDark);
   }, [colors]);
 
   // Apply theme to CSS variables whenever colors change

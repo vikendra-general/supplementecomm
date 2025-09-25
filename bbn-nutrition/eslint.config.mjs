@@ -18,6 +18,12 @@ const eslintConfig = [
       "react-hooks/exhaustive-deps": "warn",
     },
   },
+  {
+    files: ["backend/**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

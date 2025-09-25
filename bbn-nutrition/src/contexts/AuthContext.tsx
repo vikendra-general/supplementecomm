@@ -33,7 +33,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string; user?: User }>;
+  verifyOTPAndLogin: (identifier: string, otp: string) => Promise<{ success: boolean; message?: string; user?: User; token?: string }>;
+  completeRegistration: (email: string) => Promise<{ success: boolean; message?: string; user?: User; token?: string }>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
@@ -110,7 +112,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            const errorName = error instanceof Error ? error.name : '';
             console.warn('Auth initialization failed (API unavailable):', errorMessage);
             
             // Only remove token if it's actually invalid (401/403), not on network errors
@@ -131,11 +132,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   setUser(JSON.parse(storedUser));
                 } catch {
                   // If stored user is invalid, set a basic admin user
-                  setUser({ id: 'temp', email: 'admin@temp.com', role: 'admin', name: 'Admin' });
+                  setUser({ id: 'temp', email: 'admin@temp.com', role: 'admin', name: 'Admin', avatar: '', emailVerified: false });
                 }
               } else {
                 // Assume admin role for existing token holders
-                setUser({ id: 'temp', email: 'admin@temp.com', role: 'admin', name: 'Admin' });
+                setUser({ id: 'temp', email: 'admin@temp.com', role: 'admin', name: 'Admin', avatar: '', emailVerified: false });
               }
             }
           } finally {
@@ -199,14 +200,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, phone?: string) => {
+  const register = async (name: string, email: string, password: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, phone }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       if (!response.ok) {
@@ -341,12 +342,82 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const verifyOTPAndLogin = async (identifier: string, otp: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-email-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: identifier,
+          otp: otp
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid email OTP');
+      }
+
+      // For existing users, if verification is successful and we get a token, automatically log in
+      if (data.success && data.token && data.user) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Verify email OTP error:', error);
+      throw error;
+    }
+  };
+
+  const completeRegistration = async (email: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/complete-registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to complete registration');
+      }
+
+      // If registration is completed successfully, automatically log in the user
+      if (data.success && data.token && data.user) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Clean up temporary registration data
+        localStorage.removeItem('registrationEmail');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Complete registration error:', error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
     isLoading,
     login,
     register,
+    verifyOTPAndLogin,
+    completeRegistration,
     logout,
     updateProfile,
     changePassword,

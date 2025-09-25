@@ -1,4 +1,3 @@
-/* eslint-disable import/no-commonjs */
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Order = require('../models/Order');
@@ -490,7 +489,7 @@ router.put('/:id/return', protect, [
       });
     }
 
-    const { reason, items } = req.body;
+    const { reason } = req.body;
 
     // Check if return is within 30 days
     const deliveryDate = new Date(order.updatedAt);

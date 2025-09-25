@@ -114,7 +114,7 @@ function AdminUsersContent() {
         return;
       }
       
-      const response = await apiService.getAdminUsers();
+      const response = await apiService.getAdminUsers({ limit: 1000 }); // Set high limit to get all users
       if (response.success && response.data) {
         setUsers(Array.isArray(response.data) ? response.data : []);
       } else {
@@ -222,6 +222,52 @@ function AdminUsersContent() {
         }
       } else {
         alert('Failed to promote user to admin.');
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone and will delete all associated data including orders, cart, and reviews.`)) {
+      try {
+        setLoading(true);
+        const response = await apiService.deleteUser(userId);
+        if (response.success) {
+          alert('User deleted successfully!');
+          // Remove the user from the local state
+          setUsers(users.filter(u => u._id !== userId));
+        } else {
+          // Handle specific error messages from the backend
+          const errorMessage = response.message || 'Unknown error occurred';
+          if (errorMessage.includes('not found')) {
+            alert('Error: User not found. The user may have already been deleted.');
+            // Refresh the user list to sync with backend
+            await fetchUsers();
+          } else if (errorMessage.includes('admin')) {
+            alert('Error: Cannot delete admin users for security reasons.');
+          } else {
+            alert('Failed to delete user: ' + errorMessage);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        let errorMessage = 'Unknown error occurred';
+        
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          errorMessage = String(error.message);
+        }
+        
+        // Handle specific HTTP errors
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          alert('Error: User not found. The user may have already been deleted.');
+          // Refresh the user list to sync with backend
+          await fetchUsers();
+        } else {
+          alert('Error deleting user: ' + errorMessage);
+        }
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -416,16 +462,15 @@ function AdminUsersContent() {
                       <Crown className="w-4 h-4" />
                     </button>
                   )}
-                  <button
-                    className={`p-2 transition-colors ${
-                      user.isActive 
-                        ? 'text-red-500 hover:text-red-600' 
-                        : 'text-green-500 hover:text-green-600'
-                    }`}
-                    title={user.isActive ? 'Deactivate User' : 'Activate User'}
-                  >
-                    {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                  </button>
+                  {user.role === 'user' && (
+                    <button
+                      onClick={() => handleDeleteUser(user._id, user.name)}
+                      className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                      title="Delete User"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

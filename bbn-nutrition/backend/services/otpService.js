@@ -1,171 +1,136 @@
 const nodemailer = require('nodemailer');
-const twilio = require('twilio');
 const crypto = require('crypto');
+const User = require('../models/User');
+const TempRegistration = require('../models/TempRegistration');
 
-// In-memory storage for OTPs (in production, use Redis or database)
-const otpStorage = new Map();
-
-// Email configuration using Gmail (free)
-const createEmailTransporter = () => {
+// Create transporter for sending emails
+const createTransporter = () => {
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_APP_PASSWORD // Gmail App Password (not regular password)
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_APP_PASSWORD
     }
   });
 };
-
-// Twilio configuration (free tier: $15 credit)
-let twilioClient = null;
-try {
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-  }
-} catch (error) {
-  console.warn('Twilio configuration failed:', error.message);
-  twilioClient = null;
-}
 
 // Generate 6-digit OTP
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Store OTP with expiration (5 minutes)
-const storeOTP = (identifier, otp) => {
-  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-  otpStorage.set(identifier, { otp, expiresAt });
-  
-  // Auto cleanup expired OTPs
-  setTimeout(() => {
-    otpStorage.delete(identifier);
-  }, 5 * 60 * 1000);
-};
-
-// Verify OTP
-const verifyOTP = (identifier, providedOTP) => {
-  const stored = otpStorage.get(identifier);
-  
-  if (!stored) {
-    return { success: false, message: 'OTP not found or expired' };
-  }
-  
-  if (Date.now() > stored.expiresAt) {
-    otpStorage.delete(identifier);
-    return { success: false, message: 'OTP has expired' };
-  }
-  
-  if (stored.otp !== providedOTP) {
-    return { success: false, message: 'Invalid OTP' };
-  }
-  
-  // OTP is valid, remove it
-  otpStorage.delete(identifier);
-  return { success: true, message: 'OTP verified successfully' };
-};
-
 // Send Email OTP
-const sendEmailOTP = async (email, name) => {
+const sendEmailOTP = async (email, userName) => {
   try {
     const otp = generateOTP();
-    const transporter = createEmailTransporter();
-    
+    const otpExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Check if it's for registration or password reset
+    let tempUser = await TempRegistration.findOne({ email });
+    let user = await User.findOne({ email });
+
+    if (tempUser) {
+      // Registration OTP
+      tempUser.emailOTP = otp;
+      tempUser.emailOTPExpire = otpExpire;
+      tempUser.emailOTPAttempts = (tempUser.emailOTPAttempts || 0) + 1;
+      tempUser.lastEmailOTPSent = new Date();
+      await tempUser.save();
+    } else if (user) {
+      // Password reset OTP
+      user.resetPasswordOTP = otp;
+      user.resetPasswordOTPExpire = otpExpire;
+      user.resetPasswordOTPAttempts = (user.resetPasswordOTPAttempts || 0) + 1;
+      user.lastResetPasswordOTPSent = new Date();
+      await user.save();
+    } else {
+      return {
+        success: false,
+        message: 'User not found'
+      };
+    }
+
+    // Send email
+    const transporter = createTransporter();
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'BBN Nutrition - Email Verification',
+      subject: tempUser ? 'Email Verification OTP' : 'Password Reset OTP',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #16a34a;">BBN Nutrition - Email Verification</h2>
-          <p>Hello ${name},</p>
-          <p>Thank you for registering with BBN Nutrition. Please use the following OTP to verify your email address:</p>
-          <div style="background-color: #f3f4f6; padding: 20px; text-align: center; margin: 20px 0;">
-            <h1 style="color: #16a34a; font-size: 32px; margin: 0; letter-spacing: 5px;">${otp}</h1>
+          <h2 style="color: #333;">Hello ${userName}!</h2>
+          <p>Your ${tempUser ? 'email verification' : 'password reset'} OTP is:</p>
+          <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 5px;">${otp}</h1>
           </div>
-          <p>This OTP will expire in 5 minutes.</p>
-          <p>If you didn't request this verification, please ignore this email.</p>
-          <hr style="margin: 30px 0;">
-          <p style="color: #6b7280; font-size: 12px;">BBN Nutrition - Your Health, Our Priority</p>
+          <p>This OTP will expire in 10 minutes.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #666; font-size: 12px;">This is an automated message, please do not reply.</p>
         </div>
       `
     };
-    
+
     await transporter.sendMail(mailOptions);
-    storeOTP(email, otp);
-    
-    return { success: true, message: 'OTP sent to email successfully' };
+
+    return {
+      success: true,
+      message: 'OTP sent successfully'
+    };
   } catch (error) {
-    console.error('Email OTP error:', error);
-    return { success: false, message: 'Failed to send email OTP' };
+    console.error('Error sending email OTP:', error);
+    return {
+      success: false,
+      message: 'Failed to send OTP'
+    };
   }
 };
 
-// Send SMS OTP (requires Twilio setup)
-const sendSMSOTP = async (phone, name) => {
+// Verify OTP
+const verifyOTP = async (email, otp) => {
   try {
-    if (!twilioClient) {
-      return { success: false, message: 'SMS service not configured' };
+    // Check in TempRegistration first (for email verification)
+    let tempUser = await TempRegistration.findOne({ email });
+    
+    if (tempUser && tempUser.emailOTP === otp && new Date(tempUser.emailOTPExpire) > new Date()) {
+      tempUser.isEmailVerified = true;
+      tempUser.emailOTP = undefined;
+      tempUser.emailOTPExpire = undefined;
+      await tempUser.save();
+      
+      return {
+        success: true,
+        message: 'Email verified successfully',
+        type: 'registration'
+      };
     }
-    
-    const otp = generateOTP();
-    
-    await twilioClient.messages.create({
-      body: `BBN Nutrition: Your verification code is ${otp}. Valid for 5 minutes. Don't share this code with anyone.`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone
-    });
-    
-    storeOTP(phone, otp);
-    
-    return { success: true, message: 'OTP sent to phone successfully' };
-  } catch (error) {
-    console.error('SMS OTP error:', error);
-    return { success: false, message: 'Failed to send SMS OTP' };
-  }
-};
 
-// Alternative free SMS services (you can implement these)
-const sendFreeSMSOTP = async (phone, name) => {
-  // For completely free SMS, you can use services like:
-  // 1. TextBelt (free tier: 1 SMS per day per IP)
-  // 2. Fast2SMS (India - free tier available)
-  // 3. MSG91 (India - free tier available)
-  
-  // Example with TextBelt (US numbers only, 1 free SMS per day)
-  try {
-    const otp = generateOTP();
-    
-    const response = await fetch('https://textbelt.com/text', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone: phone,
-        message: `BBN Nutrition: Your verification code is ${otp}. Valid for 5 minutes.`,
-        key: 'textbelt' // Free tier key
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      storeOTP(phone, otp);
-      return { success: true, message: 'OTP sent to phone successfully' };
-    } else {
-      return { success: false, message: result.error || 'Failed to send SMS OTP' };
+    // Check in User model (for password reset)
+    let user = await User.findOne({ email });
+    if (user && user.resetPasswordOTP === otp && new Date(user.resetPasswordOTPExpire) > new Date()) {
+      // Don't clear the OTP yet - it will be cleared when password is actually reset
+      return {
+        success: true,
+        message: 'OTP verified successfully',
+        type: 'password_reset',
+        resetToken: user.resetPasswordToken
+      };
     }
+
+    return {
+      success: false,
+      message: 'Invalid or expired OTP'
+    };
   } catch (error) {
-    console.error('Free SMS OTP error:', error);
-    return { success: false, message: 'Failed to send SMS OTP' };
+    console.error('Error verifying OTP:', error);
+    return {
+      success: false,
+      message: 'Failed to verify OTP'
+    };
   }
 };
 
 module.exports = {
   sendEmailOTP,
-  sendSMSOTP,
-  sendFreeSMSOTP,
-  verifyOTP,
-  generateOTP
+  verifyOTP
 };

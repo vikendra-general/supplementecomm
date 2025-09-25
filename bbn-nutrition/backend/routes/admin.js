@@ -121,6 +121,69 @@ router.post('/users', [
   }
 });
 
+// @desc    Delete user and all associated data
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent deletion of admin users (optional safety check)
+    if (user.role === 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete admin users'
+      });
+    }
+
+    // Delete all associated data
+    const Cart = require('../models/Cart');
+    
+    // Delete user's cart
+    await Cart.findOneAndDelete({ userId: id });
+
+    // Delete user's orders
+    await Order.deleteMany({ user: id });
+
+    // Remove user from any product reviews
+    await Product.updateMany(
+      { 'reviews.user': id },
+      { $pull: { reviews: { user: id } } }
+    );
+
+    // Delete the user
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'User and all associated data deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting user'
+    });
+  }
+});
+
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/dashboard
 // @access  Private/Admin
@@ -806,77 +869,7 @@ router.get('/products/analytics', async (req, res) => {
   }
 });
 
-// @desc    Bulk update product stock
-// @route   PUT /api/admin/products/bulk-stock
-// @access  Private/Admin
-router.put('/products/bulk-stock', [
-  body('updates')
-    .isArray()
-    .withMessage('Updates must be an array'),
-  body('updates.*.productId')
-    .isMongoId()
-    .withMessage('Invalid product ID'),
-  body('updates.*.stockQuantity')
-    .isInt({ min: 0 })
-    .withMessage('Stock quantity must be a non-negative integer')
-], async (req, res) => {
-  try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: errors.array()
-      });
-    }
 
-    const { updates } = req.body;
-
-    const bulkOps = updates.map(update => ({
-      updateOne: {
-        filter: { _id: update.productId },
-        update: {
-          $set: {
-            stockQuantity: update.stockQuantity,
-            inStock: update.stockQuantity > 0
-          }
-        }
-      }
-    }));
-
-    const result = await Product.bulkWrite(bulkOps);
-
-    res.json({
-      success: true,
-      message: 'Stock updated successfully',
-      data: {
-        modifiedCount: result.modifiedCount
-      }
-    });
-  } catch (error) {
-    console.error('Bulk update stock error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
-});
-
-// @desc    Bulk update product featured status
-// @route   PUT /api/admin/products/bulk-featured
-// @access  Private/Admin
-router.put('/products/bulk-featured', [
-  body('updates')
-    .isArray()
-    .withMessage('Updates must be an array'),
-  body('updates.*.productId')
-    .isMongoId()
-    .withMessage('Invalid product ID'),
-  body('updates.*.featured')
-    .isBoolean()
-    .withMessage('Featured must be a boolean value')
-], adminBulkController.bulkUpdateFeatured);
 
 // @desc    Product routes (admin)
 // @route   /api/admin/products

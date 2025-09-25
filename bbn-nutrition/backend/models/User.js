@@ -47,28 +47,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  phone: {
-    type: String,
-    validate: {
-      validator: function(v) {
-        return !v || /^\+?[\d\s\-\(\)]+$/.test(v);
-      },
-      message: 'Please provide a valid phone number'
-    }
-  },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  isPhoneVerified: {
-    type: Boolean,
-    default: false
-  },
   emailVerificationToken: {
-    type: String,
-    select: false
-  },
-  phoneVerificationToken: {
     type: String,
     select: false
   },
@@ -141,6 +120,23 @@ const userSchema = new mongoose.Schema({
   }],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  resetPasswordOTP: {
+    type: String,
+    select: false
+  },
+  resetPasswordOTPExpire: {
+    type: Date,
+    select: false
+  },
+  resetPasswordOTPAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
+  lastResetPasswordOTPSent: {
+    type: Date,
+    select: false
+  },
   emailVerified: {
     type: Boolean,
     default: false
@@ -159,10 +155,6 @@ const userSchema = new mongoose.Schema({
     emailNotifications: {
       type: Boolean,
       default: true
-    },
-    smsNotifications: {
-      type: Boolean,
-      default: false
     },
     marketingEmails: {
       type: Boolean,

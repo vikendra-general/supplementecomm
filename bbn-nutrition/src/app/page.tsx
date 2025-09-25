@@ -366,7 +366,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl lg:text-3xl font-bold text-green-400 mb-2" style={{color: '#4ade80'}}>Why Choose BBN?</h2>
-            <p className="text-sm text-gray-300" style={{color: '#d1d5db'}}>More than just supplements — we provide trusted solutions built on research, purity, and performance, so you can unlock your body's full potential naturally.</p>
+            <p className="text-sm text-gray-300" style={{color: '#d1d5db'}}>More than just supplements — we provide trusted solutions built on research, purity, and performance, so you can unlock your body&apos;s full potential naturally.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

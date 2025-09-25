@@ -1,4 +1,4 @@
-import { Product, Order, Address } from '@/types';
+import { Product, Order, Address, Review } from '@/types';
 import { cache, CACHE_KEYS } from './cache';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
@@ -93,9 +93,9 @@ class ApiService {
       
       // Handle abort errors more gracefully
       if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
-        // Don't throw an error for aborted requests - just return silently
+        // Don't throw an error for aborted requests - just return a default response
         // This prevents console errors during navigation
-        return null;
+        return { success: false, message: 'Request aborted' } as ApiResponse<T>;
       }
       
       console.error('API request failed:', error);
@@ -510,6 +510,12 @@ class ApiService {
     });
   }
 
+  async deleteUser(userId: string) {
+    return this.request(`/admin/users/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getProductAnalytics() {
     return this.request('/admin/products/analytics');
   }
@@ -535,7 +541,7 @@ class ApiService {
     });
   }
 
-  async getProductReviews(productId: string): Promise<ApiResponse<any[]>> {
+  async getProductReviews(productId: string): Promise<ApiResponse<Review[]>> {
     return this.request(`/products/${productId}/reviews`);
   }
 
