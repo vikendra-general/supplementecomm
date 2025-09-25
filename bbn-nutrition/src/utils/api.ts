@@ -45,9 +45,18 @@ class ApiService {
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
-    // Create abort controller for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    // Use provided signal or create abort controller for timeout
+    const controller = options.signal ? null : new AbortController();
+    const signal = options.signal || controller?.signal;
+    
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (controller) {
+      timeoutId = setTimeout(() => {
+        if (!controller.signal.aborted) {
+          controller.abort();
+        }
+      }, 15000); // Increased timeout to 15 seconds
+    }
     
     const config: RequestInit = {
       headers: {
@@ -55,13 +64,19 @@ class ApiService {
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      signal: controller.signal,
+      signal,
       ...options,
     };
 
     try {
       const response = await fetch(url, config);
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        throw new ApiError(0, 'Request was cancelled');
+      }
+      
       const data = await response.json();
 
       if (!response.ok) {
@@ -70,15 +85,17 @@ class ApiService {
 
       return data;
     } catch (error) {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       
       if (error instanceof ApiError) {
         throw error;
       }
       
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error('API request timeout:', error);
-        throw new ApiError(0, 'Request timeout - please check your connection and try again');
+      // Handle abort errors more gracefully
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+        // Don't throw an error for aborted requests - just return silently
+        // This prevents console errors during navigation
+        return null;
       }
       
       console.error('API request failed:', error);
@@ -141,7 +158,7 @@ class ApiService {
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
-  } = {}): Promise<ApiResponse<Product[]>> {
+  } = {}, signal?: AbortSignal): Promise<ApiResponse<Product[]>> {
     // Check cache first
     const cacheKey = `${CACHE_KEYS.PRODUCTS}_${JSON.stringify(params)}`;
     const cachedData = cache.get<ApiResponse<Product[]>>(cacheKey);
@@ -158,7 +175,12 @@ class ApiService {
       });
     }
     
-    const result = await this.request<Product[]>(`/products?${searchParams.toString()}`);
+    const result = await this.request<Product[]>(`/products?${searchParams.toString()}`, { signal });
+    
+    // Handle null result from aborted requests
+    if (result === null) {
+      return { success: false, data: [], message: 'Request was cancelled' };
+    }
     
     // Cache the response for 5 minutes
     cache.set(cacheKey, result, 5 * 60 * 1000);

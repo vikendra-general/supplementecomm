@@ -100,13 +100,9 @@ export default function Header() {
 
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-md border-b border-gray-200' 
-        : 'bg-white/90 backdrop-blur-md border-b border-gray-100'
-    }`}>
+    <header className="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300">
       {/* Main Header */}
-      <div className={isScrolled ? 'bg-white' : 'bg-transparent'}>
+      <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14">
             {/* Logo */}
@@ -124,13 +120,9 @@ export default function Header() {
 
             {/* Location Selector - Only show when user is logged in */}
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-              <div className={`hidden md:flex items-center text-sm ml-6 ${
-                isScrolled ? 'text-text-primary' : 'text-text-primary'
-              }`}>
+              <div className="hidden md:flex items-center text-sm ml-6 text-text-primary">
                 <div className="flex flex-col">
-                  <span className={`text-xs ${
-                    isScrolled ? 'text-text-secondary' : 'text-text-secondary'
-                  }`}>Deliver to</span>
+                  <span className="text-xs text-text-secondary">Deliver to</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
@@ -154,11 +146,7 @@ export default function Header() {
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className={`flex flex-col items-start transition-colors ${
-                      isScrolled 
-                        ? 'text-gray-700 hover:text-orange-500' 
-                        : 'text-gray-700 hover:text-orange-500'
-                    }`}
+                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
                     <span className="text-xs">Hello, {user?.name?.split(' ')[0]}</span>
                     <div className="flex items-center space-x-1">
@@ -167,13 +155,9 @@ export default function Header() {
                     </div>
                   </button>
                 ) : (
-                  <Link
-                    href="/login"
-                    className={`flex flex-col items-start transition-colors ${
-                      isScrolled 
-                        ? 'text-gray-700 hover:text-orange-500' 
-                        : 'text-gray-700 hover:text-orange-500'
-                    }`}
+                  <Link 
+                    href="/login" 
+                    className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
                     <span className="text-xs">Hello, sign in</span>
                     <div className="flex items-center space-x-1">
@@ -192,7 +176,7 @@ export default function Header() {
                     </div>
                     <div className="py-2">
                       <Link
-                        href="/dashboard"
+                        href={user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
@@ -212,13 +196,9 @@ export default function Header() {
               </div>
 
               {/* Returns & Orders */}
-              <Link
-                href="/orders"
-                className={`hidden lg:flex flex-col items-start transition-colors ${
-                  isScrolled 
-                    ? 'text-gray-700 hover:text-orange-500' 
-                    : 'text-gray-700 hover:text-orange-500'
-                }`}
+              <Link 
+                href="/orders" 
+                className="hidden lg:flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
               >
                 <span className="text-xs">Returns</span>
                 <span className="text-sm font-normal">& Orders</span>
@@ -227,11 +207,7 @@ export default function Header() {
               {/* Cart */}
               <Link 
                 href="/cart" 
-                className={`flex items-center space-x-1 transition-colors relative ${
-                  isScrolled 
-                    ? 'text-gray-700 hover:text-orange-500' 
-                    : 'text-gray-700 hover:text-orange-500'
-                }`}
+                className="relative flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors"
               >
                 <div className="relative">
                   <ShoppingCart className="w-6 h-6" />
@@ -249,21 +225,14 @@ export default function Header() {
       </div>
 
       {/* Navigation Bar */}
-      <div className={`transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-gray-50 border-t border-gray-100' 
-          : 'bg-gray-50 border-t border-gray-100'
-      }`}>
+      <div className="bg-white border-t border-gray-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-9 space-x-6">
+          <div className="flex items-center justify-center h-12 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`lg:hidden flex items-center space-x-1 transition-colors absolute left-4 ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}
+              className="lg:hidden flex items-center space-x-1 text-gray-900 hover:text-orange-500 transition-colors absolute left-4"
+              style={{color: '#111827'}}
             >
               <Menu className="w-4 h-4" />
               <span className="text-sm font-normal">All</span>
@@ -271,68 +240,37 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-5">
-              <Link href="/shop" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
+              <Link href="/shop" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
                 Shop All
               </Link>
-              <Link href="/deals" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.todaysDeals')}
+              <Link href="/deals" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Today's Deals
               </Link>
-              <Link href="/best-sellers" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.bestSellers')}
+              <Link href="/best-sellers" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Best Sellers
               </Link>
-              <Link href="/protein-supplements" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.proteinSupplements')}
+              <Link href="/protein-supplements" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Protein Supplements
               </Link>
-              <Link href="/pre-workout" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.preWorkout')}
+              <Link href="/pre-workout" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Pre-Workout
               </Link>
-              <Link href="/vitamins" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.vitamins')}
+              <Link href="/vitamins" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Vitamins
               </Link>
-              <Link href="/about" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.aboutBBN')}
+              <Link href="/about" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                About BBN
               </Link>
-              <Link href="/contact" className={`transition-colors text-sm font-normal ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-orange-500' 
-                  : 'text-gray-700 hover:text-orange-500'
-              }`}>
-                {t('header.customerService')}
+              <Link href="/contact" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Customer Service
               </Link>
               
               {/* Language Switcher */}
               <div className="relative" ref={languageMenuRef}>
                 <button
                   onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                  className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal"
+                  className="flex items-center space-x-1 text-gray-900 hover:text-orange-500 transition-colors text-sm font-normal"
+                  style={{color: '#111827'}}
                 >
                   <img 
                     src={language === 'hi' ? '/images/flags/in.svg' : '/images/flags/us.svg'} 
@@ -416,28 +354,28 @@ export default function Header() {
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.todaysDeals')}
+                Today's Deals
               </Link>
               <Link 
                 href="/best-sellers" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.bestSellers')}
+                Best Sellers
               </Link>
               <Link 
                 href="/protein-supplements" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.proteinSupplements')}
+                Protein Supplements
               </Link>
               <Link 
                 href="/pre-workout" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.preWorkout')}
+                Pre-Workout
               </Link>
               <Link 
                 href="/vitamins" 
@@ -445,6 +383,20 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Vitamins
+              </Link>
+              <Link 
+                href="/about" 
+                className="block text-gray-900 hover:text-orange-600 font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About BBN
+              </Link>
+              <Link 
+                href="/contact" 
+                className="block text-gray-900 hover:text-orange-600 font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Customer Service
               </Link>
               
               {/* Mobile Account Section */}

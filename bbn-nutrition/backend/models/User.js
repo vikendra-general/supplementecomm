@@ -49,11 +49,28 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    default: ''
+    validate: {
+      validator: function(v) {
+        return !v || /^\+?[\d\s\-\(\)]+$/.test(v);
+      },
+      message: 'Please provide a valid phone number'
+    }
   },
-  phoneVerified: {
+  isEmailVerified: {
     type: Boolean,
     default: false
+  },
+  isPhoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: {
+    type: String,
+    select: false
+  },
+  phoneVerificationToken: {
+    type: String,
+    select: false
   },
   addresses: [{
     _id: {

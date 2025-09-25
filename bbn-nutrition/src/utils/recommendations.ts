@@ -4,9 +4,9 @@ import { apiService } from './api';
 /**
  * Get top selling products based on various criteria
  */
-export const getTopSellerProducts = async (limit: number = 4): Promise<Product[]> => {
+export const getTopSellerProducts = async (limit: number = 4, signal?: AbortSignal): Promise<Product[]> => {
   try {
-    const response = await apiService.getProducts({ limit: 100 });
+    const response = await apiService.getProducts({ limit: 100 }, signal);
     if (response.success && response.data) {
       return response.data
         .filter(product => product.inStock)
@@ -27,6 +27,13 @@ export const getTopSellerProducts = async (limit: number = 4): Promise<Product[]
     }
     return [];
   } catch (error) {
+    // Silently handle abort errors during navigation
+    if (error instanceof Error && 
+        (error.message.includes('Request was cancelled') || 
+         error.message.includes('aborted') || 
+         error.name === 'AbortError')) {
+      return [];
+    }
     console.error('Error fetching top seller products:', error);
     return [];
   }
@@ -113,9 +120,9 @@ export const getProductsByCategory = async (category: string, limit?: number): P
 /**
  * Get featured products for homepage
  */
-export const getFeaturedProducts = async (limit: number = 4): Promise<Product[]> => {
+export const getFeaturedProducts = async (limit: number = 4, signal?: AbortSignal): Promise<Product[]> => {
   try {
-    const response = await apiService.getProducts({ limit: 100 });
+    const response = await apiService.getProducts({ limit: 100 }, signal);
     if (response.success && response.data) {
       return response.data
         .filter(product => product.featured && product.inStock)
@@ -124,6 +131,13 @@ export const getFeaturedProducts = async (limit: number = 4): Promise<Product[]>
     }
     return [];
   } catch (error) {
+    // Silently handle abort errors during navigation
+    if (error instanceof Error && 
+        (error.message.includes('Request was cancelled') || 
+         error.message.includes('aborted') || 
+         error.name === 'AbortError')) {
+      return [];
+    }
     console.error('Error fetching featured products:', error);
     return [];
   }

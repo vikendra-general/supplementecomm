@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { sendEmailOTP, sendSMSOTP, sendFreeSMSOTP, verifyOTP } = require('../services/otpService');
 
 const router = express.Router();
 
@@ -19,8 +20,8 @@ router.post('/register', [
     .normalizeEmail()
     .withMessage('Please provide a valid email'),
   body('phone')
-    .optional()
-    .isMobilePhone()
+    .optional({ checkFalsy: true })
+    .isMobilePhone('any')
     .withMessage('Please provide a valid phone number'),
   body('password')
     .isLength({ min: 8 })
@@ -44,31 +45,44 @@ router.post('/register', [
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists with this email'
-      });
+      // If user exists but is not verified, allow them to proceed with verification
+      if (!existingUser.isEmailVerified && (!existingUser.phone || !existingUser.isPhoneVerified)) {
+        return res.status(200).json({
+          success: true,
+          message: 'User exists but not verified. Please verify your email and/or phone number.',
+          user: {
+            id: existingUser._id,
+            name: existingUser.name,
+            email: existingUser.email,
+            phone: existingUser.phone,
+            role: existingUser.role,
+            avatar: existingUser.avatar,
+            isEmailVerified: existingUser.isEmailVerified,
+            isPhoneVerified: existingUser.isPhoneVerified
+          }
+        });
+      } else {
+        // User exists and is verified
+        return res.status(400).json({
+          success: false,
+          message: 'User already exists with this email and is verified. Please login instead.'
+        });
+      }
     }
 
-    // Create user
+    // Create user (but don't verify yet)
     const user = await User.create({
       name,
       email,
       phone: phone || '',
-      password
+      password,
+      isEmailVerified: false,
+      isPhoneVerified: false
     });
-
-    // Create token
-    const token = user.getSignedJwtToken();
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      token,
+      message: 'User registered successfully. Please verify your email and/or phone number.',
       user: {
         id: user._id,
         name: user.name,
@@ -76,7 +90,8 @@ router.post('/register', [
         phone: user.phone,
         role: user.role,
         avatar: user.avatar,
-        emailVerified: user.emailVerified
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: user.isPhoneVerified
       }
     });
   } catch (error) {
@@ -99,6 +114,291 @@ router.post('/register', [
     res.status(500).json({
       success: false,
       message: 'Server error during registration'
+    });
+  }
+});
+
+// @desc    Send OTP for email verification
+// @route   POST /api/auth/send-email-otp
+// @access  Public
+router.post('/send-email-otp', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with this email'
+      });
+    }
+
+    // Check if already verified
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    // Send OTP
+    const result = await sendEmailOTP(email, user.name);
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Send email OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sending OTP'
+    });
+  }
+});
+
+// @desc    Send OTP for phone verification
+// @route   POST /api/auth/send-phone-otp
+// @access  Public
+router.post('/send-phone-otp', [
+  body('phone')
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { phone } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with this phone number'
+      });
+    }
+
+    // Check if already verified
+    if (user.isPhoneVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number is already verified'
+      });
+    }
+
+    // Try Twilio first, fallback to free service
+    let result = await sendSMSOTP(phone, user.name);
+    
+    if (!result.success) {
+      // Fallback to free SMS service
+      result = await sendFreeSMSOTP(phone, user.name);
+    }
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Send phone OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sending OTP'
+    });
+  }
+});
+
+// @desc    Verify email OTP
+// @route   POST /api/auth/verify-email-otp
+// @access  Public
+router.post('/verify-email-otp', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with this email'
+      });
+    }
+
+    // Verify OTP
+    const result = verifyOTP(email, otp);
+    
+    if (result.success) {
+      // Mark email as verified
+      user.isEmailVerified = true;
+      await user.save();
+
+      // Generate token if both email and phone are verified (or phone not provided)
+      let token = null;
+      if (user.isEmailVerified && (user.isPhoneVerified || !user.phone)) {
+        token = user.getSignedJwtToken();
+        user.lastLogin = new Date();
+        await user.save();
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Email verified successfully',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar,
+          isEmailVerified: user.isEmailVerified,
+          isPhoneVerified: user.isPhoneVerified
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Verify email OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while verifying OTP'
+    });
+  }
+});
+
+// @desc    Verify phone OTP
+// @route   POST /api/auth/verify-phone-otp
+// @access  Public
+router.post('/verify-phone-otp', [
+  body('phone')
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { phone, otp } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ phone });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found with this phone number'
+      });
+    }
+
+    // Verify OTP
+    const result = verifyOTP(phone, otp);
+    
+    if (result.success) {
+      // Mark phone as verified
+      user.isPhoneVerified = true;
+      await user.save();
+
+      // Generate token if both email and phone are verified
+      let token = null;
+      if (user.isEmailVerified && user.isPhoneVerified) {
+        token = user.getSignedJwtToken();
+        user.lastLogin = new Date();
+        await user.save();
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Phone number verified successfully',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar,
+          isEmailVerified: user.isEmailVerified,
+          isPhoneVerified: user.isPhoneVerified
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Verify phone OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while verifying OTP'
     });
   }
 });

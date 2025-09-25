@@ -100,27 +100,56 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    const abortController = new AbortController();
+
     const fetchProducts = async () => {
       try {
+        if (!isMounted) return;
         setLoading(true);
-        const [featured, topSellers] = await Promise.all([
-          getFeaturedProducts(4),
-          getTopSellerProducts(4)
-        ]);
-        setFeaturedProducts(featured);
-        setTopSellerProducts(topSellers);
         
-        // Get categories with dynamic product counts
-        const dynamicCategories = getCategoriesWithDynamicCounts();
-        setCategories(dynamicCategories);
+        const [featured, topSellers] = await Promise.all([
+          getFeaturedProducts(4, abortController.signal),
+          getTopSellerProducts(4, abortController.signal)
+        ]);
+        
+        if (isMounted) {
+          setFeaturedProducts(featured);
+          setTopSellerProducts(topSellers);
+          
+          // Get categories with dynamic product counts
+          const dynamicCategories = getCategoriesWithDynamicCounts();
+          setCategories(dynamicCategories);
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        // Only log errors if the component is still mounted
+        if (isMounted) {
+          // Check if it's an abort-related error and suppress it
+          if (error instanceof Error && 
+              (error.message.includes('Request was cancelled') || 
+               error.message.includes('aborted') || 
+               error.name === 'AbortError')) {
+            // Silently ignore abort errors during navigation
+            return;
+          }
+          // Only log if the request wasn't explicitly aborted
+          if (!abortController.signal.aborted) {
+            console.error('Error fetching products:', error);
+          }
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
   }, []);
 
   const testimonials = [
@@ -278,8 +307,8 @@ export default function HomePage() {
               href="/shop" 
               className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              View All Products
-              <ArrowRight className="ml-2 w-4 h-4" />
+              <span className="text-white">View All Products</span>
+              <ArrowRight className="ml-2 w-4 h-4 text-white" />
             </Link>
           </div>
         </div>
@@ -373,8 +402,8 @@ export default function HomePage() {
               href="/reviews" 
               className="inline-flex items-center space-x-2 bg-white text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors border border-gray-200 shadow-sm"
             >
-              <span>View All Reviews</span>
-              <ArrowRight className="w-4 h-4" />
+              <span className="text-gray-700">View All Reviews</span>
+              <ArrowRight className="w-4 h-4 text-gray-700" />
             </Link>
           </div>
         </div>
@@ -408,8 +437,8 @@ export default function HomePage() {
             href="/shop" 
             className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            Start Shopping
-            <ArrowRight className="ml-2 w-4 h-4" />
+            <span className="text-white">Start Shopping</span>
+            <ArrowRight className="ml-2 w-4 h-4 text-white" />
           </Link>
         </div>
       </section>

@@ -60,16 +60,16 @@ export default function Hero() {
                 href="/shop" 
                 className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 text-base group"
               >
-                <ShoppingBag className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-                Start Your Journey
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <ShoppingBag className="w-5 h-5 mr-2 text-white group-hover:animate-pulse" />
+                <span className="text-white">Start Your Journey</span>
+                <ArrowRight className="w-5 h-5 ml-2 text-white group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
               <button 
                 onClick={() => setIsVideoPlaying(true)}
                 className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl text-base group"
               >
-                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                See Results
+                <Play className="w-5 h-5 mr-2 text-white group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-white">See Results</span>
               </button>
             </div>
 

@@ -57,17 +57,59 @@ export default function AdminDashboard() {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7days');
+  const [isFetching, setIsFetching] = useState(false); // Prevent multiple simultaneous requests
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    console.log('Dashboard useEffect triggered:', {
+      isAuthenticated,
+      userRole: user?.role,
+      timeRange,
+      hasUser: !!user,
+      isFetching
+    });
+    if (isAuthenticated && user?.role === 'admin' && !isFetching) {
       fetchDashboardData();
     }
-  }, [isAuthenticated, user, timeRange]);
+  }, [isAuthenticated, user?.role, timeRange]);
+
+  // Additional effect to handle navigation-based refresh
+  useEffect(() => {
+    console.log('Dashboard mount effect triggered:', {
+      isAuthenticated,
+      userRole: user?.role,
+      hasUser: !!user,
+      isLoading: loading,
+      isFetching
+    });
+    // Force refresh when component mounts and user is already authenticated
+    if (isAuthenticated && user?.role === 'admin' && !isFetching) {
+      // Small delay to ensure auth state is stable
+      const timer = setTimeout(() => {
+        console.log('Forcing dashboard data refresh after mount');
+        fetchDashboardData();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const fetchDashboardData = async () => {
+    // Prevent multiple simultaneous requests
+    if (isFetching) {
+      console.log('Already fetching data, skipping...');
+      return;
+    }
+
     try {
+      setIsFetching(true);
       setLoading(true);
+      console.log('Fetching dashboard data...');
+      
+      // Check if we have a valid token
+      const token = localStorage.getItem('token');
+      console.log('Token available:', !!token);
+      
       const response = await apiService.getAdminDashboard();
+      console.log('Dashboard response:', response);
       if (response.success && response.data) {
         const data = response.data as {
           stats?: DashboardStats;
@@ -77,11 +119,19 @@ export default function AdminDashboard() {
         setStats(data.stats || {} as DashboardStats);
         setRecentOrders(data.recentOrders || []);
         setTopProducts(data.topProducts || []);
+        console.log('Dashboard data loaded successfully');
+      } else {
+        console.error('Dashboard API response not successful:', response);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Don't show error for cancelled requests during navigation
+      if (error instanceof Error && !error.message.includes('cancelled')) {
+        // Handle other errors here if needed
+      }
     } finally {
       setLoading(false);
+      setIsFetching(false);
     }
   };
 
@@ -164,9 +214,32 @@ export default function AdminDashboard() {
     );
   }
 
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return (
+      <AdminProtectedRoute>
+        <AdminLayout>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading dashboard...</p>
+              {/* Debug info */}
+              <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
+                <p>Debug Info:</p>
+                <p>isAuthenticated: {String(isAuthenticated)}</p>
+                <p>user: {user ? JSON.stringify(user, null, 2) : 'null'}</p>
+                <p>token: {localStorage.getItem('token') ? 'present' : 'missing'}</p>
+              </div>
+            </div>
+          </div>
+        </AdminLayout>
+      </AdminProtectedRoute>
+    );
+  }
+
   return (
     <AdminProtectedRoute>
       <AdminLayout>
+
         <div className="space-y-6">
           {/* Admin Mode Banner */}
           <div className="bg-green-50 rounded-lg p-4 mb-6 border border-green-200">
