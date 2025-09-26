@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Product = require('../models/Product');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -353,6 +353,40 @@ router.post('/:id/reviews', protect, [
     res.status(500).json({
       success: false,
       message: 'Server error during review addition'
+    });
+  }
+});
+
+// @desc    Get product reviews
+// @route   GET /api/products/:id/reviews
+// @access  Public
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).populate({
+      path: 'reviews.user',
+      select: 'name email'
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Sort reviews by creation date (newest first)
+    const sortedReviews = product.reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+      success: true,
+      data: sortedReviews,
+      count: sortedReviews.length
+    });
+  } catch (error) {
+    console.error('Get reviews error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during reviews fetch'
     });
   }
 });

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
 import { 
   ArrowLeft,
@@ -68,12 +69,30 @@ interface AnalyticsData {
 
 
 export default function AdminAnalyticsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading analytics...</div>}>
+      <AdminAnalyticsContent />
+    </Suspense>
+  );
+}
+
+function AdminAnalyticsContent() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('12months');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Handle URL parameters
+  useEffect(() => {
+    const view = searchParams.get('view');
+    const action = searchParams.get('action');
+    
+    // URL parameters are available but not currently used
+    // Can be implemented later for view switching and export functionality
+  }, [searchParams]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -196,7 +215,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="min-h-screen bg-dark-bg">
       {/* Header */}
-      <div className="bg-dark-card border-b border-gray-700">
+      <div className="bg-dark-card border-b border-blue-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -221,7 +240,7 @@ export default function AdminAnalyticsPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+                className="px-4 py-2 bg-blue-900/20 border border-blue-600 rounded-lg text-dark-text hover:bg-blue-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 {refreshing ? 'Refreshing...' : 'Refresh'}
@@ -229,7 +248,7 @@ export default function AdminAnalyticsPage() {
               <select
                 value={timeRange}
                 onChange={(e) => handleTimeRangeChange(e.target.value)}
-                className="px-4 py-2 bg-dark-gray border border-gray-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="px-4 py-2 bg-blue-900/20 border border-blue-600 rounded-lg text-dark-text focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="7days">Last 7 Days</option>
                 <option value="30days">Last 30 Days</option>
@@ -252,7 +271,7 @@ export default function AdminAnalyticsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-dark-text-secondary">Total Revenue</p>
@@ -269,7 +288,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-dark-text-secondary">Total Orders</p>
@@ -286,7 +305,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-dark-text-secondary">Total Customers</p>
@@ -303,7 +322,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-dark-text-secondary">Avg. Order Value</p>
@@ -324,7 +343,7 @@ export default function AdminAnalyticsPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-dark-text">Revenue Trend</h3>
               <BarChart3 className="w-5 h-5 text-primary" />
@@ -334,7 +353,7 @@ export default function AdminAnalyticsPage() {
                 <div key={data.month} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="text-sm text-dark-text-secondary w-8">{data.month}</span>
-                    <div className="flex-1 bg-dark-gray rounded-full h-2 max-w-xs">
+                    <div className="flex-1 bg-blue-900/20 rounded-full h-2 max-w-xs">
                       <div 
                         className="bg-gradient-to-r from-primary to-light-green h-2 rounded-full"
                         style={{ width: `${(data.revenue / 20000) * 100}%` }}
@@ -351,7 +370,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Order Status Distribution */}
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-dark-text">Order Status Distribution</h3>
               <PieChart className="w-5 h-5 text-primary" />
@@ -385,14 +404,14 @@ export default function AdminAnalyticsPage() {
         {/* Tables Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top Selling Products */}
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-dark-text">Top Selling Products</h3>
               <Star className="w-5 h-5 text-primary" />
             </div>
             <div className="space-y-4">
               {analytics.topSellingProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center justify-between p-3 bg-dark-gray rounded-lg">
+                <div key={product.id} className="flex items-center justify-between p-3 bg-blue-900/20 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-primary to-light-green rounded-lg flex items-center justify-center">
                       <span className="text-dark font-bold text-xs">{index + 1}</span>
@@ -411,14 +430,14 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Top Categories */}
-          <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+          <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-dark-text">Top Categories</h3>
               <Package className="w-5 h-5 text-primary" />
             </div>
             <div className="space-y-4">
               {analytics.topCategories.map((category, categoryIndex) => (
-                <div key={category.category} className="flex items-center justify-between p-3 bg-dark-gray rounded-lg">
+                <div key={category.category} className="flex items-center justify-between p-3 bg-blue-900/20 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-primary to-light-green rounded-lg flex items-center justify-center">
                       <span className="text-dark font-bold text-xs">{categoryIndex + 1}</span>
@@ -442,7 +461,7 @@ export default function AdminAnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             {/* Low Stock Alerts */}
             {analytics.lowStockProducts && analytics.lowStockProducts.length > 0 && (
-              <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+              <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-dark-text">Low Stock Alerts</h3>
                   <div className="flex items-center space-x-2">
@@ -452,7 +471,7 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="space-y-3">
                   {analytics.lowStockProducts.slice(0, 5).map((product) => (
-                    <div key={product._id} className="flex items-center justify-between p-3 bg-dark-gray rounded-lg border-l-4 border-yellow-500">
+                    <div key={product._id} className="flex items-center justify-between p-3 bg-blue-900/20 rounded-lg border-l-4 border-yellow-500">
                       <div>
                         <p className="text-sm font-medium text-dark-text">{product.name}</p>
                         <p className="text-xs text-dark-text-secondary">Stock running low</p>
@@ -479,7 +498,7 @@ export default function AdminAnalyticsPage() {
 
             {/* Out of Stock Alerts */}
             {analytics.outOfStockProducts && analytics.outOfStockProducts.length > 0 && (
-              <div className="bg-dark-card p-6 rounded-lg border border-gray-700">
+              <div className="bg-dark-card p-6 rounded-lg border border-blue-700">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-dark-text">Out of Stock</h3>
                   <div className="flex items-center space-x-2">
@@ -489,7 +508,7 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="space-y-3">
                   {analytics.outOfStockProducts.slice(0, 5).map((product) => (
-                    <div key={product._id} className="flex items-center justify-between p-3 bg-dark-gray rounded-lg border-l-4 border-red-500">
+                    <div key={product._id} className="flex items-center justify-between p-3 bg-blue-900/20 rounded-lg border-l-4 border-red-500">
                       <div>
                         <p className="text-sm font-medium text-dark-text">{product.name}</p>
                         <p className="text-xs text-dark-text-secondary">Currently unavailable</p>
@@ -517,23 +536,23 @@ export default function AdminAnalyticsPage() {
         )}
 
         {/* Performance Insights */}
-        <div className="mt-8 bg-dark-card p-6 rounded-lg border border-gray-700">
+        <div className="mt-8 bg-dark-card p-6 rounded-lg border border-blue-700">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-dark-text">Performance Insights</h3>
             <Activity className="w-5 h-5 text-primary" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-dark-gray rounded-lg">
+            <div className="text-center p-4 bg-blue-900/20 rounded-lg">
               <div className="text-2xl font-bold text-primary mb-2">{analytics.conversionRate.toFixed(1)}%</div>
               <div className="text-sm text-dark-text-secondary">Conversion Rate</div>
               <div className="text-xs text-dark-text-secondary mt-1">Orders per customer</div>
             </div>
-            <div className="text-center p-4 bg-dark-gray rounded-lg">
+            <div className="text-center p-4 bg-blue-900/20 rounded-lg">
               <div className="text-2xl font-bold text-primary mb-2">{formatCurrency(analytics.averageOrderValue)}</div>
               <div className="text-sm text-dark-text-secondary">Avg. Order Value</div>
               <div className="text-xs text-dark-text-secondary mt-1">Revenue per order</div>
             </div>
-            <div className="text-center p-4 bg-dark-gray rounded-lg">
+            <div className="text-center p-4 bg-blue-900/20 rounded-lg">
               <div className="text-2xl font-bold text-primary mb-2">{analytics.totalProducts}</div>
               <div className="text-sm text-dark-text-secondary">Total Products</div>
               <div className="text-xs text-dark-text-secondary mt-1">In catalog</div>

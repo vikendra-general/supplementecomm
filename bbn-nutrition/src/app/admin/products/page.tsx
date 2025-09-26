@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchParams } from 'next/navigation';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { apiService } from '@/utils/api';
 import { cache, CACHE_KEYS } from '@/utils/cache';
 import { 
@@ -36,12 +38,32 @@ interface ProductFormData {
   tags: string;
   featured: boolean;
   bestSeller: boolean;
-  inStock: boolean;
   todaysDeals: boolean;
+  nutritionFacts: {
+    servingSize: string;
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    sugar: string;
+    sodium: string;
+    ingredients: string;
+  };
 }
 
 export default function AdminProductsPage() {
+  return (
+    <AdminProtectedRoute>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
+        <AdminProductsContent />
+      </Suspense>
+    </AdminProtectedRoute>
+  );
+}
+
+function AdminProductsContent() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +72,21 @@ export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterBrand, setFilterBrand] = useState('');
+  const [currentView, setCurrentView] = useState('products');
+
+  // Handle URL parameters
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const view = searchParams.get('view');
+    
+    if (action === 'add') {
+      setShowProductForm(true);
+    }
+    
+    if (view) {
+      setCurrentView(view);
+    }
+  }, [searchParams]);
   const [productFormData, setProductFormData] = useState<ProductFormData>({
     name: '',
     description: '',
@@ -63,8 +100,17 @@ export default function AdminProductsPage() {
     tags: '',
     featured: false,
     bestSeller: false,
-    inStock: true,
-    todaysDeals: false
+    todaysDeals: false,
+    nutritionFacts: {
+      servingSize: '',
+      calories: '',
+      protein: '',
+      carbs: '',
+      fat: '',
+      sugar: '',
+      sodium: '',
+      ingredients: ''
+    }
   });
 
   // Fetch products from API
@@ -129,6 +175,55 @@ export default function AdminProductsPage() {
       setLoading(true);
       setError(null);
       
+      // Frontend validation
+      if (!productFormData.name.trim()) {
+        setError('Product name is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (productFormData.name.trim().length < 2) {
+        setError('Product name must be at least 2 characters');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.description.trim()) {
+        setError('Product description is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (productFormData.description.trim().length < 10) {
+        setError('Product description must be at least 10 characters');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.price || parseFloat(productFormData.price) <= 0) {
+        setError('Valid price is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.category.trim()) {
+        setError('Product category is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.brand.trim()) {
+        setError('Product brand is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!productFormData.stockQuantity || parseInt(productFormData.stockQuantity) < 0) {
+        setError('Valid stock quantity is required');
+        setLoading(false);
+        return;
+      }
+      
       // Create FormData for API request
       const formData = new FormData();
       formData.append('name', productFormData.name);
@@ -143,8 +238,19 @@ export default function AdminProductsPage() {
       formData.append('tags', productFormData.tags);
       formData.append('featured', productFormData.featured.toString());
       formData.append('bestSeller', productFormData.bestSeller.toString());
-      formData.append('inStock', productFormData.inStock.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
+      
+      // Add nutrition facts
+      formData.append('nutritionFacts', JSON.stringify({
+        servingSize: productFormData.nutritionFacts.servingSize,
+        calories: productFormData.nutritionFacts.calories ? parseFloat(productFormData.nutritionFacts.calories) : undefined,
+        protein: productFormData.nutritionFacts.protein ? parseFloat(productFormData.nutritionFacts.protein) : undefined,
+        carbs: productFormData.nutritionFacts.carbs ? parseFloat(productFormData.nutritionFacts.carbs) : undefined,
+        fat: productFormData.nutritionFacts.fat ? parseFloat(productFormData.nutritionFacts.fat) : undefined,
+        sugar: productFormData.nutritionFacts.sugar ? parseFloat(productFormData.nutritionFacts.sugar) : undefined,
+        sodium: productFormData.nutritionFacts.sodium ? parseFloat(productFormData.nutritionFacts.sodium) : undefined,
+        ingredients: productFormData.nutritionFacts.ingredients ? productFormData.nutritionFacts.ingredients.split(',').map(i => i.trim()).filter(i => i) : []
+      }));
       
       // Handle existing images (for editing)
       productFormData.images.forEach((image) => {
@@ -203,8 +309,17 @@ export default function AdminProductsPage() {
         tags: product.tags?.join(', ') || '',
         featured: product.featured || false,
         bestSeller: product.bestSeller || false,
-        inStock: product.inStock,
-        todaysDeals: (product as Product & { todaysDeals?: boolean }).todaysDeals || false
+        todaysDeals: product.todaysDeals || false,
+        nutritionFacts: {
+          servingSize: product.nutritionFacts?.servingSize || '',
+          calories: product.nutritionFacts?.calories?.toString() || '',
+          protein: product.nutritionFacts?.protein?.toString() || '',
+          carbs: product.nutritionFacts?.carbs?.toString() || '',
+          fat: product.nutritionFacts?.fat?.toString() || '',
+          sugar: product.nutritionFacts?.sugar?.toString() || '',
+          sodium: product.nutritionFacts?.sodium?.toString() || '',
+          ingredients: product.nutritionFacts?.ingredients?.join(', ') || ''
+        }
       });
     setShowProductForm(true);
   };
@@ -242,15 +357,24 @@ export default function AdminProductsPage() {
       price: '',
       originalPrice: '',
       category: '',
-      brand: '',
+      brand: 'BBN',
       images: [],
       imageFiles: [],
-      stockQuantity: '',
+      stockQuantity: '0',
       tags: '',
       featured: false,
       bestSeller: false,
-      inStock: true,
-      todaysDeals: false
+      todaysDeals: false,
+      nutritionFacts: {
+        servingSize: '',
+        calories: '',
+        protein: '',
+        carbs: '',
+        fat: '',
+        sugar: '',
+        sodium: '',
+        ingredients: ''
+      }
     });
   };
 
@@ -301,7 +425,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={fetchProducts}
                 disabled={loading}
-                className="bg-dark-gray text-dark-text px-4 py-2 rounded-lg hover:bg-hover-subtle hover:bg-opacity-50 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
@@ -309,7 +433,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={() => setShowProductForm(true)}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-3 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 px-6 py-3 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50 font-semibold"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Product</span>
@@ -434,24 +558,24 @@ export default function AdminProductsPage() {
         <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-dark-gray">
+              <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -462,9 +586,33 @@ export default function AdminProductsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
-                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
-                            <Package className="w-6 h-6 text-gray-400" />
-                          </div>
+                          {(() => {
+                            let imageUrl = '/images/products/placeholder.jpg';
+                            
+                            if (product.images && product.images.length > 0) {
+                              const firstImage = product.images[0];
+                              if (typeof firstImage === 'string') {
+                                try {
+                                  const parsed = JSON.parse(firstImage);
+                                  imageUrl = Array.isArray(parsed) ? parsed[0] : firstImage;
+                                } catch {
+                                  imageUrl = firstImage;
+                                }
+                              }
+                            }
+                            
+                            return (
+                              <img 
+                                src={imageUrl} 
+                                alt={product.name}
+                                className="h-12 w-12 rounded-lg object-cover border border-gray-300"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/images/products/placeholder.jpg';
+                                }}
+                              />
+                            );
+                          })()}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-dark-text">{product.name}</div>
@@ -511,7 +659,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEditProduct(product)}
-                          className="text-primary hover:text-primary-dark transition-colors"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -536,7 +684,7 @@ export default function AdminProductsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 my-4">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-black">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
               <button
@@ -552,40 +700,60 @@ export default function AdminProductsPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-6">
+              {/* Error Display */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+                    <p className="text-red-700 font-medium">Error</p>
+                  </div>
+                  <p className="text-red-600 mt-1">{error}</p>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Basic Information</h3>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Product Name <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={productFormData.name}
                       onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter product name"
+                      placeholder="Enter product name (min 2 characters)"
+                      required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description <span className="text-red-500">*</span>
+                    </label>
                     <textarea
                       value={productFormData.description}
                       onChange={(e) => setProductFormData({ ...productFormData, description: e.target.value })}
                       rows={4}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter product description"
+                      placeholder="Enter product description (min 10 characters)"
+                      required
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Category <span className="text-red-500">*</span>
+                      </label>
                       <select
                         value={productFormData.category}
                         onChange={(e) => setProductFormData({ ...productFormData, category: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
                       >
                         <option key="select-category" value="">Select Category</option>
                         <option key="protein" value="Protein">Protein</option>
@@ -600,13 +768,16 @@ export default function AdminProductsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Brand <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={productFormData.brand}
                         onChange={(e) => setProductFormData({ ...productFormData, brand: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter brand name"
+                        required
                       />
                     </div>
                   </div>
@@ -625,17 +796,22 @@ export default function AdminProductsPage() {
                 
                 {/* Pricing and Inventory */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Inventory</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Pricing & Inventory</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Price (₹) <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="number"
+                        min="0"
+                        step="0.01"
                         value={productFormData.price}
                         onChange={(e) => setProductFormData({ ...productFormData, price: e.target.value })}
                         className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00"
+                        required
                       />
                     </div>
                     
@@ -652,14 +828,30 @@ export default function AdminProductsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Stock Quantity <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="number"
+                      min="0"
                       value={productFormData.stockQuantity}
-                      onChange={(e) => setProductFormData({ ...productFormData, stockQuantity: e.target.value })}
+                      onChange={(e) => {
+                        const quantity = Math.max(0, parseInt(e.target.value) || 0);
+                        const inStock = quantity > 0;
+                        setProductFormData({ 
+                          ...productFormData, 
+                          stockQuantity: quantity.toString()
+                        });
+                      }}
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
+                      required
                     />
+                    <p className="mt-1 text-sm text-gray-500">
+                      Stock Status: <span className={`font-medium ${productFormData.stockQuantity && parseInt(productFormData.stockQuantity) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {productFormData.stockQuantity && parseInt(productFormData.stockQuantity) > 0 ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </p>
                   </div>
                   
                   {/* Product Images */}
@@ -736,19 +928,9 @@ export default function AdminProductsPage() {
                   
                   {/* Product Flags */}
                   <div className="space-y-3">
-                    <h4 className="text-md font-medium text-gray-900">Product Flags</h4>
+                    <h4 className="text-md font-medium text-black">Product Flags</h4>
                     
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="inStock"
-                        checked={productFormData.inStock}
-                        onChange={(e) => setProductFormData({ ...productFormData, inStock: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                      <label htmlFor="inStock" className="text-sm text-gray-900">In Stock</label>
-                    </div>
-                    
+
                     <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
@@ -783,6 +965,140 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
                 </div>
+                
+                {/* Nutrition Facts */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-black mb-4">Nutrition Facts</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Serving Size</label>
+                      <input
+                        type="text"
+                        value={productFormData.nutritionFacts.servingSize}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, servingSize: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g. 1 scoop (30g)"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Calories</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={productFormData.nutritionFacts.calories}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, calories: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Protein (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.protein}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, protein: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Carbs (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.carbs}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, carbs: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Fat (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.fat}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, fat: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sugar (g)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.sugar}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, sugar: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sodium (mg)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={productFormData.nutritionFacts.sodium}
+                        onChange={(e) => setProductFormData({ 
+                          ...productFormData, 
+                          nutritionFacts: { ...productFormData.nutritionFacts, sodium: e.target.value }
+                        })}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Ingredients</label>
+                    <textarea
+                      value={productFormData.nutritionFacts.ingredients}
+                      onChange={(e) => setProductFormData({ 
+                        ...productFormData, 
+                        nutritionFacts: { ...productFormData.nutritionFacts, ingredients: e.target.value }
+                      })}
+                      rows={3}
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="List ingredients separated by commas (e.g. Whey Protein Isolate, Natural Flavors, Stevia Extract)"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -800,7 +1116,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={handleSaveProduct}
                 disabled={loading}
-                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 font-semibold px-6 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Saving...' : 'Save Product'}</span>

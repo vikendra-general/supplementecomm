@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, Oswald, Nunito_Sans } from 'next/font/google';
 import './globals.css';
 import dynamic from 'next/dynamic';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from '@/components/ui/Notification';
 
@@ -14,6 +15,20 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-plus-jakarta-sans',
+  display: 'swap'
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-primary',
+  display: 'swap'
+});
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-heading',
   display: 'swap'
 });
 
@@ -38,14 +53,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${plusJakartaSans.variable} font-plus-jakarta-sans antialiased`}>
+      <body className={`${plusJakartaSans.variable} ${nunitoSans.variable} ${oswald.variable} font-primary antialiased`}>
         <ErrorBoundary>
-          <LanguageProvider>
-            <NotificationProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <OrderProvider>
-                    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+          <ThemeProvider>
+            <LanguageProvider>
+              <NotificationProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <OrderProvider>
+                    <div className="min-h-screen flex flex-col bg-nutrabay-background text-nutrabay-text-primary">
                       <Header />
                       <main className="flex-grow">
                         {children}
@@ -55,20 +71,24 @@ export default function RootLayout({
                     <Toaster 
                       position="top-right"
                       toastOptions={{
-                        duration: 3000,
+                        duration: 800,
                         style: {
                           background: '#363636',
                           color: '#fff',
+                          fontSize: '13px',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          maxWidth: '300px',
                         },
                         success: {
-                          duration: 3000,
+                          duration: 800,
                           iconTheme: {
                             primary: '#10B981',
                             secondary: '#fff',
                           },
                         },
                         error: {
-                          duration: 4000,
+                          duration: 1200,
                           iconTheme: {
                             primary: '#EF4444',
                             secondary: '#fff',
@@ -76,11 +96,12 @@ export default function RootLayout({
                         },
                       }}
                     />
-                  </OrderProvider>
-                </CartProvider>
-              </AuthProvider>
-            </NotificationProvider>
-          </LanguageProvider>
+                    </OrderProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </NotificationProvider>
+            </LanguageProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

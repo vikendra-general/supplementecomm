@@ -10,6 +10,7 @@ import { formatINR } from '@/utils/currency';
 import { apiService } from '@/utils/api';
 import { Address } from '@/types';
 import Script from 'next/script';
+import toast from 'react-hot-toast';
 
 // Declare Razorpay for TypeScript
 interface RazorpayOptions {
@@ -106,6 +107,8 @@ export default function CheckoutPage() {
   const [selectedBillingAddress, setSelectedBillingAddress] = useState<Address | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressFormType, setAddressFormType] = useState('shipping'); // 'shipping' or 'billing'
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderCreated, setOrderCreated] = useState(false);
   const [formData, setFormData] = useState({
     // Billing Info
     fullName: '',
@@ -156,39 +159,54 @@ export default function CheckoutPage() {
         try {
           const token = localStorage.getItem('token');
           if (!token) {
-            console.log('No token found, skipping address loading');
             return;
           }
 
-          console.log('Loading addresses for user:', user?.email);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/user/addresses`, {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+          
+          const response = await fetch(`${apiUrl}/user/addresses`, {
+            method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            // Add timeout and error handling
+            signal: AbortSignal.timeout(10000) // 10 second timeout
           });
 
           if (response.ok) {
             const result = await response.json();
-            console.log('Address API response:', result);
             if (result.success && result.addresses) {
-              console.log('Found addresses:', result.addresses.length);
               setAddresses(result.addresses);
               
               // Auto-select default address if available
                const defaultAddress = result.addresses.find((addr: Address) => addr.isDefault);
               if (defaultAddress) {
-                console.log('Auto-selecting default address:', defaultAddress);
                 setSelectedShippingAddress(defaultAddress);
                 setSelectedBillingAddress(defaultAddress);
+                // Pre-fill form with default address data
+                setFormData(prev => ({
+                  ...prev,
+                  street: defaultAddress.address || '',
+                  city: defaultAddress.city || '',
+                  state: defaultAddress.state || '',
+                  pincode: (defaultAddress.pinCode || '').replace(/[^0-9]/g, '').trim().slice(0, 6),
+                  country: defaultAddress.country || 'India'
+                }));
               }
-            } else {
-              console.log('No addresses found or API response structure unexpected');
             }
           } else {
             console.error('Failed to load addresses:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
           }
         } catch (error) {
           console.error('Error loading addresses:', error);
+          // Check if it's a network error
+          if (error instanceof TypeError && error.message.includes('fetch')) {
+            console.error('Network error: Unable to connect to backend server. Please ensure the backend is running on port 5001.');
+          }
+          // Don't throw the error to prevent app crash
         }
       };
 
@@ -216,7 +234,7 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">Authentication Required</h1>
           <p className="text-gray-600 mb-6">
             Please log in to your account to proceed with checkout.
           </p>
@@ -231,7 +249,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     let value = e.target.value;
     
     // Special handling for PIN code fields
@@ -246,22 +264,41 @@ export default function CheckoutPage() {
       ...prev,
       [e.target.name]: value
     }));
+
+    // Auto-fill address details when pincode is entered
+    if ((e.target.name === 'pincode' || e.target.name === 'shippingPincode') && value.length === 6) {
+      try {
+        const { apiService } = await import('@/utils/api');
+        const result = await apiService.lookupPincode(value);
+        
+        if (result.success && result.data) {
+          setFormData(prev => ({
+            ...prev,
+            city: result.data!.city,
+            state: result.data!.state,
+            country: result.data!.country
+          }));
+          toast.success(`Location found: ${result.data.city}, ${result.data.state}`);
+        } else {
+          toast.error(result.message || 'Unable to fetch location details');
+        }
+      } catch (error) {
+        console.error('Pincode lookup error:', error);
+        toast.error('Unable to fetch location details');
+      }
+    }
   };
 
   // Validate Indian phone number (10 digits, optionally with +91 prefix)
   // Handle Razorpay payment
   const handleRazorpayPayment = async (order: OrderData) => {
     try {
-      console.log('Creating Razorpay order for:', order._id, 'Amount:', order.total);
-      
       // Create Razorpay order
       const response = await apiService.createRazorpayOrder({
         amount: order.total,
         currency: 'INR',
         orderId: order._id
       });
-
-      console.log('Razorpay order response:', response);
 
       if (!response || !response.success) {
         console.error('Razorpay order creation failed:', response);
@@ -286,10 +323,15 @@ export default function CheckoutPage() {
          throw new Error('Invalid payment data received');
        }
 
-       console.log('Razorpay data:', razorpayData);
+       // Validate Razorpay key
+       const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+       if (!razorpayKey) {
+         console.error('Razorpay key not found in environment variables');
+         throw new Error('Payment configuration error: Authentication key was missing during initialization. Please contact support.');
+       }
 
        const options: RazorpayOptions = {
-         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+         key: razorpayKey,
          amount: razorpayData.amount,
          currency: razorpayData.currency,
          name: 'BBN Nutrition',
@@ -357,28 +399,29 @@ export default function CheckoutPage() {
     const pincodeRegex = /^[0-9]{6}$/;
     const isValid = pincodeRegex.test(cleanPincode);
     
-    // Debug logging
-    if (!isValid && cleanPincode.length === 6) {
-      console.log('PIN code validation failed:', {
-        original: pincode,
-        cleaned: cleanPincode,
-        length: cleanPincode.length,
-        characters: cleanPincode.split('').map(c => ({ char: c, code: c.charCodeAt(0) }))
-      });
-    }
-    
     return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent double submission
+    if (isSubmitting || orderCreated) {
+      return;
+    }
+    
     // Validate form data based on current step
     if (step === 1) {
       // Validate phone and pincode for billing address
-      if (!validatePhone(formData.phone)) {
-        alert('Please enter a valid Indian phone number');
-        return;
+      // Skip phone validation if user has a verified phone number
+      const isPhoneFromProfile = user?.phone && formData.phone === user.phone;
+      const isPhoneVerified = user?.phoneVerified;
+      
+      if (!isPhoneFromProfile || !isPhoneVerified) {
+        if (!validatePhone(formData.phone)) {
+          alert('Please enter a valid Indian phone number');
+          return;
+        }
       }
       
       if (!validatePincode(formData.pincode)) {
@@ -398,9 +441,11 @@ export default function CheckoutPage() {
     } else {
       // Process order
       try {
+        setIsSubmitting(true);
         const token = localStorage.getItem('token');
         if (!token) {
           alert('Please log in to place an order');
+          setIsSubmitting(false);
           return;
         }
 
@@ -454,6 +499,7 @@ export default function CheckoutPage() {
 
         if (orderResult.success && orderResult.order) {
           const order = orderResult.order;
+          setOrderCreated(true);
           
           // Handle payment based on method
           if (formData.paymentMethod === 'razorpay') {
@@ -471,6 +517,12 @@ export default function CheckoutPage() {
           console.error('Error processing order:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           alert(`Error placing order: ${errorMessage}`);
+          setIsSubmitting(false);
+          setOrderCreated(false);
+        } finally {
+          if (!orderCreated) {
+            setIsSubmitting(false);
+          }
         }
     }
   };
@@ -521,7 +573,7 @@ export default function CheckoutPage() {
 
   // Use actual cart data
   const subtotal = getCartTotal();
-  const shipping = subtotal > 4000 ? 0 : 500; // Free shipping over ₹4000
+  const shipping = subtotal >= 3500 ? 0 : 199; // Free shipping over ₹3500
   const tax = Math.round(subtotal * 0.18); // 18% GST rounded to nearest integer
   const total = subtotal + shipping + tax;
 
@@ -533,7 +585,7 @@ export default function CheckoutPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Cart
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+        <h1 className="text-3xl font-bold text-black">Checkout</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -570,12 +622,12 @@ export default function CheckoutPage() {
             {/* Step 1: Billing Information */}
             {step === 1 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Billing Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Billing Information</h2>
                 
                 {/* Address Selection */}
                 {addresses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Billing Address</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Select Billing Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {addresses.map((address) => (
                         <div
@@ -587,7 +639,7 @@ export default function CheckoutPage() {
                               street: address.address || '',
                               city: address.city || '',
                               state: address.state || '',
-                              pincode: address.pinCode || '',
+                              pincode: (address.pinCode || '').replace(/[^0-9]/g, '').trim().slice(0, 6),
                               country: address.country || 'India'
                             }));
                           }}
@@ -639,7 +691,7 @@ export default function CheckoutPage() {
                   <div>
                     {addresses.length > 0 && (
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Add New Address</h3>
+                        <h3 className="text-lg font-semibold text-black">Add New Address</h3>
                         <button
                           type="button"
                           onClick={() => setShowAddressForm(false)}
@@ -842,7 +894,7 @@ export default function CheckoutPage() {
             {/* Step 2: Shipping Information */}
             {step === 2 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Shipping Information</h2>
                 
                 {/* Same as Billing Option */}
                 <div className="mb-6">
@@ -865,7 +917,7 @@ export default function CheckoutPage() {
                 {/* Address Selection for Shipping */}
                 {!formData.sameAsBilling && addresses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Shipping Address</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Select Shipping Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {addresses.map((address) => (
                         <div
@@ -927,7 +979,7 @@ export default function CheckoutPage() {
                    <div>
                      {addresses.length > 0 && (
                        <div className="flex items-center justify-between mb-4">
-                         <h3 className="text-lg font-semibold text-gray-900">Add New Shipping Address</h3>
+                         <h3 className="text-lg font-semibold text-black">Add New Shipping Address</h3>
                          <button
                            type="button"
                            onClick={() => setShowAddressForm(false)}
@@ -1094,7 +1146,7 @@ export default function CheckoutPage() {
             {/* Step 3: Payment Information */}
             {step === 3 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Payment Information</h2>
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1150,9 +1202,14 @@ export default function CheckoutPage() {
               )}
               <button
                 type="submit"
-                className="ml-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isSubmitting || orderCreated}
+                className={`ml-auto px-8 py-3 font-semibold rounded-lg transition-colors ${
+                  isSubmitting || orderCreated
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
-                {step === 3 ? 'Place Order' : 'Continue'}
+                {isSubmitting && step === 3 ? 'Processing Order...' : step === 3 ? 'Place Order' : 'Continue'}
               </button>
             </div>
           </form>
@@ -1161,7 +1218,7 @@ export default function CheckoutPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+            <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
             
             {/* Order Items */}
             <div className="space-y-3 mb-6">

@@ -62,22 +62,26 @@ export default function PreWorkoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center space-x-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-full mb-6">
-            <Battery className="w-4 h-4 text-orange-600" />
-            <span className="text-sm font-medium text-orange-800">Energy & Performance</span>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header Section */}
+      <section className="py-8 bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-full mb-6">
+              <Battery className="w-4 h-4 text-orange-600" />
+              <span className="text-sm font-medium text-orange-800">Energy & Performance</span>
+            </div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+              Pre-Workout <span className="text-orange-600">Supplements</span>
+            </h1>
+            <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Maximize your workout performance with our powerful pre-workout formulas.
+            </p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Pre-Workout <span className="text-orange-600">Supplements</span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Maximize your workout performance with our powerful pre-workout formulas.
-          </p>
         </div>
+      </section>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Benefits */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white rounded-lg p-6 text-center shadow-sm">

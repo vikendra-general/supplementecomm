@@ -1,7 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const TempRegistration = require('../models/TempRegistration');
 const { protect } = require('../middleware/auth');
+const { sendEmailOTP, verifyOTP } = require('../services/otpService');
 
 const router = express.Router();
 
@@ -36,40 +40,73 @@ router.post('/register', [
 
     const { name, email, password } = req.body;
 
-    // Check if user already exists
+    // Check if user already exists with email (in both User and TempRegistration collections)
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: 'User with this email already exists. Please sign in instead.'
       });
     }
 
-    // Create user
-    const user = await User.create({
+    // Check if username (name) already exists in User collection
+    const existingUserByName = await User.findOne({ 
+      name: { $regex: new RegExp(`^${name.trim()}$`, 'i') } 
+    });
+    if (existingUserByName) {
+      return res.status(400).json({
+        success: false,
+        message: 'This username is already taken. Please choose a different username.'
+      });
+    }
+
+    // Check if there's already a temporary registration for this email
+    let tempRegistration = await TempRegistration.findOne({ email });
+    
+    if (tempRegistration) {
+      // Update existing temporary registration
+      tempRegistration.name = name;
+      tempRegistration.password = password;
+      tempRegistration.isEmailVerified = false;
+      tempRegistration.emailOTPAttempts = 0;
+      tempRegistration.expiresAt = new Date(Date.now() + 3600000); // Reset expiry to 1 hour from now
+      await tempRegistration.save();
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Registration data updated. Please verify your email to complete registration.',
+        tempRegistration: {
+          id: tempRegistration._id,
+          name: tempRegistration.name,
+          email: tempRegistration.email,
+          isEmailVerified: tempRegistration.isEmailVerified
+        }
+      });
+    }
+
+    // Create new temporary registration
+    console.log('🔍 Creating new TempRegistration with data:', { name, email, password: '[PRESENT]' });
+    tempRegistration = await TempRegistration.create({
       name,
       email,
-      password
+      password,
+      isEmailVerified: false
     });
-
-    // Create token
-    const token = user.getSignedJwtToken();
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    console.log('✅ TempRegistration created successfully:', {
+      id: tempRegistration._id,
+      name: tempRegistration.name,
+      email: tempRegistration.email,
+      isEmailVerified: tempRegistration.isEmailVerified
+    });
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        emailVerified: user.emailVerified
+      message: 'Registration initiated. Please verify your email to complete registration.',
+      tempRegistration: {
+        id: tempRegistration._id,
+        name: tempRegistration.name,
+        email: tempRegistration.email,
+        isEmailVerified: tempRegistration.isEmailVerified
       }
     });
   } catch (error) {
@@ -92,6 +129,331 @@ router.post('/register', [
     res.status(500).json({
       success: false,
       message: 'Server error during registration'
+    });
+  }
+});
+
+// @desc    Send OTP for email verification
+// @route   POST /api/auth/send-email-otp
+// @access  Public
+router.post('/send-email-otp', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email, name } = req.body;
+
+    // Check if user exists in User collection (for existing users)
+    let user = await User.findOne({ email });
+    let tempRegistration = null;
+    
+    if (!user) {
+      // Check if user exists in TempRegistration collection (for new registrations)
+      tempRegistration = await TempRegistration.findOne({ email });
+      if (!tempRegistration) {
+        return res.status(404).json({
+          success: false,
+          message: 'No registration found with this email address. Please register first.'
+        });
+      }
+    }
+
+    // If user exists and email is already verified, don't send OTP
+    if (user && user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified for this account'
+      });
+    }
+
+    // If temp registration exists and email is already verified, don't send OTP
+    if (tempRegistration && tempRegistration.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified for this registration'
+      });
+    }
+
+    // Use provided name or user's name if available
+    const userName = name || (user ? user.name : (tempRegistration ? tempRegistration.name : 'User'));
+
+    // Send OTP
+    const result = await sendEmailOTP(email, userName);
+    
+    if (result.success) {
+      // Update last OTP sent time and attempts for temp registration
+      if (tempRegistration) {
+        tempRegistration.lastEmailOTPSent = new Date();
+        tempRegistration.emailOTPAttempts += 1;
+        await tempRegistration.save();
+      }
+      
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Send email OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sending OTP'
+    });
+  }
+});
+
+// @desc    Complete registration after email verification
+// @route   POST /api/auth/verify-email-otp
+// @access  Public
+router.post('/verify-email-otp', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp } = req.body;
+
+    // Verify OTP first
+    const otpResult = await verifyOTP(email, otp);
+    
+    if (!otpResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: otpResult.message || 'Invalid OTP'
+      });
+    }
+
+    // Check if user exists in User collection (for existing users)
+    let user = await User.findOne({ email });
+    let tempRegistration = null;
+    
+    if (!user) {
+      // Check if user exists in TempRegistration collection (for new registrations)
+      // Need to explicitly select password field since it's set to select: false
+      tempRegistration = await TempRegistration.findOne({ email }).select('+password');
+      if (!tempRegistration) {
+        return res.status(404).json({
+          success: false,
+          message: 'No registration found with this email address'
+        });
+      }
+    }
+
+    // For existing users, update email verification status
+    if (user) {
+      user.emailVerified = true;
+      await user.save();
+
+      // Generate token if email is verified (OR logic - either email OR phone verification is sufficient)
+      let token = null;
+      if (user.emailVerified) {
+        token = user.getSignedJwtToken();
+        user.lastLogin = new Date();
+        await user.save();
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Email verified successfully',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar,
+          emailVerified: user.emailVerified,
+          isPhoneVerified: user.isPhoneVerified
+        }
+      });
+    } else {
+      // For temporary registrations, automatically complete registration after email verification
+      tempRegistration.isEmailVerified = true;
+      await tempRegistration.save();
+
+      // Check if user already exists (double-check)
+      const existingUser = await User.findOne({ email: tempRegistration.email });
+      if (existingUser) {
+        // Delete temp registration and return error
+        await TempRegistration.findByIdAndDelete(tempRegistration._id);
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email already exists'
+        });
+      }
+
+      // Create the actual user account
+      const newUser = new User({
+        name: tempRegistration.name,
+        email: tempRegistration.email,
+        password: tempRegistration.password, // This is already hashed from TempRegistration
+        isEmailVerified: true,
+        role: 'user'
+      });
+      
+      // Save without triggering password hashing middleware since it's already hashed
+      await newUser.save({ validateBeforeSave: false });
+
+      // Delete the temporary registration
+      await TempRegistration.findByIdAndDelete(tempRegistration._id);
+
+      // Generate JWT token and log the user in
+      const token = newUser.getSignedJwtToken();
+      newUser.lastLogin = new Date();
+      await newUser.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Email verified and registration completed successfully! You are now logged in.',
+        token,
+        user: {
+          id: newUser._id,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone,
+          role: newUser.role,
+          avatar: newUser.avatar,
+          isEmailVerified: newUser.isEmailVerified,
+          isPhoneVerified: newUser.isPhoneVerified
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Verify email OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while verifying OTP'
+    });
+  }
+});
+
+
+
+// @desc    Complete registration after OTP verification
+// @route   POST /api/auth/complete-registration
+// @access  Public
+router.post('/complete-registration', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+
+    // Find temporary registration (explicitly select password field)
+    const tempRegistration = await TempRegistration.findOne({ email }).select('+password');
+    if (!tempRegistration) {
+      return res.status(404).json({
+        success: false,
+        message: 'No temporary registration found with this email address'
+      });
+    }
+
+    // Check if email is verified
+    if (!tempRegistration.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please verify your email before completing registration',
+        isEmailVerified: tempRegistration.isEmailVerified
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email address'
+      });
+    }
+
+    // Create the actual user account
+    const userData = tempRegistration.getUserData();
+    console.log('🔍 User data from temp registration:', userData);
+    
+    const user = new User({
+      ...userData,
+      emailVerified: true
+    });
+    
+    console.log('🔍 User object before save:', {
+      name: user.name,
+      email: user.email,
+      password: user.password ? '[PRESENT]' : '[MISSING]',
+      emailVerified: user.emailVerified
+    });
+
+    await user.save();
+    console.log('✅ User saved successfully with ID:', user._id);
+
+    // Delete temporary registration
+    await TempRegistration.findByIdAndDelete(tempRegistration._id);
+    console.log('🗑️ Temporary registration deleted');
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Registration completed successfully',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
+  } catch (error) {
+    console.error('Complete registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while completing registration'
     });
   }
 });
@@ -139,6 +501,27 @@ router.post('/login', [
       });
     }
 
+    // Skip verification for admin users and existing users (created before verification was implemented)
+    // Only require verification for new regular users
+    const isAdmin = user.role === 'admin';
+    const isExistingUser = user.createdAt < new Date('2024-01-01'); // Users created before verification system
+    const requiresVerification = !isAdmin && !isExistingUser && !user.isEmailVerified;
+    
+    if (requiresVerification) {
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your email address before logging in',
+        requiresVerification: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          phone: user.phone,
+          isEmailVerified: user.isEmailVerified,
+          isPhoneVerified: true // Default to true since phone verification is not implemented
+        }
+      });
+    }
+
     // Create token
     const token = user.getSignedJwtToken();
 
@@ -154,9 +537,11 @@ router.post('/login', [
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         avatar: user.avatar,
-        emailVerified: user.emailVerified
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: true // Default to true since phone verification is not implemented
       }
     });
   } catch (error) {
@@ -184,6 +569,7 @@ router.get('/me', protect, async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         phone: user.phone,
+        phoneVerified: user.phoneVerified,
         addresses: user.addresses,
         wishlist: user.wishlist,
         emailVerified: user.emailVerified,
@@ -219,10 +605,15 @@ router.put('/profile', protect, [
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('Name must be between 2 and 50 characters'),
+  body('email')
+    .optional()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
   body('phone')
     .optional()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number')
+    .matches(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/)
+    .withMessage('Please provide a valid Indian phone number')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -236,9 +627,29 @@ router.put('/profile', protect, [
     }
 
     const fieldsToUpdate = {};
-    const { name, phone, avatar } = req.body;
+    const { name, email, phone, avatar } = req.body;
 
     if (name) fieldsToUpdate.name = name;
+    if (email) {
+      // Check if email is already taken by another user
+      const existingUser = await User.findOne({ 
+        email: email,
+        _id: { $ne: req.user.id }
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already registered with another account'
+        });
+      }
+      
+      fieldsToUpdate.email = email;
+      // If email is changed, mark as unverified
+      if (email !== req.user.email) {
+        fieldsToUpdate.emailVerified = false;
+      }
+    }
     if (phone) fieldsToUpdate.phone = phone;
     if (avatar) fieldsToUpdate.avatar = avatar;
 
@@ -258,12 +669,13 @@ router.put('/profile', protect, [
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         avatar: user.avatar,
-        phone: user.phone,
         addresses: user.addresses,
         wishlist: user.wishlist,
         emailVerified: user.emailVerified,
+        phoneVerified: user.phoneVerified,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt
       }
@@ -346,7 +758,7 @@ router.put('/password', protect, [
   }
 });
 
-// @desc    Forgot password
+// @desc    Forgot password - Send OTP
 // @route   POST /api/auth/forgot-password
 // @access  Public
 router.post('/forgot-password', [
@@ -376,33 +788,87 @@ router.post('/forgot-password', [
       });
     }
 
-    // Get reset token
-    const resetToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
-
-    // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/reset-password?token=${resetToken}`;
-
-    // Email service integration would go here
-    // For development, the reset link is available in server logs
-
-    res.json({
-      success: true,
-      message: 'Password reset email sent'
-    });
+    // Send OTP to email
+    const result = await sendEmailOTP(email, user.name);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Password reset OTP sent to your email'
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message || 'Failed to send OTP'
+      });
+    }
   } catch (error) {
     console.error('Forgot password error:', error);
-    
-    // Clear reset token fields if error
-    if (user) {
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpire = undefined;
-      await user.save({ validateBeforeSave: false });
-    }
-    
     res.status(500).json({
       success: false,
       message: 'Server error during password reset request'
+    });
+  }
+});
+
+// @desc    Verify forgot password OTP
+// @route   POST /api/auth/verify-forgot-password-otp
+// @access  Public
+router.post('/verify-forgot-password-otp', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('OTP must be 6 digits')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No user found with this email address'
+      });
+    }
+
+    // Verify OTP
+    const result = await verifyOTP(email, otp);
+    
+    if (result.success) {
+      // Generate a temporary reset token for password reset
+      const resetToken = user.getResetPasswordToken();
+      await user.save({ validateBeforeSave: false });
+
+      res.json({
+        success: true,
+        message: 'OTP verified successfully',
+        resetToken
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Verify forgot password OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while verifying OTP'
     });
   }
 });
@@ -434,7 +900,6 @@ router.post('/reset-password', [
     const { token, password } = req.body;
 
     // Get hashed token
-    const crypto = require('crypto');
     const resetPasswordToken = crypto
       .createHash('sha256')
       .update(token)
@@ -493,7 +958,6 @@ router.post('/verify-email', [
     const { token } = req.body;
 
     // Get hashed token
-    const crypto = require('crypto');
     const emailVerificationToken = crypto
       .createHash('sha256')
       .update(token)
@@ -572,10 +1036,11 @@ router.post('/resend-verification', [
     await user.save({ validateBeforeSave: false });
 
     // Create verification URL
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}&email=${email}`;
+    // const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}&email=${email}`;
 
     // Email service integration would go here
     // For development, the verification link is available in server logs
+    console.log(`Verification link: ${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}&email=${email}`);
 
     res.json({
       success: true,

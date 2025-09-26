@@ -21,13 +21,19 @@ const productRoutes = require('./routes/products');
 const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
 const categoryRoutes = require('./routes/categories');
+const cartRoutes = require('./routes/cart');
+const stockMonitor = require('./services/stockMonitor');
 
 const app = express();
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  fs.accessSync(uploadsDir);
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
 }
 
 // Security middleware
@@ -108,6 +114,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Base API route
 app.get('/api', (req, res) => {
@@ -263,12 +270,19 @@ const connectWithRetry = async () => {
       serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
     });
     console.log('✅ Connected to MongoDB');
+    
+    // Start stock monitor service
+    if (process.env.ENABLE_STOCK_MONITOR !== 'false') {
+      stockMonitor.start();
+    }
+    
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 API URL: http://localhost:${PORT}/api`);
       console.log(`📚 API Docs: http://localhost:${PORT}/api/docs`);
+      console.log(`🔍 Stock Monitor: ${stockMonitor.getStatus().isRunning ? 'Running' : 'Stopped'}`);
     });
   } catch (err) {
     console.error('❌ MongoDB connection error:', err);
@@ -284,6 +298,9 @@ connectWithRetry();
 process.on('SIGTERM', async () => {
   console.log('👋 SIGTERM received, shutting down gracefully');
   try {
+    // Stop stock monitor
+    stockMonitor.stop();
+    
     await mongoose.connection.close();
     console.log('✅ MongoDB connection closed');
     process.exit(0);
@@ -296,6 +313,9 @@ process.on('SIGTERM', async () => {
 process.on('SIGINT', async () => {
   console.log('👋 SIGINT received, shutting down gracefully');
   try {
+    // Stop stock monitor
+    stockMonitor.stop();
+    
     await mongoose.connection.close();
     console.log('✅ MongoDB connection closed');
     process.exit(0);

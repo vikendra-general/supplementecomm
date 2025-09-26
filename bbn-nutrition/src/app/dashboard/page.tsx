@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { 
   Package, 
   Clock, 
@@ -32,11 +33,19 @@ import { Product } from '@/types';
 import { formatPrice } from '@/utils/currency';
 import { apiService } from '@/utils/api';
 import toast from 'react-hot-toast';
-import Image from 'next/image';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
+  const { user, isAuthenticated, refreshUser } = useAuth();
   const { orders, isLoading, error, cancelOrder, requestReturn } = useOrders();
   const { addToCart } = useCart();
   const router = useRouter();
@@ -119,9 +128,9 @@ export default function DashboardPage() {
   // Initialize profile form with user data
   useEffect(() => {
     if (user) {
-      const nameParts = user.name?.split(' ') || [''];
+      const nameParts = user.name?.trim().split(' ').filter(part => part.length > 0) || [];
       setProfileForm({
-        firstName: nameParts[0] || '',
+        firstName: nameParts[0] || user.name || '',
         lastName: nameParts.slice(1).join(' ') || '',
         email: user.email || '',
         phone: user.phone || ''
@@ -384,11 +393,34 @@ export default function DashboardPage() {
     setAddressMethod('manual');
   };
 
-  const handleAddressFormChange = (field: string, value: string | boolean) => {
+  const handleAddressFormChange = async (field: string, value: string | boolean) => {
     setAddressForm(prev => ({
       ...prev,
       [field]: value
     }));
+
+    // Auto-fill address details when pincode is entered
+    if (field === 'pinCode' && typeof value === 'string' && value.length === 6) {
+      try {
+        const { apiService } = await import('@/utils/api');
+        const result = await apiService.lookupPincode(value);
+        
+        if (result.success && result.data) {
+          setAddressForm(prev => ({
+            ...prev,
+            city: result.data!.city,
+            state: result.data!.state,
+            country: result.data!.country
+          }));
+          toast.success(`Location found: ${result.data.city}, ${result.data.state}`);
+        } else {
+          toast.error(result.message || 'Unable to fetch location details');
+        }
+      } catch (error) {
+        console.error('Pincode lookup error:', error);
+        toast.error('Unable to fetch location details');
+      }
+    }
   };
 
   // Validate Indian PIN code (6 digits)
@@ -470,7 +502,7 @@ export default function DashboardPage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!profileForm.firstName || !profileForm.email) {
+    if (!profileForm.firstName?.trim() || !profileForm.email?.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -503,10 +535,8 @@ export default function DashboardPage() {
 
       if (response.ok && result.success) {
         toast.success('Profile updated successfully!');
-        // Update the user context if available
-        if (result.user) {
-          // The AuthContext should handle this update
-        }
+        // Refresh user data to reflect changes immediately
+        await refreshUser();
       } else {
         toast.error(result.message || 'Failed to update profile');
       }
@@ -572,9 +602,9 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {user?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
-          </h1>
+          <h1 className="text-3xl font-bold text-black mb-2">
+             {user?.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard'}
+           </h1>
           <p className="text-gray-600 mb-6">
             {user?.role === 'admin' 
               ? 'Welcome to the admin panel! Manage your store, products, orders, and users from here.'
@@ -592,7 +622,7 @@ export default function DashboardPage() {
                 <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-light rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg ring-4 ring-primary/20">
                   <span className="text-white font-bold text-xl">{user?.name?.charAt(0) || 'U'}</span>
                 </div>
-                <h3 className="font-semibold text-gray-900">{user?.name}</h3>
+                <h3 className="font-semibold text-black">{user?.name}</h3>
                 <p className="text-sm text-gray-600">{user?.email}</p>
               </div>
 
@@ -633,7 +663,7 @@ export default function DashboardPage() {
             {/* Admin Overview Tab */}
             {activeTab === 'overview' && user?.role === 'admin' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Admin Overview</h2>
+                <h2 className="text-2xl font-bold text-black">Admin Overview</h2>
                 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -680,7 +710,7 @@ export default function DashboardPage() {
                 
                 {/* Quick Actions */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link href="/admin/products" className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                       <ShoppingBag className="w-6 h-6 text-primary" />
@@ -705,7 +735,7 @@ export default function DashboardPage() {
             {activeTab === 'products' && user?.role === 'admin' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Products</h2>
+                  <h2 className="text-2xl font-bold text-black">Manage Products</h2>
                   <Link href="/admin/products" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                     Go to Product Management
                   </Link>
@@ -728,7 +758,7 @@ export default function DashboardPage() {
             {activeTab === 'users' && user?.role === 'admin' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Manage Users</h2>
+                  <h2 className="text-2xl font-bold text-black">Manage Users</h2>
                   <Link href="/admin/users" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                     Go to User Management
                   </Link>
@@ -749,11 +779,11 @@ export default function DashboardPage() {
             {/* Admin Reports Tab */}
             {activeTab === 'reports' && user?.role === 'admin' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Reports & Analytics</h2>
+                <h2 className="text-2xl font-bold text-black">Reports & Analytics</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Reports</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Sales Reports</h3>
                     <p className="text-gray-600 mb-4">View detailed sales analytics and revenue reports.</p>
                     <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
                       View Sales Reports
@@ -761,7 +791,7 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Analytics</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">Product Analytics</h3>
                     <p className="text-gray-600 mb-4">Analyze product performance and inventory trends.</p>
                     <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                       View Product Analytics
@@ -775,7 +805,7 @@ export default function DashboardPage() {
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-black">
                     {user?.role === 'admin' ? 'All Orders' : 'My Orders'}
                   </h2>
                 </div>
@@ -794,7 +824,7 @@ export default function DashboardPage() {
                 ) : orders.length === 0 ? (
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
                     <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+                    <h3 className="text-lg font-medium text-black mb-2">No orders found</h3>
                     <p className="text-gray-600 mb-4">You haven&apos;t placed any orders yet.</p>
                     <Link 
                       href="/shop"
@@ -809,7 +839,7 @@ export default function DashboardPage() {
                         <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="font-semibold text-gray-900">Order #{order.orderNumber}</h3>
+                              <h3 className="font-semibold text-black">Order #{order.orderNumber}</h3>
                               <p className="text-sm text-gray-600">
                                 Placed on {new Date(order.createdAt).toLocaleDateString()}
                               </p>
@@ -820,7 +850,7 @@ export default function DashboardPage() {
                               )}
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-gray-900">${order.total.toFixed(2)}</p>
+                              <p className="font-semibold text-gray-900">₹{order.total.toFixed(2)}</p>
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                 {getStatusIcon(order.status)}
                                 <span className="ml-1">{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
@@ -834,16 +864,16 @@ export default function DashboardPage() {
                                 <span className="text-gray-600">
                                   {item.name} {item.variant && `(${item.variant.name})`} (Qty: {item.quantity})
                                 </span>
-                                <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</span>
                               </div>
                             ))}
                           </div>
                           
                           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
                             <div className="text-sm text-gray-600">
-                              <p>Subtotal: ${order.subtotal.toFixed(2)}</p>
-                              <p>Tax: ${order.tax.toFixed(2)}</p>
-                              <p>Shipping: ${order.shipping.toFixed(2)}</p>
+                              <p>Subtotal: ₹{order.subtotal.toFixed(2)}</p>
+                <p>Tax: ₹{order.tax.toFixed(2)}</p>
+                <p>Shipping: ₹{order.shipping.toFixed(2)}</p>
                             </div>
                             <div className="flex space-x-2">
                               <button className="text-primary hover:text-primary-dark font-medium text-sm">
@@ -886,7 +916,7 @@ export default function DashboardPage() {
             {activeTab === 'wishlist' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">My Wishlist</h2>
+                  <h2 className="text-2xl font-bold text-black">My Wishlist</h2>
                 </div>
                 
                 {wishlistLoading ? (
@@ -897,7 +927,7 @@ export default function DashboardPage() {
                 ) : wishlistItems.length === 0 ? (
                   <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
                     <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
+                    <h3 className="text-lg font-medium text-black mb-2">Your wishlist is empty</h3>
                     <p className="text-gray-600 mb-4">Start adding products to your wishlist to see them here.</p>
                     <Link 
                       href="/shop"
@@ -913,7 +943,27 @@ export default function DashboardPage() {
                         {/* Product Image */}
                         <div className="relative aspect-square mb-4 overflow-hidden rounded-lg">
                           <Image
-                            src={product.images[0] || '/images/products/placeholder.svg'}
+<<<<<<< HEAD
+                            src={product.images && product.images.length > 0 && product.images[0] ? product.images[0] : '/images/products/placeholder.svg'}
+=======
+                            src={(() => {
+                              // Handle case where images might be a stringified array
+                              let imageUrl = product.images[0] || '/images/products/placeholder.svg';
+                              
+                              // If the imageUrl looks like a stringified array, parse it
+                              if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                                try {
+                                  const parsed = JSON.parse(imageUrl);
+                                  imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                                } catch (e) {
+                                  console.warn('Failed to parse image URL:', imageUrl);
+                                  imageUrl = '/images/products/placeholder.svg';
+                                }
+                              }
+                              
+                              return imageUrl;
+                            })()}
+>>>>>>> 36ddce34379598944ad00632f563c93aea679e33
                             alt={product.name}
                             fill
                             className="object-cover"
@@ -924,7 +974,7 @@ export default function DashboardPage() {
                         {/* Product Info */}
                         <div className="space-y-2">
                           <p className="text-sm text-gray-500">{product.brand}</p>
-                          <h3 className="font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
+                          <h3 className="font-semibold text-black">{product.name}</h3>
                           
                           {/* Rating */}
                           <div className="flex items-center">
@@ -940,7 +990,7 @@ export default function DashboardPage() {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-gray-500 ml-1">({product.reviews})</span>
+                            <span className="text-sm text-gray-500 ml-1">({product.reviewCount || (Array.isArray(product.reviews) ? product.reviews.length : product.reviews) || 0})</span>
                           </div>
                           
                           {/* Price */}
@@ -988,7 +1038,7 @@ export default function DashboardPage() {
             {activeTab === 'addresses' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
+                  <h2 className="text-2xl font-bold text-black">My Addresses</h2>
                   <button 
                     onClick={handleAddAddress}
                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center space-x-2"
@@ -1009,7 +1059,7 @@ export default function DashboardPage() {
                       addresses.map((address) => (
                         <div key={address._id} className="bg-white border border-gray-200 rounded-lg p-6">
                           <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-black">
                               {address.type.charAt(0).toUpperCase() + address.type.slice(1)} Address
                               {address.isDefault && (
                                 <span className="ml-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded">
@@ -1034,7 +1084,7 @@ export default function DashboardPage() {
                     ) : (
                       <div className="col-span-full bg-white border border-gray-200 rounded-lg p-8 text-center">
                         <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="font-semibold text-gray-900 mb-2">No addresses yet</h3>
+                        <h3 className="font-semibold text-black mb-2">No addresses yet</h3>
                         <p className="text-gray-600 mb-6">Add your first shipping address to get started</p>
                         <button 
                           onClick={handleAddAddress}
@@ -1053,7 +1103,7 @@ export default function DashboardPage() {
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Account Settings</h2>
+                <h2 className="text-2xl font-bold text-black">Account Settings</h2>
                 
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <form onSubmit={handleSaveProfile} className="space-y-6">
@@ -1136,7 +1186,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-black">
                   {editingAddress ? 'Edit Address' : 'Add New Address'}
                 </h2>
                 <button
@@ -1164,7 +1214,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-black">
                         {locationLoading ? 'Getting Location...' : 'Use Current Location'}
                       </h3>
                       <p className="text-sm text-gray-600">
@@ -1181,7 +1231,7 @@ export default function DashboardPage() {
                       <Edit3 className="w-6 h-6 text-gray-600" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-gray-900">Enter Manually</h3>
+                      <h3 className="font-semibold text-black">Enter Manually</h3>
                       <p className="text-sm text-gray-600">Type your address details</p>
                     </div>
                   </button>

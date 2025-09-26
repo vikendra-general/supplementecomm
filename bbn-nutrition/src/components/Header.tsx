@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, User, Menu, X, Heart, LogOut, MapPin, ChevronDown, Globe } from 'lucide-react';
+import Image from 'next/image';
+
+import { ShoppingCart, Menu, MapPin, ChevronDown, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,11 +13,14 @@ import AmazonStyleSearch from './AmazonStyleSearch';
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
-  const { language, setLanguage, t } = useLanguage();
-  const router = useRouter();
+  const { language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
 
 
   const handleLogout = () => {
@@ -24,6 +28,54 @@ export default function Header() {
     setIsUserMenuOpen(false);
     setIsMenuOpen(false);
   };
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Handle scroll detection for header styling
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const handleScroll = () => {
+      // Scroll handling logic removed as isScrolled is not used
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isHydrated]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setIsLanguageMenuOpen(false);
+      }
+    };
+
+    const handleDropdownScroll = () => {
+      setIsUserMenuOpen(false);
+      setIsLanguageMenuOpen(false);
+    };
+
+    if (isUserMenuOpen || isLanguageMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleDropdownScroll, true);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleDropdownScroll, true);
+    };
+  }, [isUserMenuOpen, isLanguageMenuOpen]);
 
 
 
@@ -39,31 +91,29 @@ export default function Header() {
 
 
   return (
-    <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
+    <header className="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300">
       {/* Main Header */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-14 space-x-4">
+          <div className="flex items-center h-14">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-8 h-8 bg-green-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BBN</span>
-              </div>
-              <div className="hidden lg:block">
-                <div className="text-gray-900 font-bold text-base leading-tight">
-                  Booster Box
-                </div>
-                <div className="text-orange-500 text-xs font-medium">
-                  Nutrition
-                </div>
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <div className="w-20 h-20 flex items-center justify-center">
+                <Image
+                  src="/images/BBNLogo.png"
+                  alt="BBN Nutrition Logo"
+                  width={80}
+                  height={80}
+                  className="object-contain"
+                />
               </div>
             </Link>
 
             {/* Location Selector - Only show when user is logged in */}
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-              <div className="hidden md:flex items-center text-text-primary text-sm">
+              <div className="hidden md:flex items-center text-sm ml-6 text-text-primary">
                 <div className="flex flex-col">
-                  <span className="text-text-secondary text-xs">Deliver to</span>
+                  <span className="text-xs text-text-secondary">Deliver to</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
@@ -74,16 +124,16 @@ export default function Header() {
               </div>
             )}
 
-            {/* Amazon Style Search Bar */}
-            <div className="flex-1 max-w-2xl">
+            {/* Amazon Style Search Bar - Centered and Responsive */}
+            <div className="flex-1 mx-6 max-w-2xl">
               <AmazonStyleSearch />
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-6 flex-shrink-0">
 
               {/* Account & Lists */}
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -96,8 +146,8 @@ export default function Header() {
                     </div>
                   </button>
                 ) : (
-                  <Link
-                    href="/login"
+                  <Link 
+                    href="/login" 
                     className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
                     <span className="text-xs">Hello, sign in</span>
@@ -117,7 +167,7 @@ export default function Header() {
                     </div>
                     <div className="py-2">
                       <Link
-                        href="/dashboard"
+                        href={user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
@@ -137,8 +187,8 @@ export default function Header() {
               </div>
 
               {/* Returns & Orders */}
-              <Link
-                href="/orders"
+              <Link 
+                href="/orders" 
                 className="hidden lg:flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
               >
                 <span className="text-xs">Returns</span>
@@ -148,7 +198,7 @@ export default function Header() {
               {/* Cart */}
               <Link 
                 href="/cart" 
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors relative"
+                className="relative flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors"
               >
                 <div className="relative">
                   <ShoppingCart className="w-6 h-6" />
@@ -166,13 +216,14 @@ export default function Header() {
       </div>
 
       {/* Navigation Bar */}
-      <div className="bg-gray-50 border-t border-gray-100">
+      <div className="bg-white border-t border-gray-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-9 space-x-6">
+          <div className="flex items-center justify-center h-12 space-x-6">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors"
+              className="lg:hidden flex items-center space-x-1 text-gray-900 hover:text-orange-500 transition-colors absolute left-4"
+              style={{color: '#111827'}}
             >
               <Menu className="w-4 h-4" />
               <span className="text-sm font-normal">All</span>
@@ -180,44 +231,44 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-5">
-              <Link href="/shop" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
+              <Link href="/shop" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
                 Shop All
               </Link>
-              <Link href="/deals" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.todaysDeals')}
+              <Link href="/deals" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Today&apos;s Deals
               </Link>
-              <Link href="/best-sellers" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.bestSellers')}
+              <Link href="/best-sellers" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Best Sellers
               </Link>
-              <Link href="/protein-supplements" className="text-orange-500 hover:text-orange-600 transition-colors text-sm font-normal">
-                {t('header.proteinSupplements')}
+              <Link href="/protein-supplements" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Protein Supplements
               </Link>
-              <Link href="/pre-workout" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.preWorkout')}
+              <Link href="/pre-workout" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Pre-Workout
               </Link>
-              <Link href="/vitamins" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.vitamins')}
+              <Link href="/vitamins" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Vitamins
               </Link>
-              <Link href="/about" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.aboutBBN')}
+              <Link href="/about" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                About BBN
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal">
-                {t('header.customerService')}
+              <Link href="/contact" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
+                Customer Service
               </Link>
               
               {/* Language Switcher */}
-              <div className="relative">
+              <div className="relative" ref={languageMenuRef}>
                 <button
                   onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                  className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors text-sm font-normal"
+                  className="flex items-center space-x-1 text-gray-900 hover:text-orange-500 transition-colors text-sm font-normal"
+                  style={{color: '#111827'}}
                 >
-                  <img 
+                  <Image 
                     src={language === 'hi' ? '/images/flags/in.svg' : '/images/flags/us.svg'} 
                     alt={language === 'hi' ? 'Hindi' : 'English'}
+                    width={16}
+                    height={16}
                     className="w-4 h-4 rounded-sm"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
                   />
                   <Globe className="w-3 h-3" />
                   <span className="uppercase text-xs">{language}</span>
@@ -233,13 +284,12 @@ export default function Header() {
                           language === 'en' ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
                         }`}
                       >
-                        <img 
+                        <Image 
                           src="/images/flags/us.svg" 
                           alt="English"
+                          width={16}
+                          height={16}
                           className="w-4 h-4 rounded-sm"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
                         <span>English</span>
                       </button>
@@ -249,13 +299,12 @@ export default function Header() {
                           language === 'hi' ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
                         }`}
                       >
-                        <img 
+                        <Image 
                           src="/images/flags/in.svg" 
                           alt="Hindi"
+                          width={16}
+                          height={16}
                           className="w-4 h-4 rounded-sm"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
                         <span>हिंदी</span>
                       </button>
@@ -293,28 +342,28 @@ export default function Header() {
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.todaysDeals')}
+                Today&apos;s Deals
               </Link>
               <Link 
                 href="/best-sellers" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.bestSellers')}
+                Best Sellers
               </Link>
               <Link 
                 href="/protein-supplements" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.proteinSupplements')}
+                Protein Supplements
               </Link>
               <Link 
                 href="/pre-workout" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('header.preWorkout')}
+                Pre-Workout
               </Link>
               <Link 
                 href="/vitamins" 
@@ -322,6 +371,20 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Vitamins
+              </Link>
+              <Link 
+                href="/about" 
+                className="block text-gray-900 hover:text-orange-600 font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About BBN
+              </Link>
+              <Link 
+                href="/contact" 
+                className="block text-gray-900 hover:text-orange-600 font-medium py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Customer Service
               </Link>
               
               {/* Mobile Account Section */}

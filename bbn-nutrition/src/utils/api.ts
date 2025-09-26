@@ -1,4 +1,4 @@
-import { Product, Order, Address } from '@/types';
+import { Product, Order, Address, Review } from '@/types';
 import { cache, CACHE_KEYS } from './cache';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
@@ -45,17 +45,38 @@ class ApiService {
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
+    // Use provided signal or create abort controller for timeout
+    const controller = options.signal ? null : new AbortController();
+    const signal = options.signal || controller?.signal;
+    
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (controller) {
+      timeoutId = setTimeout(() => {
+        if (!controller.signal.aborted) {
+          controller.abort();
+        }
+      }, 15000); // Increased timeout to 15 seconds
+    }
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
+      signal,
       ...options,
     };
 
     try {
       const response = await fetch(url, config);
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        throw new ApiError(0, 'Request was cancelled');
+      }
+      
       const data = await response.json();
 
       if (!response.ok) {
@@ -64,9 +85,19 @@ class ApiService {
 
       return data;
     } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
+      
       if (error instanceof ApiError) {
         throw error;
       }
+      
+      // Handle abort errors more gracefully
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+        // Don't throw an error for aborted requests - just return a default response
+        // This prevents console errors during navigation
+        return { success: false, message: 'Request aborted' } as ApiResponse<T>;
+      }
+      
       console.error('API request failed:', error);
       throw new ApiError(500, 'Network error - please check your connection');
     }
@@ -127,7 +158,7 @@ class ApiService {
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
-  } = {}): Promise<ApiResponse<Product[]>> {
+  } = {}, signal?: AbortSignal): Promise<ApiResponse<Product[]>> {
     // Check cache first
     const cacheKey = `${CACHE_KEYS.PRODUCTS}_${JSON.stringify(params)}`;
     const cachedData = cache.get<ApiResponse<Product[]>>(cacheKey);
@@ -144,7 +175,12 @@ class ApiService {
       });
     }
     
-    const result = await this.request<Product[]>(`/products?${searchParams.toString()}`);
+    const result = await this.request<Product[]>(`/products?${searchParams.toString()}`, { signal });
+    
+    // Handle null result from aborted requests
+    if (result === null) {
+      return { success: false, data: [], message: 'Request was cancelled' };
+    }
     
     // Cache the response for 5 minutes
     cache.set(cacheKey, result, 5 * 60 * 1000);
@@ -426,6 +462,13 @@ class ApiService {
     });
   }
 
+  async updatePaymentStatus(orderId: string, paymentStatus: string, note?: string): Promise<ApiResponse<Order>> {
+    return this.request(`/admin/orders/${orderId}/payment`, {
+      method: 'PUT',
+      body: JSON.stringify({ paymentStatus, notes: note }),
+    });
+  }
+
   async getAdminUsers(params?: {
     page?: number;
     limit?: number;
@@ -450,6 +493,26 @@ class ApiService {
     return this.request(`/admin/users/${userId}/role`, {
       method: 'PUT',
       body: JSON.stringify({ role }),
+    });
+  }
+
+  async createUser(userData: {
+    name: string;
+    email: string;
+    phone?: string;
+    role: 'user' | 'admin';
+    emailVerified?: boolean;
+    isActive?: boolean;
+  }) {
+    return this.request('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async deleteUser(userId: string) {
+    return this.request(`/admin/users/${userId}`, {
+      method: 'DELETE',
     });
   }
 
@@ -478,9 +541,153 @@ class ApiService {
     });
   }
 
+  async getProductReviews(productId: string): Promise<ApiResponse<Review[]>> {
+    return this.request(`/products/${productId}/reviews`);
+  }
+
+  // Cart operations
+  async getCart() {
+    return this.request('/cart');
+  }
+
+  async addToCart(cartData: {
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async updateCartItem(cartData: {
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/update', {
+      method: 'PUT',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async removeFromCart(cartData: {
+    productId: string;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }) {
+    return this.request('/cart/remove', {
+      method: 'DELETE',
+      body: JSON.stringify(cartData),
+    });
+  }
+
+  async clearCart() {
+    return this.request('/cart/clear', {
+      method: 'DELETE',
+    });
+  }
+
+  async syncCart(items: Array<{
+    productId: string;
+    quantity: number;
+    variant?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }>) {
+    return this.request('/cart/sync', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    });
+  }
+
+  async getCartStats() {
+    return this.request('/cart/stats');
+  }
+
   // Health check
   async healthCheck() {
     return this.request('/health');
+  }
+
+  // Pincode lookup for Indian addresses
+  async lookupPincode(pincode: string): Promise<{
+    success: boolean;
+    data?: {
+      pincode: string;
+      city: string;
+      state: string;
+      country: string;
+      district?: string;
+      region?: string;
+    };
+    message?: string;
+  }> {
+    try {
+      // Validate pincode format (6 digits)
+      if (!/^[0-9]{6}$/.test(pincode)) {
+        return {
+          success: false,
+          message: 'Invalid pincode format. Please enter a 6-digit pincode.'
+        };
+      }
+
+      // Use alternative pincode API that supports CORS
+      const response = await fetch(`https://api.zippopotam.us/in/${pincode}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch pincode data');
+      }
+
+      const data = await response.json();
+      
+      // Check if the API returned valid data (Zippopotamus format)
+      if (data && data.country && data.places && data.places.length > 0) {
+        const place = data.places[0];
+        
+        return {
+          success: true,
+          data: {
+            pincode: pincode,
+            city: place['place name'] || '',
+            state: place['state'] || '',
+            country: data.country || 'India',
+            district: place['place name'] || '',
+            region: place['state abbreviation'] || ''
+          }
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No data found for this pincode. Please check and try again.'
+        };
+      }
+    } catch (error) {
+      console.error('Pincode lookup error:', error);
+      return {
+        success: false,
+        message: 'Unable to fetch location data. Please enter details manually.'
+      };
+    }
   }
 }
 

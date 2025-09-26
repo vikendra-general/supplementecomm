@@ -8,7 +8,8 @@ export interface Product {
   brand: string;
   images: string[];
   rating: number;
-  reviews: number;
+  reviewCount?: number;
+  reviews?: number; // Number of reviews, not array
   inStock: boolean;
   stockQuantity?: number;
   nutritionFacts?: NutritionFacts;
@@ -16,6 +17,7 @@ export interface Product {
   tags: string[];
   featured?: boolean;
   bestSeller?: boolean;
+  todaysDeals?: boolean;
 }
 
 export interface ProductVariant {
@@ -50,6 +52,7 @@ export interface User {
   role: string;
   avatar: string;
   phone?: string;
+  phoneVerified?: boolean;
   addresses?: Address[];
   wishlist?: string[];
   emailVerified: boolean;
@@ -123,7 +126,7 @@ export interface Review {
   userName: string;
   rating: number;
   comment: string;
-  createdAt: Date;
+  createdAt: string; // Changed from Date to string for consistency
 }
 
 export interface Brand {

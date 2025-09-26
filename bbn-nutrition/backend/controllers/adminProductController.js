@@ -1,3 +1,4 @@
+/* eslint-disable import/no-commonjs */
 const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
 
@@ -91,9 +92,8 @@ exports.createProduct = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       productData.images = req.files.map(file => {
-        // Convert full path to relative URL path
-        const relativePath = file.path.replace(/\\/g, '/').split('/uploads/')[1];
-        return `/uploads/${relativePath}`;
+        // Cloudinary returns the secure_url directly
+        return file.path; // This is the Cloudinary URL
       });
     }
 
@@ -135,6 +135,27 @@ exports.createProduct = async (req, res) => {
       productData.tags = productData.tags.split(',').map(tag => tag.trim());
     }
 
+    // Convert string boolean values to actual booleans
+    if (productData.inStock !== undefined) {
+      productData.inStock = productData.inStock === 'true' || productData.inStock === true;
+    }
+    if (productData.featured !== undefined) {
+      productData.featured = productData.featured === 'true' || productData.featured === true;
+    }
+    if (productData.bestSeller !== undefined) {
+      productData.bestSeller = productData.bestSeller === 'true' || productData.bestSeller === true;
+    }
+    if (productData.todaysDeals !== undefined) {
+      productData.todaysDeals = productData.todaysDeals === 'true' || productData.todaysDeals === true;
+    }
+
+    // Automatically set inStock based on stockQuantity
+    if (productData.stockQuantity !== undefined) {
+      const stockQuantity = parseInt(productData.stockQuantity) || 0;
+      productData.stockQuantity = Math.max(0, stockQuantity); // Ensure non-negative
+      productData.inStock = productData.stockQuantity > 0;
+    }
+
     const product = await Product.create(productData);
 
     res.status(201).json({
@@ -170,9 +191,8 @@ exports.updateProduct = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       productData.images = req.files.map(file => {
-        // Convert full path to relative URL path
-        const relativePath = file.path.replace(/\\/g, '/').split('/uploads/')[1];
-        return `/uploads/${relativePath}`;
+        // Cloudinary returns the secure_url directly
+        return file.path; // This is the Cloudinary URL
       });
     }
 
@@ -203,6 +223,27 @@ exports.updateProduct = async (req, res) => {
     // Handle tags if provided
     if (productData.tags && typeof productData.tags === 'string') {
       productData.tags = productData.tags.split(',').map(tag => tag.trim());
+    }
+
+    // Convert string boolean values to actual booleans
+    if (productData.inStock !== undefined) {
+      productData.inStock = productData.inStock === 'true' || productData.inStock === true;
+    }
+    if (productData.featured !== undefined) {
+      productData.featured = productData.featured === 'true' || productData.featured === true;
+    }
+    if (productData.bestSeller !== undefined) {
+      productData.bestSeller = productData.bestSeller === 'true' || productData.bestSeller === true;
+    }
+    if (productData.todaysDeals !== undefined) {
+      productData.todaysDeals = productData.todaysDeals === 'true' || productData.todaysDeals === true;
+    }
+
+    // Automatically set inStock based on stockQuantity
+    if (productData.stockQuantity !== undefined) {
+      const stockQuantity = parseInt(productData.stockQuantity) || 0;
+      productData.stockQuantity = Math.max(0, stockQuantity); // Ensure non-negative
+      productData.inStock = productData.stockQuantity > 0;
     }
 
     const product = await Product.findByIdAndUpdate(
