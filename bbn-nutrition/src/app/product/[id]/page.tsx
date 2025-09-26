@@ -319,16 +319,54 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Images */}
         <div className="space-y-4">
-          {/* Main Image Placeholder */}
-          <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-            <div className="text-gray-400 text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-4xl">📦</span>
+          {/* Main Image */}
+          <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            {product.images && product.images.length > 0 ? (
+               <img
+                 src={product.images[0]}
+                 alt={product.name}
+                 className="main-product-image w-full h-full object-cover"
+                 onError={(e) => {
+                   e.currentTarget.src = '/images/products/placeholder.svg';
+                 }}
+               />
+             ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <span className="text-4xl">📦</span>
+                  </div>
+                  <p className="text-lg font-medium">No Image Available</p>
+                </div>
               </div>
-              <p className="text-lg font-medium">Product Image</p>
-              <p className="text-sm">Add manually</p>
-            </div>
+            )}
           </div>
+          
+          {/* Thumbnail Images */}
+          {product.images && product.images.length > 1 && (
+            <div className="flex space-x-2 overflow-x-auto">
+              {product.images.map((image, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary"
+                  onClick={() => {
+                    // Update main image when thumbnail is clicked
+                    const mainImg = document.querySelector('.main-product-image') as HTMLImageElement;
+                    if (mainImg) mainImg.src = image;
+                  }}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.name} ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/products/placeholder.svg';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
