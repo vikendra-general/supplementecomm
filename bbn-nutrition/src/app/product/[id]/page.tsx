@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/utils/currency';
 import { apiService } from '@/utils/api';
 import { Product } from '@/types';
+import { Review } from '@/types';
 import toast from 'react-hot-toast';
 
 interface ProductDetailPageProps {
@@ -37,7 +38,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
@@ -191,7 +192,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     
     const variant = product.variants?.find(v => v.id === selectedVariant);
     const availableStock = getAvailableStock(product, variant);
-    const maxCanAdd = getMaxQuantityCanAdd(product, variant);
     
     if (newQuantity < 1) {
       setQuantity(1);
@@ -303,17 +303,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       } else {
         setReviewError(response.message || 'Failed to submit review');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Review submission error:', error);
-      setReviewError(error.message || 'Failed to submit review. Please try again.');
+      setReviewError(error instanceof Error ? error.message : 'Failed to submit review. Please try again.');
     } finally {
       setIsSubmittingReview(false);
     }
   };
 
 
-
-  const isProductInCart = isInCart(product.id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

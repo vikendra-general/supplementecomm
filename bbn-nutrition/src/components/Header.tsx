@@ -13,7 +13,7 @@ import AmazonStyleSearch from './AmazonStyleSearch';
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -113,7 +113,7 @@ export default function Header() {
             {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
               <div className="hidden md:flex items-center text-sm ml-6 text-text-primary">
                 <div className="flex flex-col">
-                  <span className="text-xs text-text-secondary">Deliver to</span>
+                  <span className="text-xs text-text-secondary">{t('header.deliverTo')}</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium">
@@ -139,9 +139,9 @@ export default function Header() {
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
-                    <span className="text-xs">Hello, {user?.name?.split(' ')[0]}</span>
+                    <span className="text-xs">{t('header.hello')}, {user?.name?.split(' ')[0]}</span>
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-normal">Account & Lists</span>
+                      <span className="text-sm font-normal">{t('header.accountLists')}</span>
                       <ChevronDown className="w-3 h-3" />
                     </div>
                   </button>
@@ -150,9 +150,9 @@ export default function Header() {
                     href="/login" 
                     className="flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
                   >
-                    <span className="text-xs">Hello, sign in</span>
+                    <span className="text-xs">{t('header.helloSignIn')}</span>
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-normal">Account & Lists</span>
+                      <span className="text-sm font-normal">{t('header.accountLists')}</span>
                       <ChevronDown className="w-3 h-3" />
                     </div>
                   </Link>
@@ -171,14 +171,14 @@ export default function Header() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Your Account
+                        {t('header.yourAccount')}
                       </Link>
                       <div className="border-t border-gray-200 mt-2 pt-2">
                         <button
                           onClick={handleLogout}
                           className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
-                          Sign Out
+                          {t('header.signOut')}
                         </button>
                       </div>
                     </div>
@@ -191,8 +191,8 @@ export default function Header() {
                 href="/orders" 
                 className="hidden lg:flex flex-col items-start text-gray-700 hover:text-orange-500 transition-colors"
               >
-                <span className="text-xs">Returns</span>
-                <span className="text-sm font-normal">& Orders</span>
+                <span className="text-xs">{t('header.returns')}</span>
+                <span className="text-sm font-normal">{t('header.orders')}</span>
               </Link>
 
               {/* Cart */}
@@ -208,7 +208,7 @@ export default function Header() {
                     </span>
                   )}
                 </div>
-                <span className="hidden lg:block text-sm font-medium">Cart</span>
+                <span className="hidden lg:block text-sm font-medium">{t('header.cart')}</span>
               </Link>
             </div>
           </div>
@@ -232,28 +232,28 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-5">
               <Link href="/shop" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Shop All
+                {t('footer.shopAll')}
               </Link>
               <Link href="/deals" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Today&apos;s Deals
+                {t('header.todaysDeals')}
               </Link>
               <Link href="/best-sellers" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Best Sellers
+                {t('header.bestSellers')}
               </Link>
               <Link href="/protein-supplements" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Protein Supplements
+                {t('header.proteinSupplements')}
               </Link>
               <Link href="/pre-workout" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Pre-Workout
+                {t('header.preWorkout')}
               </Link>
               <Link href="/vitamins" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Vitamins
+                {t('header.vitamins')}
               </Link>
               <Link href="/about" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                About BBN
+                {t('header.aboutBBN')}
               </Link>
               <Link href="/contact" className="transition-colors text-sm font-normal text-gray-900 hover:text-orange-500" style={{color: '#111827'}}>
-                Customer Service
+                {t('header.customerService')}
               </Link>
               
               {/* Language Switcher */}
@@ -335,56 +335,56 @@ export default function Header() {
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Shop All
+                {t('footer.shopAll')}
               </Link>
               <Link 
                 href="/deals" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Today&apos;s Deals
+                {t('header.todaysDeals')}
               </Link>
               <Link 
                 href="/best-sellers" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Best Sellers
+                {t('header.bestSellers')}
               </Link>
               <Link 
                 href="/protein-supplements" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Protein Supplements
+                {t('header.proteinSupplements')}
               </Link>
               <Link 
                 href="/pre-workout" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Pre-Workout
+                {t('header.preWorkout')}
               </Link>
               <Link 
                 href="/vitamins" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Vitamins
+                {t('header.vitamins')}
               </Link>
               <Link 
                 href="/about" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                About BBN
+                {t('header.aboutBBN')}
               </Link>
               <Link 
                 href="/contact" 
                 className="block text-gray-900 hover:text-orange-600 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Customer Service
+                {t('header.customerService')}
               </Link>
               
               {/* Mobile Account Section */}

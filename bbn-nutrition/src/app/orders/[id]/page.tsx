@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Package, 
@@ -59,7 +59,6 @@ interface OrderDetails {
 export default function OrderDetailsPage() {
   const { user, isAuthenticated } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,9 +67,9 @@ export default function OrderDetailsPage() {
     if (isAuthenticated && params.id) {
       fetchOrderDetails();
     }
-  }, [isAuthenticated, params.id]);
+  }, [isAuthenticated, params.id, fetchOrderDetails]);
 
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -107,7 +106,7 @@ export default function OrderDetailsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
 
   const calculateEstimatedDelivery = (createdAt: string, status: string) => {
     const orderDate = new Date(createdAt);

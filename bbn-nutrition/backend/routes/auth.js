@@ -21,6 +21,8 @@ router.post('/register', [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please provide a valid email'),
+  body('mobile')
+    .optional(),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
@@ -38,14 +40,17 @@ router.post('/register', [
       });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, mobile, password } = req.body;
 
-    // Check if user already exists with email (in both User and TempRegistration collections)
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists with email or mobile (in both User and TempRegistration collections)
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { mobile }] 
+    });
     if (existingUser) {
+      const field = existingUser.email === email ? 'email' : 'mobile number';
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists. Please sign in instead.'
+        message: `User with this ${field} already exists. Please sign in instead.`
       });
     }
 
@@ -60,12 +65,16 @@ router.post('/register', [
       });
     }
 
-    // Check if there's already a temporary registration for this email
-    let tempRegistration = await TempRegistration.findOne({ email });
+    // Check if there's already a temporary registration for this email or mobile
+    let tempRegistration = await TempRegistration.findOne({ 
+      $or: [{ email }, { mobile }] 
+    });
     
     if (tempRegistration) {
       // Update existing temporary registration
       tempRegistration.name = name;
+      tempRegistration.email = email;
+      tempRegistration.mobile = mobile;
       tempRegistration.password = password;
       tempRegistration.isEmailVerified = false;
       tempRegistration.emailOTPAttempts = 0;
@@ -79,16 +88,18 @@ router.post('/register', [
           id: tempRegistration._id,
           name: tempRegistration.name,
           email: tempRegistration.email,
+          mobile: tempRegistration.mobile,
           isEmailVerified: tempRegistration.isEmailVerified
         }
       });
     }
 
     // Create new temporary registration
-    console.log('🔍 Creating new TempRegistration with data:', { name, email, password: '[PRESENT]' });
+    console.log('🔍 Creating new TempRegistration with data:', { name, email, mobile, password: '[PRESENT]' });
     tempRegistration = await TempRegistration.create({
       name,
       email,
+      mobile,
       password,
       isEmailVerified: false
     });
@@ -96,6 +107,7 @@ router.post('/register', [
       id: tempRegistration._id,
       name: tempRegistration.name,
       email: tempRegistration.email,
+      mobile: tempRegistration.mobile,
       isEmailVerified: tempRegistration.isEmailVerified
     });
 
@@ -106,6 +118,7 @@ router.post('/register', [
         id: tempRegistration._id,
         name: tempRegistration.name,
         email: tempRegistration.email,
+        mobile: tempRegistration.mobile,
         isEmailVerified: tempRegistration.isEmailVerified
       }
     });
@@ -317,6 +330,7 @@ router.post('/verify-email-otp', [
       const newUser = new User({
         name: tempRegistration.name,
         email: tempRegistration.email,
+        mobile: tempRegistration.mobile,
         password: tempRegistration.password, // This is already hashed from TempRegistration
         isEmailVerified: true,
         role: 'user'
@@ -341,6 +355,7 @@ router.post('/verify-email-otp', [
           id: newUser._id,
           name: newUser.name,
           email: newUser.email,
+          mobile: newUser.mobile,
           phone: newUser.phone,
           role: newUser.role,
           avatar: newUser.avatar,
@@ -446,6 +461,7 @@ router.post('/complete-registration', [
         id: user._id,
         name: user.name,
         email: user.email,
+        mobile: user.mobile,
         isEmailVerified: user.isEmailVerified
       }
     });
@@ -501,26 +517,15 @@ router.post('/login', [
       });
     }
 
-    // Skip verification for admin users and existing users (created before verification was implemented)
-    // Only require verification for new regular users
+    // Skip verification for admin users and all existing users
+    // Email verification should only be required for NEW registrations, not existing users
     const isAdmin = user.role === 'admin';
-    const isExistingUser = user.createdAt < new Date('2024-01-01'); // Users created before verification system
-    const requiresVerification = !isAdmin && !isExistingUser && !user.isEmailVerified;
     
-    if (requiresVerification) {
-      return res.status(403).json({
-        success: false,
-        message: 'Please verify your email address before logging in',
-        requiresVerification: true,
-        user: {
-          id: user._id,
-          email: user.email,
-          phone: user.phone,
-          isEmailVerified: user.isEmailVerified,
-          isPhoneVerified: true // Default to true since phone verification is not implemented
-        }
-      });
-    }
+    // For existing users (users who already have accounts), skip email verification
+    // Only new users going through the registration process need verification
+    // If a user exists in the User collection, they should be able to login regardless of emailVerified status
+    
+    // Allow login for all existing users - verification is only for new registrations
 
     // Create token
     const token = user.getSignedJwtToken();
@@ -538,6 +543,7 @@ router.post('/login', [
         name: user.name,
         email: user.email,
         phone: user.phone,
+        mobile: user.mobile,
         role: user.role,
         avatar: user.avatar,
         isEmailVerified: user.isEmailVerified,
@@ -569,6 +575,7 @@ router.get('/me', protect, async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         phone: user.phone,
+        mobile: user.mobile || user.phone, // Map phone to mobile if mobile is not set
         phoneVerified: user.phoneVerified,
         addresses: user.addresses,
         wishlist: user.wishlist,
@@ -1040,7 +1047,9 @@ router.post('/resend-verification', [
 
     // Email service integration would go here
     // For development, the verification link is available in server logs
-    console.log(`Verification link: ${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}&email=${email}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Verification link: ${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}&email=${email}`);
+    }
 
     res.json({
       success: true,

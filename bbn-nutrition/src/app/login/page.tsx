@@ -3,14 +3,14 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle, Shield, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle, Shield, CheckCircle, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/components/ui/Notification';
 
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, register, verifyOTPAndLogin, completeRegistration, isLoading, isAuthenticated, user } = useAuth();
+  const { login, register, verifyOTPAndLogin, isLoading, isAuthenticated, user } = useAuth();
   const { showNotification } = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,8 @@ function LoginPageContent() {
     email: '',
     password: '',
     name: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    mobile: ''
   });
   
   // Check if this is an admin login request
@@ -124,7 +125,7 @@ function LoginPageContent() {
           }
           
           // Register user (this will create unverified user or return existing unverified user)
-          const registrationResult = await register(formData.name, formData.email, formData.password);
+          const registrationResult = await register(formData.name, formData.email, formData.password, formData.mobile);
           
           // Move to OTP verification step
           setRegistrationStep(2);
@@ -226,7 +227,8 @@ function LoginPageContent() {
       email: '',
       password: '',
       name: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      mobile: ''
     });
   };
 
@@ -287,6 +289,30 @@ function LoginPageContent() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && registrationStep === 1 && (
             <>
+              {!isLogin && registrationStep === 1 && (
+                <div>
+                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    Mobile Number <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="tel"
+                      id="mobile"
+                      name="mobile"
+                      value={formData.mobile}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900"
+                      placeholder="Enter your mobile number"
+                      required={!isLogin}
+                    />
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    Enter your mobile number
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name <span className="text-red-500">*</span>

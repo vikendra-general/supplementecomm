@@ -17,6 +17,10 @@ const tempRegistrationSchema = new mongoose.Schema({
       'Please provide a valid email'
     ]
   },
+  mobile: {
+    type: String,
+    required: false
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
@@ -102,6 +106,7 @@ tempRegistrationSchema.methods.getUserData = function() {
   return {
     name: this.name,
     email: this.email,
+    mobile: this.mobile,
     password: this.password, // Already hashed
     isEmailVerified: this.isEmailVerified
   };

@@ -277,19 +277,20 @@ class CartService {
   }
 
   // Clean up old carts (call this periodically)
-  cleanupOldCarts(maxAgeHours = 24) {
-    const cutoffTime = new Date(Date.now() - (maxAgeHours * 60 * 60 * 1000));
-    let cleanedCount = 0;
+  async cleanupOldCarts(maxAgeHours = 24) {
+    try {
+      const cutoffTime = new Date(Date.now() - (maxAgeHours * 60 * 60 * 1000));
+      
+      // Delete old carts from MongoDB
+      const result = await Cart.deleteMany({
+        updatedAt: { $lt: cutoffTime }
+      });
 
-    for (const [userId, cart] of this.carts.entries()) {
-      if (cart.updatedAt < cutoffTime) {
-        this.carts.delete(userId);
-        cleanedCount++;
+      if (result.deletedCount > 0) {
+        console.log(`🧹 Cleaned up ${result.deletedCount} old carts`);
       }
-    }
-
-    if (cleanedCount > 0) {
-      console.log(`🧹 Cleaned up ${cleanedCount} old carts`);
+    } catch (error) {
+      console.error('❌ Error cleaning up old carts:', error);
     }
   }
 }

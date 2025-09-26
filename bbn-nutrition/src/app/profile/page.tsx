@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, 
   MapPin, 
@@ -10,6 +10,7 @@ import {
   Truck
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Order {
   _id: string;
@@ -55,11 +56,14 @@ export default function ProfilePage() {
   const [orders] = useState<Order[]>([]);
   const [wishlist] = useState<WishlistItem[]>([]);
   const [addresses] = useState<Address[]>([]);
-  const [loading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const { user, isAuthenticated } = useAuth();
 
-  // The useEffect hook and user context are removed as per the edit hint.
-  // The user object and isAuthenticated are no longer available.
-  // The logout function is also removed.
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   // The formatCurrency, formatDate, getStatusColor, getStatusIcon functions
   // are removed as they are not used in the new_code.
@@ -88,7 +92,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-              <p className="text-gray-600 mt-1">Welcome back, User</p>
+              <p className="text-gray-600 mt-1">Welcome back, {user?.name || 'User'}</p>
             </div>
             {/* The logout button is removed as per the edit hint. */}
           </div>
@@ -370,7 +374,7 @@ export default function ProfilePage() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                         <input
                           type="text"
-                          defaultValue="User Name"
+                          defaultValue={user?.name || ''}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -380,18 +384,18 @@ export default function ProfilePage() {
                         </label>
                         <input
                           type="email"
-                          defaultValue="user@example.com"
+                          defaultValue={user?.email || ''}
                           disabled
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone
+                          Mobile Number
                         </label>
                         <input
                           type="tel"
-                          defaultValue="+1234567890"
+                          defaultValue={user?.mobile || ''}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>

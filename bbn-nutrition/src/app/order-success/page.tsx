@@ -98,7 +98,7 @@ function OrderSuccessContent() {
        } else {
          throw new Error('Invalid order data');
        }
-    } catch (error) {
+    } catch {
       setError('Failed to fetch order details');
     } finally {
       setLoading(false);

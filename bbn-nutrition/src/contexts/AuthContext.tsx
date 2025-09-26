@@ -20,6 +20,7 @@ interface User {
   role: string;
   avatar: string;
   phone?: string;
+  mobile?: string;
   phoneVerified?: boolean;
   addresses?: Address[];
   wishlist?: string[];
@@ -33,7 +34,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string; user?: User }>;
+  register: (name: string, email: string, password: string, mobile: string) => Promise<{ success: boolean; message?: string; user?: User }>;
   verifyOTPAndLogin: (identifier: string, otp: string) => Promise<{ success: boolean; message?: string; user?: User; token?: string }>;
   completeRegistration: (email: string) => Promise<{ success: boolean; message?: string; user?: User; token?: string }>;
   logout: () => void;
@@ -200,14 +201,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, mobile: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, mobile }),
       });
 
       if (!response.ok) {

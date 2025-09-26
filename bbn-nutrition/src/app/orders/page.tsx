@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { 
   Package, 
-  Truck, 
   CheckCircle, 
   Clock, 
   Search,
@@ -13,8 +12,7 @@ import {
   Mail,
   MessageCircle,
   ArrowLeft,
-  Eye,
-  Download
+  Eye
 } from 'lucide-react';
 
 interface Order {
@@ -33,72 +31,33 @@ interface Order {
   createdAt: string;
 }
 
-const mockOrders: Order[] = [
-  {
-    _id: '1',
-    orderNumber: 'BBN-2024-001',
-    items: [
-      {
-        product: { name: 'BBN Whey Protein Isolate', images: ['/images/whey-protein.jpg'] },
-        quantity: 2,
-        price: 59.99
-      }
-    ],
-    total: 119.98,
-    status: 'delivered',
-    paymentStatus: 'paid',
-    trackingNumber: 'TRK123456789',
-    estimatedDelivery: '2024-01-25',
-    createdAt: '2024-01-20T10:30:00Z'
-  },
-  {
-    _id: '2',
-    orderNumber: 'BBN-2024-002',
-    items: [
-      {
-        product: { name: 'BBN Pre-Workout Elite', images: ['/images/pre-workout.jpg'] },
-        quantity: 1,
-        price: 44.99
-      }
-    ],
-    total: 44.99,
-    status: 'shipped',
-    paymentStatus: 'paid',
-    trackingNumber: 'TRK987654321',
-    estimatedDelivery: '2024-01-28',
-    createdAt: '2024-01-21T14:15:00Z'
-  }
-];
+interface TrackingStep {
+  date: string;
+  status: string;
+  description: string;
+}
 
 export default function OrdersPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [trackingResult, setTrackingResult] = useState<{
-    orderNumber?: string;
-    status?: string;
-    estimatedDelivery?: string;
-    trackingSteps?: Array<{
-      status: string;
-      date: string;
-      completed: boolean;
-    }>;
-    error?: string;
-  } | null>(null);
-  const [activeTab, setActiveTab] = useState('orders');
-  const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<Order | null>(null);
-  const [showReturnModal, setShowReturnModal] = useState(false);
-  const [returnReason, setReturnReason] = useState('');
-  const [returnDescription, setReturnDescription] = useState('');
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchOrders();
+  const calculateEstimatedDelivery = (createdAt: string, status: string) => {
+    const orderDate = new Date(createdAt);
+    const deliveryDate = new Date(orderDate);
+    
+    // Add 7 days for estimated delivery
+    deliveryDate.setDate(orderDate.getDate() + 7);
+    
+    // If order is already delivered, return the current date
+    if (status === 'delivered') {
+      return new Date().toISOString().split('T')[0];
     }
-  }, [isAuthenticated]);
+    
+    return deliveryDate.toISOString().split('T')[0];
+  };
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -122,29 +81,48 @@ export default function OrdersPage() {
             estimatedDelivery: calculateEstimatedDelivery(order.createdAt, order.status)
           }));
           setOrders(processedOrders);
+        } else {
+          console.error('Failed to fetch orders:', result.message);
         }
+      } else {
+        console.error('Failed to fetch orders:', response.statusText);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const calculateEstimatedDelivery = (createdAt: string, status: string) => {
-    const orderDate = new Date(createdAt);
-    const deliveryDate = new Date(orderDate);
-    
-    // Add 7 days for estimated delivery
-    deliveryDate.setDate(orderDate.getDate() + 7);
-    
-    // If order is already delivered, return the current date
-    if (status === 'delivered') {
-      return new Date().toISOString().split('T')[0];
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchOrders();
     }
-    
-    return deliveryDate.toISOString().split('T')[0];
-  };
+  }, [isAuthenticated, fetchOrders]);
+
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingResult, setTrackingResult] = useState<{
+    orderNumber?: string;
+    status?: string;
+    estimatedDelivery?: string;
+    trackingSteps?: Array<{
+      status: string;
+      date: string;
+      completed: boolean;
+    }>;
+    error?: string;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState('orders');
+  const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<Order | null>(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState('');
+  const [returnDescription, setReturnDescription] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchOrders();
+    }
+  }, [isAuthenticated, fetchOrders]);
 
   const handleTrackOrder = () => {
     if (trackingNumber) {
@@ -185,7 +163,7 @@ export default function OrdersPage() {
 
         if (result.success) {
           // Display tracking information in a more user-friendly way
-          const trackingInfo = result.data.trackingSteps.map((step: any) => 
+          const trackingInfo = result.data.trackingSteps.map((step: TrackingStep) => 
             `${step.date}: ${step.status} - ${step.description}`
           ).join('\n');
           

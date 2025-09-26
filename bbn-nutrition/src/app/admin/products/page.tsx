@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -72,19 +72,13 @@ function AdminProductsContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterBrand, setFilterBrand] = useState('');
-  const [currentView, setCurrentView] = useState('products');
 
   // Handle URL parameters
   useEffect(() => {
     const action = searchParams.get('action');
-    const view = searchParams.get('view');
     
     if (action === 'add') {
       setShowProductForm(true);
-    }
-    
-    if (view) {
-      setCurrentView(view);
     }
   }, [searchParams]);
   const [productFormData, setProductFormData] = useState<ProductFormData>({
@@ -114,7 +108,7 @@ function AdminProductsContent() {
   });
 
   // Fetch products from API
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -128,14 +122,14 @@ function AdminProductsContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load products on component mount
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       fetchProducts();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, fetchProducts]);
 
   // Get unique categories and brands
   const categories = Array.from(new Set(products.map(p => p.category)));
@@ -837,7 +831,6 @@ function AdminProductsContent() {
                       value={productFormData.stockQuantity}
                       onChange={(e) => {
                         const quantity = Math.max(0, parseInt(e.target.value) || 0);
-                        const inStock = quantity > 0;
                         setProductFormData({ 
                           ...productFormData, 
                           stockQuantity: quantity.toString()

@@ -384,8 +384,8 @@ export default function CheckoutPage() {
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
-    return phoneRegex.test(phone);
+    // Accept any phone number format
+    return phone && phone.trim().length > 0;
   };
 
   // Validate Indian PIN code (6 digits)
@@ -419,7 +419,7 @@ export default function CheckoutPage() {
       
       if (!isPhoneFromProfile || !isPhoneVerified) {
         if (!validatePhone(formData.phone)) {
-          alert('Please enter a valid Indian phone number');
+          alert('Please enter a phone number');
           return;
         }
       }

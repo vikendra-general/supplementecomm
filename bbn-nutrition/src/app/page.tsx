@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { getCategoriesWithDynamicCounts } from '@/utils/categoryUtils'
 import { getTopSellerProducts, getFeaturedProducts } from '@/utils/recommendations'
-import { Star, ArrowRight, Truck, Shield, Clock, TrendingUp, Zap, Award, Users, CheckCircle } from 'lucide-react'
+import { Star, ArrowRight, Truck, Shield, Clock, TrendingUp, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { memo, useState, useEffect } from 'react'
@@ -20,7 +20,7 @@ const ProductCard = dynamic(() => import('@/components/ProductCard'), {
 })
 
 // Memoized components for better performance
-const CategoryCard = memo(({ category, t }: { category: { id: string; name: string; description: string; productCount: number; image: string }, t: (key: string) => string }) => (
+const CategoryCard = memo(({ category }: { category: { id: string; name: string; description: string; productCount: number; image: string } }) => (
   <Link 
     href={`/shop?category=${category.name.toLowerCase()}`}
     className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
@@ -97,7 +97,6 @@ export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [topSellerProducts, setTopSellerProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -106,7 +105,6 @@ export default function HomePage() {
     const fetchProducts = async () => {
       try {
         if (!isMounted) return;
-        setLoading(true);
         
         const [featured, topSellers] = await Promise.all([
           getFeaturedProducts(4, abortController.signal),
@@ -136,10 +134,6 @@ export default function HomePage() {
           if (!abortController.signal.aborted) {
             console.error('Error fetching products:', error);
           }
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
         }
       }
     };
@@ -241,7 +235,7 @@ export default function HomePage() {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} t={t} />
+              <CategoryCard key={category.id} category={category} />
             ))}
           </div>
         </div>
@@ -307,7 +301,7 @@ export default function HomePage() {
               href="/shop" 
               className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              <span className="text-white">View All Products</span>
+              <span className="text-white">{t('home.viewAll')}</span>
               <ArrowRight className="ml-2 w-4 h-4 text-white" />
             </Link>
           </div>
@@ -354,7 +348,7 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {topSellerProducts.map((product, index) => (
+            {topSellerProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -437,7 +431,7 @@ export default function HomePage() {
             href="/shop" 
             className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            <span className="text-white">Start Shopping</span>
+            <span className="text-white">{t('home.startShopping')}</span>
             <ArrowRight className="ml-2 w-4 h-4 text-white" />
           </Link>
         </div>

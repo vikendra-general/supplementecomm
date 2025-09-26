@@ -120,10 +120,14 @@ export interface Category {
 }
 
 export interface Review {
+  _id?: string;
   id: string;
   productId: string;
   userId: string;
   userName: string;
+  user?: {
+    name: string;
+  };
   rating: number;
   comment: string;
   createdAt: string; // Changed from Date to string for consistency

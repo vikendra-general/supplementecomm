@@ -65,8 +65,9 @@ router.post('/users', [
       });
     }
 
-    // Generate a temporary password (user will need to reset it)
-    const tempPassword = 'TempPass123!';
+    // Generate a secure random temporary password
+    const crypto = require('crypto');
+    const tempPassword = crypto.randomBytes(12).toString('hex') + 'A1!'; // Ensure it meets password requirements
 
     // Create user
     const user = await User.create({

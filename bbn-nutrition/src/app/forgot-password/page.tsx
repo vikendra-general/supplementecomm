@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, CheckCircle, Shield } from 'lucide-react';
+import { ArrowLeft, Mail, Shield } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || 'Failed to send OTP');
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.message || 'Invalid OTP');
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
       if (!response.ok) {
         setError(data.message || 'Failed to resend OTP');
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);

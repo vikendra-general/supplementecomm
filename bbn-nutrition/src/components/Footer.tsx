@@ -138,17 +138,17 @@ export default function Footer() {
         <div className="border-t border-gray-300 mt-6 pt-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <div className="text-gray-600 text-xs">
-              © 2024 Booster Box Nutrition. All rights reserved.
+              {t('footer.copyright')}
             </div>
             <div className="flex space-x-3 text-xs">
               <Link href="/privacy" className="text-gray-600 hover:text-black transition-colors">
-                Privacy Policy
+                {t('footer.privacyPolicy')}
               </Link>
               <Link href="/terms" className="text-gray-600 hover:text-black transition-colors">
-                Terms of Service
+                {t('footer.termsOfService')}
               </Link>
               <Link href="/cookies" className="text-gray-600 hover:text-black transition-colors">
-                Cookie Policy
+                {t('footer.cookiePolicy')}
               </Link>
             </div>
           </div>
