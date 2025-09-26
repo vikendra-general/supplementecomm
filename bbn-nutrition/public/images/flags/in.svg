@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="in">
+      <path d="M0 0h512v512H0z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#in)">
+    <path fill="#ff9933" d="M0 0h512v170.7H0z"/>
+    <path fill="#fff" d="M0 170.7h512v170.6H0z"/>
+    <path fill="#138808" d="M0 341.3h512V512H0z"/>
+    <g transform="translate(256,256)">
+      <circle r="52.9" fill="none" stroke="#000080" stroke-width="3.2"/>
+      <circle r="11.4" fill="#000080"/>
+      <g stroke="#000080" stroke-width="2.3" fill="none">
+        <circle r="17.1"/>
+        <circle r="25.7"/>
+        <circle r="34.3"/>
+        <circle r="42.9"/>
+      </g>
+      <g stroke="#000080" stroke-width="1.1" fill="none">
+        <path d="m0-52.9 1.6 1.6"/>
+        <path d="m7.4-52.4 1.6 1.6"/>
+        <path d="m14.7-51.4 1.6 1.6"/>
+        <path d="m21.8-49.9 1.6 1.6"/>
+        <path d="m28.6-47.9 1.6 1.6"/>
+        <path d="m35.1-45.4 1.6 1.6"/>
+        <path d="m41.3-42.4 1.6 1.6"/>
+        <path d="m47.1-38.9 1.6 1.6"/>
+        <path d="m52.4-34.9 1.6 1.6"/>
+        <path d="m57.3-30.4 1.6 1.6"/>
+        <path d="m61.7-25.4 1.6 1.6"/>
+        <path d="m65.5-20.1 1.6 1.6"/>
+        <path d="m68.8-14.4 1.6 1.6"/>
+        <path d="m71.5-8.4 1.6 1.6"/>
+        <path d="m73.6-2.1 1.6 1.6"/>
+        <path d="m75.1 4.4 1.6 1.6"/>
+        <path d="m76 11 1.6 1.6"/>
+        <path d="m76.3 17.7 1.6 1.6"/>
+        <path d="m76 24.4 1.6 1.6"/>
+        <path d="m75.1 31 1.6 1.6"/>
+        <path d="m73.6 37.5 1.6 1.6"/>
+        <path d="m71.5 43.8 1.6 1.6"/>
+        <path d="m68.8 49.8 1.6 1.6"/>
+        <path d="m65.5 55.5 1.6 1.6"/>
+      </g>
+    </g>
+  </g>
+</svg>

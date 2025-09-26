@@ -104,7 +104,7 @@ export default function CartPage() {
                         <Link href={`/product/${item.product.id}`}>
                           <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                             <Image
-                              src={item.product.images[0] || '/images/products/placeholder.svg'}
+                              src={item.product.images && item.product.images.length > 0 && item.product.images[0] ? item.product.images[0] : '/images/products/placeholder.svg'}
                               alt={item.product.name}
                               fill
                               className="object-cover"

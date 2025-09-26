@@ -913,7 +913,7 @@ export default function DashboardPage() {
                         {/* Product Image */}
                         <div className="relative aspect-square mb-4 overflow-hidden rounded-lg">
                           <Image
-                            src={product.images[0] || '/images/products/placeholder.svg'}
+                            src={product.images && product.images.length > 0 && product.images[0] ? product.images[0] : '/images/products/placeholder.svg'}
                             alt={product.name}
                             fill
                             className="object-cover"

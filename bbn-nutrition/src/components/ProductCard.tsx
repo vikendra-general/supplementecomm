@@ -152,7 +152,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <Link href={`/product/${product.id}`}>
           <div className="relative w-full h-full">
             <Image
-              src={product.images[0] || '/images/products/placeholder.svg'}
+              src={product.images && product.images.length > 0 && product.images[0] ? product.images[0] : '/images/products/placeholder.svg'}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"

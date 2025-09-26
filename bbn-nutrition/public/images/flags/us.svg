@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="us">
+      <path d="M0 0h512v512H0z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#us)">
+    <path fill="#bd3d44" d="M0 0h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0z"/>
+    <path fill="#fff" d="M0 39.4h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0zm0 78.8h512v39.4H0z"/>
+    <path fill="#192f5d" d="M0 0h256v275.7H0z"/>
+    <g fill="#fff">
+      <g id="d">
+        <g id="c">
+          <g id="e">
+            <g id="b">
+              <path id="a" d="m247 90 70.5 217.5L130 159.5h234L176.5 307.5 247 90z"/>
+              <use href="#a" y="420"/>
+              <use href="#a" y="840"/>
+              <use href="#a" y="1260"/>
+            </g>
+            <use href="#a" y="1680"/>
+          </g>
+          <use href="#b" x="247" y="210"/>
+        </g>
+        <use href="#c" x="494" y="420"/>
+      </g>
+      <use href="#d" x="988" y="840"/>
+      <use href="#d" x="988" y="1890"/>
+      <use href="#d" x="494" y="1470"/>
+      <use href="#e" x="247" y="630"/>
+      <use href="#e" x="741" y="1050"/>
+      <use href="#e" x="1235" y="1470"/>
+      <use href="#b" x="247" y="1890"/>
+      <use href="#b" x="741" y="2310"/>
+      <use href="#b" x="1235" y="2730"/>
+      <use href="#a" x="494" y="2100"/>
+      <use href="#a" x="988" y="2520"/>
+      <use href="#a" x="1482" y="2940"/>
+    </g>
+  </g>
+</svg>

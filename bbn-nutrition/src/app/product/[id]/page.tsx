@@ -237,10 +237,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           {/* Main Image */}
           <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
             <Image
-              src={product.images[selectedImage] || '/images/products/placeholder.svg'}
+              src={product.images && product.images.length > selectedImage && product.images[selectedImage] ? product.images[selectedImage] : '/images/products/placeholder.svg'}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-cover rounded-lg"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
             
