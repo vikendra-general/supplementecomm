@@ -1,27 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Product } from '@/types';
 
 type Language = 'en' | 'hi';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  category: string;
-  brand: string;
-  images: string[];
-  rating: number;
-  reviews: number;
-  inStock: boolean;
-  stockQuantity?: number;
-  variants?: { id: string; name: string; price: number; inStock: boolean }[];
-  tags: string[];
-  featured?: boolean;
-  bestSeller?: boolean;
-}
 
 interface LanguageContextType {
   language: Language;

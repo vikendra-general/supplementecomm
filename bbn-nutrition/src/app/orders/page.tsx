@@ -21,7 +21,7 @@ interface Order {
   _id: string;
   orderNumber: string;
   items: {
-    product: { name: string; images: string[] };
+    product: { name: string; images: string[] } | null;
     quantity: number;
     price: number;
   }[];
@@ -87,6 +87,10 @@ export default function OrdersPage() {
     error?: string;
   } | null>(null);
   const [activeTab, setActiveTab] = useState('orders');
+  const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<Order | null>(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState('');
+  const [returnDescription, setReturnDescription] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -112,7 +116,12 @@ export default function OrdersPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setOrders(result.orders || []);
+          // Process orders to calculate proper estimated delivery dates
+          const processedOrders = (result.orders || []).map((order: Order) => ({
+            ...order,
+            estimatedDelivery: calculateEstimatedDelivery(order.createdAt, order.status)
+          }));
+          setOrders(processedOrders);
         }
       }
     } catch (error) {
@@ -120,6 +129,21 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateEstimatedDelivery = (createdAt: string, status: string) => {
+    const orderDate = new Date(createdAt);
+    const deliveryDate = new Date(orderDate);
+    
+    // Add 7 days for estimated delivery
+    deliveryDate.setDate(orderDate.getDate() + 7);
+    
+    // If order is already delivered, return the current date
+    if (status === 'delivered') {
+      return new Date().toISOString().split('T')[0];
+    }
+    
+    return deliveryDate.toISOString().split('T')[0];
   };
 
   const handleTrackOrder = () => {
@@ -143,6 +167,98 @@ export default function OrdersPage() {
         setTrackingResult({ error: 'Tracking number not found' });
       }
     }
+  };
+
+  const handleTrackPackage = async (order: Order) => {
+    if (order.trackingNumber) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/orders/track/${order.trackingNumber}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Display tracking information in a more user-friendly way
+          const trackingInfo = result.data.trackingSteps.map((step: any) => 
+            `${step.date}: ${step.status} - ${step.description}`
+          ).join('\n');
+          
+          alert(`Tracking Information for ${order.trackingNumber}:\n\n${trackingInfo}`);
+        } else {
+          alert(result.message || 'Failed to retrieve tracking information.');
+        }
+      } catch (error) {
+        console.error('Tracking error:', error);
+        alert('Failed to retrieve tracking information. Please try again.');
+      }
+    } else {
+      alert('No tracking number available for this order.');
+    }
+  };
+
+  const handleReturnItem = async (order: Order) => {
+    if (order.status === 'delivered') {
+      // Check if order is within return window (30 days)
+      const deliveryDate = new Date(order.estimatedDelivery);
+      const currentDate = new Date();
+      const daysDifference = Math.floor((currentDate.getTime() - deliveryDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDifference <= 30) {
+        setSelectedOrderForReturn(order);
+        setShowReturnModal(true);
+      } else {
+        alert('Return window has expired. Returns are only accepted within 30 days of delivery.');
+      }
+    } else {
+      alert('Returns can only be initiated for delivered orders.');
+    }
+  };
+
+  const submitReturnRequest = async () => {
+    if (!selectedOrderForReturn || !returnReason) {
+      alert('Please select a reason for return.');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/orders/${selectedOrderForReturn._id}/return`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: returnReason,
+          description: returnDescription
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(result.message);
+        // Refresh orders to show updated status
+        fetchOrders();
+      } else {
+        alert(result.message || 'Failed to submit return request.');
+      }
+    } catch (error) {
+      console.error('Return request error:', error);
+      alert('Failed to submit return request. Please try again.');
+    }
+
+    // Reset form and close modal
+    setReturnReason('');
+    setReturnDescription('');
+    setSelectedOrderForReturn(null);
+    setShowReturnModal(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -263,10 +379,13 @@ export default function OrdersPage() {
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
                             {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                           </span>
-                          <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
+                          <Link 
+                            href={`/orders/${order._id}`}
+                            className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+                          >
                             <Eye className="w-4 h-4 inline mr-1" />
                             View Details
-                          </button>
+                          </Link>
                         </div>
                       </div>
                       
@@ -278,7 +397,9 @@ export default function OrdersPage() {
                                 <Package className="w-8 h-8 text-gray-400" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{item.product.name}</h4>
+                                <h4 className="font-medium text-gray-900">
+                                  {item.product?.name || 'Product name unavailable'}
+                                </h4>
                                 <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                                 <p className="text-sm font-medium text-gray-900">₹{item.price}</p>
                               </div>
@@ -305,10 +426,16 @@ export default function OrdersPage() {
                           </div>
                           
                           <div className="space-y-2">
-                            <button className="w-full bg-orange-400 text-white py-2 px-4 rounded-lg hover:bg-orange-500 transition-colors text-sm">
+                            <button 
+                              onClick={() => handleTrackPackage(order)}
+                              className="w-full bg-orange-400 text-white py-2 px-4 rounded-lg hover:bg-orange-500 transition-colors text-sm"
+                            >
                               Track Package
                             </button>
-                            <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                            <button 
+                              onClick={() => handleReturnItem(order)}
+                              className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                            >
                               Return Item
                             </button>
                           </div>
@@ -467,6 +594,78 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Return Modal */}
+      {showReturnModal && selectedOrderForReturn && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Return Request - Order #{selectedOrderForReturn.orderNumber}
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Return
+                </label>
+                <select
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="">Select a reason</option>
+                  <option value="defective">Defective/Damaged Product</option>
+                  <option value="wrong-item">Wrong Item Received</option>
+                  <option value="not-as-described">Not as Described</option>
+                  <option value="quality-issues">Quality Issues</option>
+                  <option value="changed-mind">Changed Mind</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={returnDescription}
+                  onChange={(e) => setReturnDescription(e.target.value)}
+                  placeholder="Please provide additional details about your return request..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Return Policy:</strong> Items must be unopened and in original packaging. 
+                  Return shipping label will be provided via email within 24 hours.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => submitReturnRequest()}
+                className="flex-1 bg-orange-400 text-white py-2 px-4 rounded-lg hover:bg-orange-500 transition-colors"
+              >
+                Submit Return Request
+              </button>
+              <button
+                onClick={() => {
+                  setReturnReason('');
+                  setReturnDescription('');
+                  setSelectedOrderForReturn(null);
+                  setShowReturnModal(false);
+                }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

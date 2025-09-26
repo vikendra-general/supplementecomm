@@ -47,13 +47,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  phone: {
+  emailVerificationToken: {
     type: String,
-    default: ''
-  },
-  phoneVerified: {
-    type: Boolean,
-    default: false
+    select: false
   },
   addresses: [{
     _id: {
@@ -83,7 +79,7 @@ const userSchema = new mongoose.Schema({
     },
     country: {
       type: String,
-      default: 'United States'
+      default: 'India'
     },
     isDefault: {
       type: Boolean,
@@ -124,6 +120,23 @@ const userSchema = new mongoose.Schema({
   }],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  resetPasswordOTP: {
+    type: String,
+    select: false
+  },
+  resetPasswordOTPExpire: {
+    type: Date,
+    select: false
+  },
+  resetPasswordOTPAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
+  lastResetPasswordOTPSent: {
+    type: Date,
+    select: false
+  },
   emailVerified: {
     type: Boolean,
     default: false
@@ -143,17 +156,13 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     },
-    smsNotifications: {
-      type: Boolean,
-      default: false
-    },
     marketingEmails: {
       type: Boolean,
       default: true
     },
     currency: {
       type: String,
-      default: 'USD',
+      default: 'INR',
       enum: ['USD', 'INR', 'EUR']
     },
     language: {

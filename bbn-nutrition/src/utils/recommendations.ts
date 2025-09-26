@@ -4,9 +4,9 @@ import { apiService } from './api';
 /**
  * Get top selling products based on various criteria
  */
-export const getTopSellerProducts = async (limit: number = 4): Promise<Product[]> => {
+export const getTopSellerProducts = async (limit: number = 4, signal?: AbortSignal): Promise<Product[]> => {
   try {
-    const response = await apiService.getProducts({ limit: 100 });
+    const response = await apiService.getProducts({ limit: 100 }, signal);
     if (response.success && response.data) {
       return response.data
         .filter(product => product.inStock)
@@ -20,13 +20,20 @@ export const getTopSellerProducts = async (limit: number = 4): Promise<Product[]
             return b.rating - a.rating;
           }
           // Then by number of reviews
-          return b.reviews - a.reviews;
+          return (b.reviewCount || (b.reviews || 0)) - (a.reviewCount || (a.reviews || 0));
         })
         .filter(product => product.bestSeller || product.rating >= 4.0)
         .slice(0, limit);
     }
     return [];
   } catch (error) {
+    // Silently handle abort errors during navigation
+    if (error instanceof Error && 
+        (error.message.includes('Request was cancelled') || 
+         error.message.includes('aborted') || 
+         error.name === 'AbortError')) {
+      return [];
+    }
     console.error('Error fetching top seller products:', error);
     return [];
   }
@@ -77,8 +84,8 @@ export const getTrendingProducts = async (limit: number = 6): Promise<Product[]>
         .filter(product => product.inStock && product.rating >= 4.0)
         .sort((a, b) => {
           // Calculate trending score based on rating and review count
-          const aTrendingScore = a.rating * Math.log(a.reviews + 1);
-          const bTrendingScore = b.rating * Math.log(b.reviews + 1);
+          const aTrendingScore = a.rating * Math.log((a.reviews || 0) + 1);
+          const bTrendingScore = b.rating * Math.log((b.reviews || 0) + 1);
           return bTrendingScore - aTrendingScore;
         })
         .slice(0, limit);
@@ -113,9 +120,9 @@ export const getProductsByCategory = async (category: string, limit?: number): P
 /**
  * Get featured products for homepage
  */
-export const getFeaturedProducts = async (limit: number = 4): Promise<Product[]> => {
+export const getFeaturedProducts = async (limit: number = 4, signal?: AbortSignal): Promise<Product[]> => {
   try {
-    const response = await apiService.getProducts({ limit: 100 });
+    const response = await apiService.getProducts({ limit: 100 }, signal);
     if (response.success && response.data) {
       return response.data
         .filter(product => product.featured && product.inStock)
@@ -124,6 +131,13 @@ export const getFeaturedProducts = async (limit: number = 4): Promise<Product[]>
     }
     return [];
   } catch (error) {
+    // Silently handle abort errors during navigation
+    if (error instanceof Error && 
+        (error.message.includes('Request was cancelled') || 
+         error.message.includes('aborted') || 
+         error.name === 'AbortError')) {
+      return [];
+    }
     console.error('Error fetching featured products:', error);
     return [];
   }

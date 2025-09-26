@@ -61,23 +61,37 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         params.append('status', status);
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(`${API_BASE_URL}/orders?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
       });
 
-      const data = await response.json();
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch orders');
+        const data = await response.json().catch(() => ({ message: 'Network error' }));
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      setOrders(data.orders);
+      const data = await response.json();
+      setOrders(data.orders || []);
     } catch (error: unknown) {
       console.error('Error fetching orders:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch orders');
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          setError('Request timeout. Please check your connection and try again.');
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError('Failed to fetch orders. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -213,10 +227,14 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     setError(null);
   };
 
-  // Load orders when token is available
+  // Load orders when token is available with a small delay to ensure backend is ready
   useEffect(() => {
     if (isAuthenticated) {
-      getOrders();
+      const timer = setTimeout(() => {
+        getOrders();
+      }, 500); // 500ms delay to ensure backend is ready
+      
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, getOrders]);
 

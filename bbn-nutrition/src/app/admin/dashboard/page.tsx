@@ -57,17 +57,59 @@ export default function AdminDashboard() {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7days');
+  const [isFetching, setIsFetching] = useState(false); // Prevent multiple simultaneous requests
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    console.log('Dashboard useEffect triggered:', {
+      isAuthenticated,
+      userRole: user?.role,
+      timeRange,
+      hasUser: !!user,
+      isFetching
+    });
+    if (isAuthenticated && user?.role === 'admin' && !isFetching) {
       fetchDashboardData();
     }
-  }, [isAuthenticated, user, timeRange]);
+  }, [isAuthenticated, user?.role, timeRange]);
+
+  // Additional effect to handle navigation-based refresh
+  useEffect(() => {
+    console.log('Dashboard mount effect triggered:', {
+      isAuthenticated,
+      userRole: user?.role,
+      hasUser: !!user,
+      isLoading: loading,
+      isFetching
+    });
+    // Force refresh when component mounts and user is already authenticated
+    if (isAuthenticated && user?.role === 'admin' && !isFetching) {
+      // Small delay to ensure auth state is stable
+      const timer = setTimeout(() => {
+        console.log('Forcing dashboard data refresh after mount');
+        fetchDashboardData();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const fetchDashboardData = async () => {
+    // Prevent multiple simultaneous requests
+    if (isFetching) {
+      console.log('Already fetching data, skipping...');
+      return;
+    }
+
     try {
+      setIsFetching(true);
       setLoading(true);
+      console.log('Fetching dashboard data...');
+      
+      // Check if we have a valid token
+      const token = localStorage.getItem('token');
+      console.log('Token available:', !!token);
+      
       const response = await apiService.getAdminDashboard();
+      console.log('Dashboard response:', response);
       if (response.success && response.data) {
         const data = response.data as {
           stats?: DashboardStats;
@@ -77,11 +119,19 @@ export default function AdminDashboard() {
         setStats(data.stats || {} as DashboardStats);
         setRecentOrders(data.recentOrders || []);
         setTopProducts(data.topProducts || []);
+        console.log('Dashboard data loaded successfully');
+      } else {
+        console.error('Dashboard API response not successful:', response);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Don't show error for cancelled requests during navigation
+      if (error instanceof Error && !error.message.includes('cancelled')) {
+        // Handle other errors here if needed
+      }
     } finally {
       setLoading(false);
+      setIsFetching(false);
     }
   };
 
@@ -164,23 +214,46 @@ export default function AdminDashboard() {
     );
   }
 
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return (
+      <AdminProtectedRoute>
+        <AdminLayout>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading dashboard...</p>
+              {/* Debug info */}
+              <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
+                <p>Debug Info:</p>
+                <p>isAuthenticated: {String(isAuthenticated)}</p>
+                <p>user: {user ? JSON.stringify(user, null, 2) : 'null'}</p>
+                <p>token: {localStorage.getItem('token') ? 'present' : 'missing'}</p>
+              </div>
+            </div>
+          </div>
+        </AdminLayout>
+      </AdminProtectedRoute>
+    );
+  }
+
   return (
     <AdminProtectedRoute>
       <AdminLayout>
+
         <div className="space-y-6">
           {/* Admin Mode Banner */}
-          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-4 mb-6">
+          <div className="bg-green-50 rounded-lg p-4 mb-6 border border-green-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="bg-white bg-opacity-20 rounded-full p-2">
-                  <Settings className="w-6 h-6 text-white" />
+                <div className="bg-green-100 rounded-full p-2">
+                  <Settings className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-lg">Administrator Dashboard</h2>
-                  <p className="text-green-100 text-sm">You are logged in as an administrator - manage your website, not place orders</p>
+                  <h2 className="text-green-900 font-semibold text-lg">Administrator Dashboard</h2>
+                  <p className="text-green-700 text-sm">You are logged in as an administrator - manage your website, not place orders</p>
                 </div>
               </div>
-              <div className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                 Admin Mode
               </div>
             </div>
@@ -189,7 +262,7 @@ export default function AdminDashboard() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Website Management Dashboard</h1>
+              <h1 className="text-2xl font-bold text-black">Website Management Dashboard</h1>
               <p className="text-gray-600 mt-1">Welcome back, {user?.name} - Manage your BBN Nutrition website</p>
             </div>
             <div className="flex items-center space-x-3">
@@ -202,7 +275,7 @@ export default function AdminDashboard() {
                 <option value="30days">Last 30 days</option>
                 <option value="90days">Last 90 days</option>
               </select>
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+              <button className="px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 Export Report
               </button>
             </div>
@@ -215,124 +288,144 @@ export default function AdminDashboard() {
               value={formatCurrency(stats?.totalRevenue || 0)}
               icon={DollarSign}
               growth={stats?.revenueGrowth}
-              color="bg-gradient-to-r from-green-500 to-green-600"
+              color="bg-green-50"
             />
             <StatCard
               title="Total Orders"
               value={stats?.totalOrders || 0}
               icon={ShoppingCart}
               growth={stats?.ordersGrowth}
-              color="bg-gradient-to-r from-blue-500 to-blue-600"
+              color="bg-blue-50"
             />
             <StatCard
               title="Total Users"
               value={stats?.totalUsers || 0}
               icon={Users}
               growth={stats?.usersGrowth}
-              color="bg-gradient-to-r from-purple-500 to-purple-600"
+              color="bg-purple-50"
             />
             <StatCard
               title="Total Products"
               value={stats?.totalProducts || 0}
               icon={Package}
-              color="bg-gradient-to-r from-orange-500 to-orange-600"
+              color="bg-orange-50"
             />
           </div>
 
           {/* All Admin Tools & Features */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">All Admin Tools & Features</h2>
+                <h2 className="text-2xl font-bold text-black">All Admin Tools & Features</h2>
                 <p className="text-gray-600 mt-1">Complete access to all administrative functions</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* PRODUCT OPERATIONS */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">PRODUCT OPERATIONS</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/products" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> View All Products
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">PRODUCT OPERATIONS</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/products" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">View All Products</span>
                   </Link>
-                  <Link href="/admin/products?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Add New Product
+                  <Link href="/admin/products?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Add New Product</span>
                   </Link>
-                  <Link href="/admin/products?view=inventory" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Manage Inventory
+                  <Link href="/admin/products?view=inventory" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Manage Inventory</span>
                   </Link>
-                  <Link href="/admin/products?view=categories" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Product Categories
+                  <Link href="/admin/products?view=categories" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Product Categories</span>
                   </Link>
-                  <Link href="/admin/products?view=bulk" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Bulk Operations
+                  <Link href="/admin/products?view=bulk" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Bulk Operations</span>
                   </Link>
                 </div>
               </div>
 
               {/* ORDER MANAGEMENT */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">ORDER MANAGEMENT</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/orders" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> All Orders
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">ORDER MANAGEMENT</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/orders" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">All Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=pending" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Pending Orders
+                  <Link href="/admin/orders?status=pending" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Pending Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=processing" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Processing Orders
+                  <Link href="/admin/orders?status=processing" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Processing Orders</span>
                   </Link>
-                  <Link href="/admin/orders?status=shipped" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Shipped Orders
+                  <Link href="/admin/orders?status=shipped" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Shipped Orders</span>
                   </Link>
-                  <Link href="/admin/orders?view=refunds" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Refunds & Returns
+                  <Link href="/admin/orders?view=refunds" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Refunds & Returns</span>
                   </Link>
                 </div>
               </div>
 
               {/* USER MANAGEMENT */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">USER MANAGEMENT</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> All Users
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">USER MANAGEMENT</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/users" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">All Users</span>
                   </Link>
-                  <Link href="/admin/users?role=customer" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Customers
+                  <Link href="/admin/users?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Add New User</span>
                   </Link>
-                  <Link href="/admin/users?role=admin" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Admin Users
+                  <Link href="/admin/users?role=customer" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Customers</span>
                   </Link>
-                  <Link href="/admin/users?action=add" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Add New User
+                  <Link href="/admin/users?role=admin" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Admin Users</span>
                   </Link>
-                  <Link href="/admin/users?view=permissions" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> User Permissions
+                  <Link href="/admin/users?view=permissions" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">User Permissions</span>
                   </Link>
                 </div>
               </div>
 
               {/* ANALYTICS & REPORTS */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">ANALYTICS & REPORTS</h3>
-                <div className="space-y-2">
-                  <Link href="/admin/analytics" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Analytics Dashboard
+              <div className="space-y-4 h-full">
+                <h3 className="text-lg font-semibold text-black border-b border-gray-200 pb-3 mb-4">ANALYTICS & REPORTS</h3>
+                <div className="space-y-3 flex-1">
+                  <Link href="/admin/analytics" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Analytics Dashboard</span>
                   </Link>
-                  <Link href="/admin/analytics?view=sales" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Sales Reports
+                  <Link href="/admin/analytics?view=sales" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Sales Reports</span>
                   </Link>
-                  <Link href="/admin/analytics?view=performance" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Product Performance
+                  <Link href="/admin/analytics?view=performance" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Product Performance</span>
                   </Link>
-                  <Link href="/admin/analytics?view=customers" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Customer Analytics
+                  <Link href="/admin/analytics?view=customers" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Customer Analytics</span>
                   </Link>
-                  <Link href="/admin/analytics?action=export" className="flex items-center text-sm text-gray-700 hover:text-green-600 transition-colors">
-                    <span className="mr-2">→</span> Export Reports
+                  <Link href="/admin/analytics?action=export" className="flex items-center text-sm text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 p-2 rounded-md group">
+                    <span className="mr-3 text-green-500 group-hover:text-green-600 font-medium">→</span> 
+                    <span className="font-medium">Export Reports</span>
                   </Link>
                 </div>
               </div>
@@ -345,7 +438,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                  <h3 className="text-lg font-semibold text-black">Recent Orders</h3>
                   <Link
                     href="/admin/orders"
                     className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
@@ -403,7 +496,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
+                  <h3 className="text-lg font-semibold text-black">Top Products</h3>
                   <Link
                     href="/admin/products"
                     className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
@@ -457,7 +550,7 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-black mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 href="/admin/products"

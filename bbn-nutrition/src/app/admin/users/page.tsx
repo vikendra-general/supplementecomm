@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/api';
@@ -55,6 +55,14 @@ interface UserFormData {
 }
 
 export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading users...</div>}>
+      <AdminUsersContent />
+    </Suspense>
+  );
+}
+
+function AdminUsersContent() {
   const { user, isAuthenticated, refreshUser } = useAuth();
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);
@@ -106,7 +114,7 @@ export default function AdminUsersPage() {
         return;
       }
       
-      const response = await apiService.getAdminUsers();
+      const response = await apiService.getAdminUsers({ limit: 1000 }); // Set high limit to get all users
       if (response.success && response.data) {
         setUsers(Array.isArray(response.data) ? response.data : []);
       } else {
@@ -157,20 +165,24 @@ export default function AdminUsersPage() {
           return;
         }
       } else {
-        // Create new user
-        const newUser: User = {
-          _id: Date.now().toString(),
-          ...userFormData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          stats: {
-            totalOrders: 0,
-            totalSpent: 0
-          },
-          addresses: []
-        };
-        setUsers([...users, newUser]);
-        alert('User created successfully!');
+        // Create new user via API
+        const response = await apiService.createUser(userFormData);
+        if (response.success && response.data) {
+          // Add the new user from API response to local state
+          const newUser: User = {
+            ...response.data as User,
+            stats: {
+              totalOrders: 0,
+              totalSpent: 0
+            },
+            addresses: []
+          };
+          setUsers([...users, newUser]);
+          alert('User created successfully!');
+        } else {
+          alert('Failed to create user: ' + (response.message || 'Unknown error'));
+          return;
+        }
       }
       
       setShowUserForm(false);
@@ -210,6 +222,52 @@ export default function AdminUsersPage() {
         }
       } else {
         alert('Failed to promote user to admin.');
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone and will delete all associated data including orders, cart, and reviews.`)) {
+      try {
+        setLoading(true);
+        const response = await apiService.deleteUser(userId);
+        if (response.success) {
+          alert('User deleted successfully!');
+          // Remove the user from the local state
+          setUsers(users.filter(u => u._id !== userId));
+        } else {
+          // Handle specific error messages from the backend
+          const errorMessage = response.message || 'Unknown error occurred';
+          if (errorMessage.includes('not found')) {
+            alert('Error: User not found. The user may have already been deleted.');
+            // Refresh the user list to sync with backend
+            await fetchUsers();
+          } else if (errorMessage.includes('admin')) {
+            alert('Error: Cannot delete admin users for security reasons.');
+          } else {
+            alert('Failed to delete user: ' + errorMessage);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        let errorMessage = 'Unknown error occurred';
+        
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          errorMessage = String(error.message);
+        }
+        
+        // Handle specific HTTP errors
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          alert('Error: User not found. The user may have already been deleted.');
+          // Refresh the user list to sync with backend
+          await fetchUsers();
+        } else {
+          alert('Error deleting user: ' + errorMessage);
+        }
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -264,7 +322,7 @@ export default function AdminUsersPage() {
                 <ArrowLeft className="w-6 h-6" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+                <h1 className="text-3xl font-bold text-black">User Management</h1>
                 <p className="text-gray-600 mt-1">Manage users and their permissions</p>
               </div>
             </div>
@@ -272,17 +330,17 @@ export default function AdminUsersPage() {
               <button
                 onClick={fetchUsers}
                 disabled={loading}
-                className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
               </button>
               <button
                 onClick={() => setShowUserForm(true)}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 font-semibold"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add User
+                <Plus className="w-4 h-4" />
+                <span>Add User</span>
               </button>
             </div>
           </div>
@@ -361,7 +419,7 @@ export default function AdminUsersPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
+                    <h3 className="text-lg font-semibold text-black">{user.name}</h3>
                     <p className="text-gray-600">{user.email}</p>
                     <div className="flex items-center space-x-3 mt-1">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -404,16 +462,15 @@ export default function AdminUsersPage() {
                       <Crown className="w-4 h-4" />
                     </button>
                   )}
-                  <button
-                    className={`p-2 transition-colors ${
-                      user.isActive 
-                        ? 'text-red-500 hover:text-red-600' 
-                        : 'text-green-500 hover:text-green-600'
-                    }`}
-                    title={user.isActive ? 'Deactivate User' : 'Activate User'}
-                  >
-                    {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                  </button>
+                  {user.role === 'user' && (
+                    <button
+                      onClick={() => handleDeleteUser(user._id, user.name)}
+                      className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                      title="Delete User"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -434,7 +491,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300">
             <div className="p-6 border-b border-gray-300 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-black">
                 {editingUser ? 'Edit User' : 'Add New User'}
               </h2>
               <button
@@ -509,7 +566,7 @@ export default function AdminUsersPage() {
                 </div>
                 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">Account Settings</h3>
+                  <h3 className="text-lg font-medium text-black">Account Settings</h3>
                   
                   <div className="flex items-center">
                     <input

@@ -74,7 +74,12 @@ class CartService {
     try {
       const cart = await Cart.findOne({ userId });
       if (!cart) {
-        throw new Error('Cart not found');
+        // If cart doesn't exist, there's nothing to remove
+        return {
+          userId,
+          items: [],
+          updatedAt: new Date()
+        };
       }
 
       const itemIndex = cart.items.findIndex(item => 
@@ -83,7 +88,8 @@ class CartService {
       );
 
       if (itemIndex === -1) {
-        throw new Error('Item not found in cart');
+        // If item doesn't exist in cart, just return the cart as is
+        return cart;
       }
 
       const removedItem = cart.items.splice(itemIndex, 1)[0];
@@ -99,38 +105,68 @@ class CartService {
 
   async updateItemQuantity(userId, productId, quantity, variant = null) {
     try {
-      const cart = this.carts.get(userId);
+      let cart = await Cart.findOne({ userId });
       if (!cart) {
-        throw new Error('Cart not found');
+        // Create a new cart if it doesn't exist
+        cart = new Cart({
+          userId,
+          items: []
+        });
       }
 
       const itemIndex = cart.items.findIndex(item => 
-        item.productId === productId && 
+        item.productId.toString() === productId && 
         (!variant || item.variant?.id === variant?.id)
       );
 
       if (itemIndex === -1) {
-        throw new Error('Item not found in cart');
-      }
+        // If item doesn't exist in cart and quantity is positive, add it
+        if (quantity > 0) {
+          const product = await Product.findById(productId);
+          if (!product) {
+            throw new Error('Product not found');
+          }
 
-      if (quantity <= 0) {
-        // Remove item if quantity is 0 or negative
-        cart.items.splice(itemIndex, 1);
-      } else {
-        // Check stock availability
-        const product = await Product.findById(productId);
-        const availableStock = this.getAvailableStock(product, variant);
-        
-        if (quantity > availableStock) {
-          throw new Error(`Only ${availableStock} items available in stock`);
+          const availableStock = this.getAvailableStock(product, variant);
+          if (quantity > availableStock) {
+            throw new Error(`Only ${availableStock} items available in stock`);
+          }
+
+          const cartItem = {
+            productId,
+            productName: product.name,
+            price: variant ? variant.price : product.price,
+            quantity,
+            variant: variant || null,
+            addedAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          cart.items.push(cartItem);
+        } else {
+          // If quantity is 0 or negative and item doesn't exist, just return the cart
+          return cart;
         }
+      } else {
+        if (quantity <= 0) {
+          // Remove item if quantity is 0 or negative
+          cart.items.splice(itemIndex, 1);
+        } else {
+          // Check stock availability
+          const product = await Product.findById(productId);
+          const availableStock = this.getAvailableStock(product, variant);
+          
+          if (quantity > availableStock) {
+            throw new Error(`Only ${availableStock} items available in stock`);
+          }
 
-        cart.items[itemIndex].quantity = quantity;
-        cart.items[itemIndex].updatedAt = new Date();
+          cart.items[itemIndex].quantity = quantity;
+          cart.items[itemIndex].updatedAt = new Date();
+        }
       }
 
       cart.updatedAt = new Date();
-      this.carts.set(userId, cart);
+      await cart.save();
 
       console.log(`✅ Updated cart item quantity for user ${userId}`);
       return cart;
@@ -150,24 +186,13 @@ class CartService {
           updatedAt: new Date()
         };
       } else {
-        // Convert ObjectIds to strings for frontend compatibility
+        // Convert to plain object while preserving populated product data
         cart = cart.toObject();
-        cart.items = cart.items.map(item => {
-          // Handle both ObjectId and populated Product object cases
-          let productId;
-          if (typeof item.productId === 'object' && item.productId._id) {
-            // If productId is a populated Product object, extract the _id
-            productId = item.productId._id.toString();
-          } else {
-            // If productId is an ObjectId, convert to string
-            productId = item.productId.toString();
-          }
-          
-          return {
-            ...item,
-            productId: productId
-          };
-        });
+        cart.items = cart.items.map(item => ({
+          ...item,
+          // Keep the populated product data, don't convert to string
+          productId: item.productId
+        }));
       }
       return cart;
     } catch (error) {

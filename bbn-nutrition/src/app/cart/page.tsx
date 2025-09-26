@@ -15,16 +15,11 @@ export default function CartPage() {
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  
-  // Debug logging
-  console.log('🛒 Cart page - items:', items);
-  console.log('🛒 Cart page - items length:', items.length);
-  console.log('🛒 Cart page - cart total:', getCartTotal());
 
-  const handleQuantityChange = async (productId: string, newQuantity: number) => {
+  const handleQuantityChange = async (productId: string, newQuantity: number, variant?: any) => {
     setIsUpdating(productId);
     try {
-      updateQuantity(productId, newQuantity);
+      await updateQuantity(productId, newQuantity, variant);
       toast.success('Cart updated');
     } catch {
       toast.error('Failed to update cart');
@@ -33,8 +28,8 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = (productId: string) => {
-    removeFromCart(productId);
+  const handleRemoveItem = (productId: string, variant?: any) => {
+    removeFromCart(productId, variant);
     toast.success('Item removed from cart');
   };
 
@@ -44,9 +39,10 @@ export default function CartPage() {
   };
 
   const subtotal = getCartTotal();
-  const freeShippingThreshold = 2999; // Free shipping over ₹2999 (more appropriate for Indian market)
+  const freeShippingThreshold = 3500; // Free shipping over ₹3500
   const shipping = subtotal >= freeShippingThreshold ? 0 : 199; // ₹199 shipping fee
   const total = subtotal + shipping; // No tax calculation
+  const amountNeededForFreeShipping = freeShippingThreshold - subtotal;
 
   if (items.length === 0) {
     return (
@@ -55,7 +51,7 @@ export default function CartPage() {
           <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
             <ShoppingBag className="w-12 h-12 text-gray-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('cart.emptyTitle')}</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">{t('cart.emptyTitle')}</h1>
           <p className="text-gray-600 mb-8">{t('cart.emptyMessage')}</p>
           <Link
             href="/shop"
@@ -73,7 +69,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('cart.title')}</h1>
+          <h1 className="text-3xl font-bold text-black mb-2">{t('cart.title')}</h1>
           <p className="text-gray-600">
             {items.length} {items.length !== 1 ? 'products' : 'product'}
           </p>
@@ -85,7 +81,7 @@ export default function CartPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">{t('cart.cartItems')}</h2>
+                  <h2 className="text-lg font-semibold text-black">{t('cart.cartItems')}</h2>
                   <button
                     onClick={handleClearCart}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
@@ -96,18 +92,39 @@ export default function CartPage() {
               </div>
 
               <div className="divide-y divide-gray-200">
-                {items.map((item) => (
-                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="p-6">
+                {items.map((item, index) => (
+                  <div key={`${item.product.id}-${item.variant?.id || 'default'}-${index}`} className="p-6">
                     <div className="flex items-center space-x-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
                         <Link href={`/product/${item.product.id}`}>
                           <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                             <Image
+<<<<<<< HEAD
                               src={item.product.images && item.product.images.length > 0 && item.product.images[0] ? item.product.images[0] : '/images/products/placeholder.svg'}
+=======
+                              src={(() => {
+                                // Handle case where images might be a stringified array
+                                let imageUrl = item.product.images[0] || '/images/products/placeholder.svg';
+                                
+                                // If the imageUrl looks like a stringified array, parse it
+                                if (typeof imageUrl === 'string' && imageUrl.startsWith('[') && imageUrl.endsWith(']')) {
+                                  try {
+                                    const parsed = JSON.parse(imageUrl);
+                                    imageUrl = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/images/products/placeholder.svg';
+                                  } catch (e) {
+                                    console.warn('Failed to parse image URL:', imageUrl);
+                                    imageUrl = '/images/products/placeholder.svg';
+                                  }
+                                }
+                                
+                                return imageUrl;
+                              })()}
+>>>>>>> 36ddce34379598944ad00632f563c93aea679e33
                               alt={item.product.name}
                               fill
                               className="object-cover"
+                              sizes="80px"
                             />
                           </div>
                         </Link>
@@ -118,7 +135,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <Link href={`/product/${item.product.id}`}>
-                              <h3 className="text-lg font-semibold text-gray-900 hover:text-primary transition-colors cursor-pointer">
+                              <h3 className="text-lg font-semibold text-black hover:text-primary transition-colors cursor-pointer">
                                 {item.product.name}
                               </h3>
                             </Link>
@@ -144,7 +161,7 @@ export default function CartPage() {
                           <div className="flex flex-col space-y-2">
                             <div className="flex items-center space-x-2">
                               <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity - 1, item.variant)}
                                 disabled={isUpdating === item.product.id || item.quantity <= 1}
                                 className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
@@ -154,7 +171,7 @@ export default function CartPage() {
                                 {isUpdating === item.product.id ? '...' : item.quantity}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                                onClick={() => handleQuantityChange(item.product.id, item.quantity + 1, item.variant)}
                                 disabled={isUpdating === item.product.id || item.quantity >= getAvailableStock(item.product, item.variant)}
                                 className="p-1 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={item.quantity >= getAvailableStock(item.product, item.variant) ? 'Maximum stock reached' : 'Increase quantity'}
@@ -169,7 +186,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <button
-                            onClick={() => handleRemoveItem(item.product.id)}
+                            onClick={() => handleRemoveItem(item.product.id, item.variant)}
                             className="text-red-600 hover:text-red-700 p-2"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -186,7 +203,7 @@ export default function CartPage() {
           {/* Order Summary */}
           <div className="lg:w-80">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
@@ -208,18 +225,36 @@ export default function CartPage() {
               </div>
 
               {shipping > 0 && (
-                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700">
-                    {t('cart.add')} {formatPrice(freeShippingThreshold - subtotal)} {t('cart.freeShippingMessage')}
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-blue-800">
+                      Add products worth {formatPrice(amountNeededForFreeShipping)} to be eligible for free delivery!
+                    </p>
+                  </div>
+                  <div className="mt-2 bg-blue-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min((subtotal / freeShippingThreshold) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    {formatPrice(subtotal)} of {formatPrice(freeShippingThreshold)} ({Math.round((subtotal / freeShippingThreshold) * 100)}%)
                   </p>
                 </div>
               )}
               
               {shipping === 0 && subtotal >= freeShippingThreshold && (
-                <div className="mb-6 p-3 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-700">
-                    {t('cart.qualifyFreeShipping')}
-                  </p>
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <p className="text-sm font-medium text-green-800">
+                      🎉 Congratulations! You qualify for free delivery!
+                    </p>
+                  </div>
+                  <div className="mt-2 bg-green-200 rounded-full h-2">
+                    <div className="bg-green-600 h-2 rounded-full w-full"></div>
+                  </div>
                 </div>
               )}
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { apiService } from '@/utils/api';
 import { cache, CACHE_KEYS } from '@/utils/cache';
 import { 
@@ -51,6 +52,16 @@ interface ProductFormData {
 }
 
 export default function AdminProductsPage() {
+  return (
+    <AdminProtectedRoute>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
+        <AdminProductsContent />
+      </Suspense>
+    </AdminProtectedRoute>
+  );
+}
+
+function AdminProductsContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -229,24 +240,17 @@ export default function AdminProductsPage() {
       formData.append('bestSeller', productFormData.bestSeller.toString());
       formData.append('todaysDeals', productFormData.todaysDeals.toString());
       
-      // Handle nutrition facts
-      const nutritionFacts = {
+      // Add nutrition facts
+      formData.append('nutritionFacts', JSON.stringify({
         servingSize: productFormData.nutritionFacts.servingSize,
-        calories: parseFloat(productFormData.nutritionFacts.calories) || 0,
-        protein: parseFloat(productFormData.nutritionFacts.protein) || 0,
-        carbs: parseFloat(productFormData.nutritionFacts.carbs) || 0,
-        fat: parseFloat(productFormData.nutritionFacts.fat) || 0,
-        sugar: parseFloat(productFormData.nutritionFacts.sugar) || 0,
-        sodium: parseFloat(productFormData.nutritionFacts.sodium) || 0,
-        ingredients: productFormData.nutritionFacts.ingredients.split(',').map(ingredient => ingredient.trim()).filter(ingredient => ingredient.length > 0)
-      };
-      
-      // Only add nutrition facts if at least one field is filled
-      if (nutritionFacts.servingSize || nutritionFacts.calories > 0 || nutritionFacts.protein > 0 || 
-          nutritionFacts.carbs > 0 || nutritionFacts.fat > 0 || nutritionFacts.sugar > 0 || 
-          nutritionFacts.sodium > 0 || nutritionFacts.ingredients.length > 0) {
-        formData.append('nutritionFacts', JSON.stringify(nutritionFacts));
-      }
+        calories: productFormData.nutritionFacts.calories ? parseFloat(productFormData.nutritionFacts.calories) : undefined,
+        protein: productFormData.nutritionFacts.protein ? parseFloat(productFormData.nutritionFacts.protein) : undefined,
+        carbs: productFormData.nutritionFacts.carbs ? parseFloat(productFormData.nutritionFacts.carbs) : undefined,
+        fat: productFormData.nutritionFacts.fat ? parseFloat(productFormData.nutritionFacts.fat) : undefined,
+        sugar: productFormData.nutritionFacts.sugar ? parseFloat(productFormData.nutritionFacts.sugar) : undefined,
+        sodium: productFormData.nutritionFacts.sodium ? parseFloat(productFormData.nutritionFacts.sodium) : undefined,
+        ingredients: productFormData.nutritionFacts.ingredients ? productFormData.nutritionFacts.ingredients.split(',').map(i => i.trim()).filter(i => i) : []
+      }));
       
       // Handle existing images (for editing)
       productFormData.images.forEach((image) => {
@@ -421,7 +425,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={fetchProducts}
                 disabled={loading}
-                className="bg-dark-gray text-dark-text px-4 py-2 rounded-lg hover:bg-hover-subtle hover:bg-opacity-50 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
@@ -429,7 +433,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={() => setShowProductForm(true)}
                 disabled={loading}
-                className="bg-gradient-to-r from-primary to-light-green text-dark font-semibold px-6 py-3 rounded-lg hover:from-dark-green hover:to-primary transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 px-6 py-3 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50 font-semibold"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Product</span>
@@ -554,24 +558,24 @@ export default function AdminProductsPage() {
         <div className="bg-dark-card rounded-lg border border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-dark-gray">
+              <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -582,9 +586,33 @@ export default function AdminProductsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
-                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
-                            <Package className="w-6 h-6 text-gray-400" />
-                          </div>
+                          {(() => {
+                            let imageUrl = '/images/products/placeholder.jpg';
+                            
+                            if (product.images && product.images.length > 0) {
+                              const firstImage = product.images[0];
+                              if (typeof firstImage === 'string') {
+                                try {
+                                  const parsed = JSON.parse(firstImage);
+                                  imageUrl = Array.isArray(parsed) ? parsed[0] : firstImage;
+                                } catch {
+                                  imageUrl = firstImage;
+                                }
+                              }
+                            }
+                            
+                            return (
+                              <img 
+                                src={imageUrl} 
+                                alt={product.name}
+                                className="h-12 w-12 rounded-lg object-cover border border-gray-300"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/images/products/placeholder.jpg';
+                                }}
+                              />
+                            );
+                          })()}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-dark-text">{product.name}</div>
@@ -631,7 +659,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEditProduct(product)}
-                          className="text-primary hover:text-primary-dark transition-colors"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -656,7 +684,7 @@ export default function AdminProductsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 my-4">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-black">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
               <button
@@ -686,7 +714,7 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Basic Information</h3>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -768,7 +796,7 @@ export default function AdminProductsPage() {
                 
                 {/* Pricing and Inventory */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Inventory</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Pricing & Inventory</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -900,7 +928,7 @@ export default function AdminProductsPage() {
                   
                   {/* Product Flags */}
                   <div className="space-y-3">
-                    <h4 className="text-md font-medium text-gray-900">Product Flags</h4>
+                    <h4 className="text-md font-medium text-black">Product Flags</h4>
                     
 
                     <div className="flex items-center space-x-3">
@@ -940,7 +968,7 @@ export default function AdminProductsPage() {
                 
                 {/* Nutrition Facts */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Nutrition Facts</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">Nutrition Facts</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -1088,7 +1116,7 @@ export default function AdminProductsPage() {
               <button
                 onClick={handleSaveProduct}
                 disabled={loading}
-                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 disabled:opacity-50"
+                className="bg-green-50 text-green-700 border border-green-200 font-semibold px-6 py-2 rounded-lg hover:bg-green-100 transition-all flex items-center space-x-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 <span>{loading ? 'Saving...' : 'Save Product'}</span>

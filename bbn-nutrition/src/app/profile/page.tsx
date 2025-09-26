@@ -56,7 +56,6 @@ export default function ProfilePage() {
   const [wishlist] = useState<WishlistItem[]>([]);
   const [addresses] = useState<Address[]>([]);
   const [loading] = useState(true);
-  const [error] = useState<string | null>(null);
 
   // The useEffect hook and user context are removed as per the edit hint.
   // The user object and isAuthenticated are no longer available.
