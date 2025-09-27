@@ -469,6 +469,16 @@ class ApiService {
     });
   }
 
+  async getAdminOrderDetails(orderId: string): Promise<ApiResponse<Order>> {
+    return this.request(`/admin/orders/${orderId}`);
+  }
+
+  async deleteAdminOrder(orderId: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request(`/admin/orders/${orderId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getAdminUsers(params?: {
     page?: number;
     limit?: number;

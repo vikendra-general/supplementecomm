@@ -22,28 +22,12 @@ interface Address {
   country: string;
 }
 
-interface OrderDetails {
-  _id: string;
-  orderNumber: string;
+interface OrderDetails extends Omit<Order, 'user'> {
   user: {
     name: string;
     email: string;
     phone: string;
   };
-  items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
-  status: string;
-  paymentStatus: string;
-  paymentMethod: string;
-  shippingAddress: Address;
-  billingAddress: Address;
-  trackingNumber: string | null;
-  estimatedDelivery: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export default function OrderDetailsPage() {
@@ -70,9 +54,9 @@ function OrderDetailsContent() {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getOrder(orderId);
+      const response = await apiService.getAdminOrderDetails(orderId);
       if (response.success && response.data) {
-        setOrder(response.data as OrderDetails);
+        setOrder(response.data as unknown as OrderDetails);
       } else {
         setError('Order not found');
       }

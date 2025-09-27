@@ -411,6 +411,92 @@ router.put('/orders/:id/status', [
   }
 });
 
+// @desc    Get single order details (Admin)
+// @route   GET /api/admin/orders/:id
+// @access  Private/Admin
+router.get('/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
+      });
+    }
+
+    const order = await Order.findById(id)
+      .populate('user', 'name email phone')
+      .populate('items.product', 'name price images brand category');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    console.error('Get order details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Delete order (Admin)
+// @route   DELETE /api/admin/orders/:id
+// @access  Private/Admin
+router.delete('/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Only allow deletion of cancelled orders or orders that haven't been processed
+    if (!['pending', 'cancelled'].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete orders that are being processed or have been delivered'
+      });
+    }
+
+    await Order.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Order deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // @desc    Update order payment status
 // @route   PUT /api/admin/orders/:id/payment
 // @access  Private/Admin

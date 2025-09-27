@@ -227,14 +227,15 @@ function AdminOrdersContent() {
 
     try {
       setLoading(true);
-      // Note: You may need to implement delete order API endpoint
-      // await apiService.deleteOrder(orderId);
+      const response = await apiService.deleteAdminOrder(orderId);
       
-      // For now, just remove from local state
-      setOrders(orders.filter(order => order._id !== orderId));
-      
-      // Show success message (you can implement toast notifications)
-      alert('Order deleted successfully');
+      if (response.success) {
+        // Remove from local state
+        setOrders(orders.filter(order => order._id !== orderId));
+        alert('Order deleted successfully');
+      } else {
+        alert(response.message || 'Failed to delete order');
+      }
     } catch (error) {
       console.error('Error deleting order:', error);
       alert('Failed to delete order. Please try again.');
