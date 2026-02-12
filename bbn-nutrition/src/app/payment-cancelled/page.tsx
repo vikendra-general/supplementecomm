@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { XCircle, ArrowLeft, RefreshCw, CreditCard, HelpCircle } from 'lucide-react';
@@ -19,6 +19,14 @@ interface OrderDetails {
 }
 
 export default function PaymentCancelledPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PaymentCancelledContent />
+    </Suspense>
+  );
+}
+
+function PaymentCancelledContent() {
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);

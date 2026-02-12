@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'],
+    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned', 'return_requested'],
     default: 'pending'
   },
   paymentStatus: {
@@ -154,7 +154,7 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order number before saving
+// Generate order number and tracking number before saving
 orderSchema.pre('save', async function(next) {
   if (this.isNew) {
     const date = new Date();
@@ -162,16 +162,11 @@ orderSchema.pre('save', async function(next) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     
-    // Get count of orders for today
-    const todayOrders = await this.constructor.countDocuments({
-      createdAt: {
-        $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-        $lt: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
-      }
-    });
-    
-    const orderNumber = `BBN-${year}${month}${day}-${String(todayOrders + 1).padStart(4, '0')}`;
-    this.orderNumber = orderNumber;
+    // Use simple timestamp-based order number for now
+     const dateKey = `${year}${month}${day}`;
+     const timestamp = Date.now().toString().slice(-6);
+     const orderNumber = `BBN-${dateKey}-${timestamp}`;
+     this.orderNumber = orderNumber;
     
     // Add initial status to history
     this.statusHistory.push({
@@ -179,6 +174,11 @@ orderSchema.pre('save', async function(next) {
       timestamp: new Date(),
       note: 'Order created'
     });
+  }
+
+  // Generate tracking number when order is created or status changes to shipped/processing
+  if (!this.trackingNumber && (this.isNew || (this.isModified('status') && ['processing', 'shipped', 'delivered'].includes(this.status)))) {
+    this.trackingNumber = `TRK${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
   }
   
   next();

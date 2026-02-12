@@ -1,27 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Product } from '@/types';
 
 type Language = 'en' | 'hi';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  category: string;
-  brand: string;
-  images: string[];
-  rating: number;
-  reviews: number;
-  inStock: boolean;
-  stockQuantity?: number;
-  variants?: { id: string; name: string; price: number; inStock: boolean }[];
-  tags: string[];
-  featured?: boolean;
-  bestSeller?: boolean;
-}
 
 interface LanguageContextType {
   language: Language;
@@ -55,6 +37,14 @@ const translations = {
     'header.customerService': 'Customer Service',
     'header.searchPlaceholder': 'Search BBN Nutrition supplements...',
     'header.deliverTo': 'Deliver to',
+    'header.hello': 'Hello',
+    'header.helloSignIn': 'Hello, sign in',
+    'header.accountLists': 'Account & Lists',
+    'header.yourAccount': 'Your Account',
+    'header.signOut': 'Sign Out',
+    'header.returns': 'Returns',
+    'header.orders': '& Orders',
+    'header.cart': 'Cart',
     'header.signIn': 'Sign in to save your cart and track your orders.',
     
     // Cart
@@ -196,6 +186,9 @@ const translations = {
     'footer.newsletterDesc': 'Subscribe to get updates on new products and exclusive offers',
     'footer.subscribe': 'Subscribe',
     'footer.copyright': '© 2024 BBN Nutrition. All rights reserved.',
+    'footer.privacyPolicy': 'Privacy Policy',
+    'footer.termsOfService': 'Terms of Service',
+    'footer.cookiePolicy': 'Cookie Policy',
     
     // Shop
     'shop.title': 'Shop',
@@ -241,6 +234,14 @@ const translations = {
     'header.customerService': 'ग्राहक सेवा',
     'header.searchPlaceholder': 'BBN न्यूट्रिशन सप्लीमेंट खोजें...',
     'header.deliverTo': 'डिलीवर करें',
+    'header.hello': 'नमस्ते',
+    'header.helloSignIn': 'नमस्ते, साइन इन करें',
+    'header.accountLists': 'खाता और सूचियां',
+    'header.yourAccount': 'आपका खाता',
+    'header.signOut': 'साइन आउट',
+    'header.returns': 'रिटर्न',
+    'header.orders': 'और ऑर्डर',
+    'header.cart': 'कार्ट',
     'header.signIn': 'अपनी कार्ट सेव करने और ऑर्डर ट्रैक करने के लिए साइन इन करें।',
     
     // Cart
@@ -382,6 +383,9 @@ const translations = {
     'footer.newsletterDesc': 'नए उत्पादों और विशेष ऑफर की अपडेट पाने के लिए सब्सक्राइब करें',
     'footer.subscribe': 'सब्सक्राइब करें',
     'footer.copyright': '© 2024 BBN न्यूट्रिशन। सभी अधिकार सुरक्षित।',
+    'footer.privacyPolicy': 'गोपनीयता नीति',
+    'footer.termsOfService': 'सेवा की शर्तें',
+    'footer.cookiePolicy': 'कुकी नीति',
     
     // Shop
     'shop.title': 'दुकान',

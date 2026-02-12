@@ -74,6 +74,7 @@ export const products: Product[] = [
       '/images/products/creatine.jpg'
     ],
     rating: 4.7,
+    reviewCount: 1563,
     reviews: 1563,
     inStock: true,
     bestSeller: true,

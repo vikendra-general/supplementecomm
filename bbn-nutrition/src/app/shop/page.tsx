@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { apiService } from '@/utils/api';
@@ -8,7 +8,18 @@ import { Product } from '@/types';
 import { categories } from '@/data/categories';
 import { Filter, Grid, List, Search } from 'lucide-react';
 
+
+
+
 export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading shop...</div>}>
+      <ShopContent />
+    </Suspense>
+  );
+}
+
+function ShopContent() {
   const searchParams = useSearchParams();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -193,7 +204,7 @@ export default function ShopPage() {
         <div className="mb-8">
           {filters.searchQuery ? (
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-black mb-2">
                 Search Results for &ldquo;{filters.searchQuery}&rdquo;
               </h1>
               <p className="text-gray-600">
@@ -202,7 +213,7 @@ export default function ShopPage() {
             </div>
           ) : (
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
+              <h1 className="text-3xl font-bold text-black mb-2">Shop</h1>
               <p className="text-gray-600">
                 Find the perfect supplements for your fitness goals
               </p>
@@ -253,7 +264,7 @@ export default function ShopPage() {
           <div className={`lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                <h3 className="text-lg font-semibold text-black">Filters</h3>
                 <button
                   onClick={clearFilters}
                   className="text-sm text-primary hover:text-accent-2"
@@ -264,7 +275,7 @@ export default function ShopPage() {
 
               {/* Category Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Category</h4>
+                <h4 className="font-medium text-black mb-3">Category</h4>
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -298,7 +309,7 @@ export default function ShopPage() {
 
               {/* Brand Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Brand</h4>
+                <h4 className="font-medium text-black mb-3">Brand</h4>
                 <select
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
@@ -313,7 +324,7 @@ export default function ShopPage() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
+                <h4 className="font-medium text-black mb-3">Price Range</h4>
                 <div className="space-y-2">
                   <input
                     type="number"
@@ -364,18 +375,18 @@ export default function ShopPage() {
 
               {/* Rating Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Minimum Rating</h4>
+                <h4 className="font-medium text-black mb-3">Minimum Rating</h4>
                 <select
                   value={filters.rating}
                   onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">Any Rating</option>
-                  <option value="3">3+ Stars</option>
-                  <option value="3.5">3.5+ Stars</option>
-                  <option value="4">4+ Stars</option>
-                  <option value="4.5">4.5+ Stars</option>
-                  <option value="5">5 Stars</option>
+                  <option value="3">3+ Stars ({allProducts.filter(product => product.rating >= 3).length})</option>
+                  <option value="3.5">3.5+ Stars ({allProducts.filter(product => product.rating >= 3.5).length})</option>
+                  <option value="4">4+ Stars ({allProducts.filter(product => product.rating >= 4).length})</option>
+                  <option value="4.5">4.5+ Stars ({allProducts.filter(product => product.rating >= 4.5).length})</option>
+                  <option value="5">5 Stars ({allProducts.filter(product => product.rating === 5).length})</option>
                 </select>
               </div>
             </div>
@@ -394,7 +405,7 @@ export default function ShopPage() {
                 <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                <h3 className="text-lg font-semibold text-black mb-2">No products found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your filters or search terms.</p>
                 <button
                   onClick={clearFilters}

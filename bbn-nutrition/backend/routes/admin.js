@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
@@ -14,6 +14,176 @@ const router = express.Router();
 
 // All routes require admin authorization
 router.use(protect, authorize('admin'));
+
+// @desc    Create new user (Admin only)
+// @route   POST /api/admin/users
+// @access  Private/Admin
+router.post('/users', [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('phone')
+    .optional()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+  body('role')
+    .isIn(['user', 'admin'])
+    .withMessage('Invalid role'),
+  body('emailVerified')
+    .optional()
+    .isBoolean()
+    .withMessage('Email verified must be a boolean'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('Is active must be a boolean')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { name, email, phone, role, emailVerified, isActive } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // Generate a secure random temporary password
+    const crypto = require('crypto');
+    const tempPassword = crypto.randomBytes(12).toString('hex') + 'A1!'; // Ensure it meets password requirements
+
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      phone: phone || '',
+      password: tempPassword,
+      role: role || 'user',
+      emailVerified: emailVerified || false,
+      isActive: isActive !== undefined ? isActive : true
+    });
+
+    // Remove password from response
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      emailVerified: user.emailVerified,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: userResponse
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+    
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: validationErrors
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Delete user and all associated data
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent deletion of admin users (optional safety check)
+    if (user.role === 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete admin users'
+      });
+    }
+
+    // Delete all associated data
+    const Cart = require('../models/Cart');
+    
+    // Delete user's cart
+    await Cart.findOneAndDelete({ userId: id });
+
+    // Delete user's orders
+    await Order.deleteMany({ user: id });
+
+    // Remove user from any product reviews
+    await Product.updateMany(
+      { 'reviews.user': id },
+      { $pull: { reviews: { user: id } } }
+    );
+
+    // Delete the user
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'User and all associated data deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting user'
+    });
+  }
+});
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/dashboard
@@ -234,6 +404,155 @@ router.put('/orders/:id/status', [
     });
   } catch (error) {
     console.error('Update order status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Get single order details (Admin)
+// @route   GET /api/admin/orders/:id
+// @access  Private/Admin
+router.get('/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
+      });
+    }
+
+    const order = await Order.findById(id)
+      .populate('user', 'name email phone')
+      .populate('items.product', 'name price images brand category');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    console.error('Get order details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Delete order (Admin)
+// @route   DELETE /api/admin/orders/:id
+// @access  Private/Admin
+router.delete('/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Only allow deletion of cancelled orders or orders that haven't been processed
+    if (!['pending', 'cancelled'].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete orders that are being processed or have been delivered'
+      });
+    }
+
+    await Order.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Order deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Update order payment status
+// @route   PUT /api/admin/orders/:id/payment
+// @access  Private/Admin
+router.put('/orders/:id/payment', [
+  body('paymentStatus')
+    .isIn(['pending', 'paid', 'failed', 'refunded'])
+    .withMessage('Invalid payment status'),
+  body('notes')
+    .optional()
+    .isString()
+    .withMessage('Notes must be a string')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: errors.array()
+      });
+    }
+
+    const { paymentStatus, notes } = req.body;
+
+    const updateData = {
+      paymentStatus,
+      $push: {
+        statusHistory: {
+          status: `payment_${paymentStatus}`,
+          timestamp: new Date(),
+          note: notes || `Payment status changed to ${paymentStatus}`
+        }
+      }
+    };
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).populate('user', 'name email');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment status updated successfully',
+      data: order
+    });
+  } catch (error) {
+    console.error('Update payment status error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -637,77 +956,7 @@ router.get('/products/analytics', async (req, res) => {
   }
 });
 
-// @desc    Bulk update product stock
-// @route   PUT /api/admin/products/bulk-stock
-// @access  Private/Admin
-router.put('/products/bulk-stock', [
-  body('updates')
-    .isArray()
-    .withMessage('Updates must be an array'),
-  body('updates.*.productId')
-    .isMongoId()
-    .withMessage('Invalid product ID'),
-  body('updates.*.stockQuantity')
-    .isInt({ min: 0 })
-    .withMessage('Stock quantity must be a non-negative integer')
-], async (req, res) => {
-  try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: errors.array()
-      });
-    }
 
-    const { updates } = req.body;
-
-    const bulkOps = updates.map(update => ({
-      updateOne: {
-        filter: { _id: update.productId },
-        update: {
-          $set: {
-            stockQuantity: update.stockQuantity,
-            inStock: update.stockQuantity > 0
-          }
-        }
-      }
-    }));
-
-    const result = await Product.bulkWrite(bulkOps);
-
-    res.json({
-      success: true,
-      message: 'Stock updated successfully',
-      data: {
-        modifiedCount: result.modifiedCount
-      }
-    });
-  } catch (error) {
-    console.error('Bulk update stock error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
-});
-
-// @desc    Bulk update product featured status
-// @route   PUT /api/admin/products/bulk-featured
-// @access  Private/Admin
-router.put('/products/bulk-featured', [
-  body('updates')
-    .isArray()
-    .withMessage('Updates must be an array'),
-  body('updates.*.productId')
-    .isMongoId()
-    .withMessage('Invalid product ID'),
-  body('updates.*.featured')
-    .isBoolean()
-    .withMessage('Featured must be a boolean value')
-], adminBulkController.bulkUpdateFeatured);
 
 // @desc    Product routes (admin)
 // @route   /api/admin/products

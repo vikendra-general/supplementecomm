@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart } from 'lucide-react';
 
 export default function WishlistPage() {
   const router = useRouter();

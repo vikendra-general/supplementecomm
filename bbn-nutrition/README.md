@@ -64,17 +64,7 @@ chmod +x setup.sh
 **Option 1: Start both servers together**
 ```bash
 npm run dev:full
-```
 
-**Option 2: Start servers separately**
-```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend
-npm run dev
-```
 
 ### 4. Access the Application
 

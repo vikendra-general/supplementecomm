@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function VerifyEmailPage() {
-  const router = useRouter();
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'expired'>('verifying');
   const [message, setMessage] = useState('');
@@ -53,7 +60,7 @@ export default function VerifyEmailPage() {
           setMessage(data.message || 'Failed to verify email. Please try again.');
         }
       }
-    } catch (error) {
+    } catch {
       setStatus('error');
       setMessage('Network error. Please check your connection and try again.');
     }
@@ -83,7 +90,7 @@ export default function VerifyEmailPage() {
       } else {
         setMessage(data.message || 'Failed to send verification email. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setMessage('Network error. Please try again.');
     } finally {
       setIsResending(false);

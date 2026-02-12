@@ -22,7 +22,7 @@ export default function TermsOfServicePage() {
               <FileText className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Terms of Service</h1>
+              <h1 className="text-3xl font-bold text-black">Terms of Service</h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
@@ -38,7 +38,7 @@ export default function TermsOfServicePage() {
           <div className="p-8 space-y-8">
             {/* Introduction */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">1. Introduction</h2>
               <p className="text-gray-700 leading-relaxed">
                 Welcome to BBN Nutrition (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of our website located at bbn-nutrition.com (the &quot;Service&quot;) operated by BBN Nutrition Private Limited.
               </p>
@@ -49,7 +49,7 @@ export default function TermsOfServicePage() {
 
             {/* Acceptance of Terms */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Acceptance of Terms</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">2. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed">
                 By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. Additionally, when using this website&apos;s particular services, you shall be subject to any posted guidelines or rules applicable to such services.
               </p>
@@ -57,7 +57,7 @@ export default function TermsOfServicePage() {
 
             {/* Use License */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Use License</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">3. Use License</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Permission is granted to temporarily download one copy of the materials on BBN Nutrition&apos;s website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
               </p>
@@ -71,7 +71,7 @@ export default function TermsOfServicePage() {
 
             {/* User Accounts */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. User Accounts</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">4. User Accounts</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for safeguarding the password and for all activities that occur under your account.
               </p>
@@ -82,7 +82,7 @@ export default function TermsOfServicePage() {
 
             {/* Products and Services */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Products and Services</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">5. Products and Services</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 All products and services are subject to availability. We reserve the right to discontinue any product or service at any time without notice.
               </p>
@@ -96,7 +96,7 @@ export default function TermsOfServicePage() {
 
             {/* Orders and Payment */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Orders and Payment</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">6. Orders and Payment</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 By placing an order, you warrant that you are legally capable of entering into binding contracts and that all information you provide is accurate and complete.
               </p>
@@ -110,7 +110,7 @@ export default function TermsOfServicePage() {
 
             {/* Shipping and Delivery */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Shipping and Delivery</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">7. Shipping and Delivery</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We will make every effort to deliver products within the estimated timeframe. However, delivery times are estimates and not guaranteed.
               </p>
@@ -121,7 +121,7 @@ export default function TermsOfServicePage() {
 
             {/* Returns and Refunds */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Returns and Refunds</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">8. Returns and Refunds</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We offer a 30-day return policy for unopened products in their original packaging. Products must be returned in the same condition as received.
               </p>
@@ -132,7 +132,7 @@ export default function TermsOfServicePage() {
 
             {/* Prohibited Uses */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Prohibited Uses</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">9. Prohibited Uses</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 You may not use our Service:
               </p>
@@ -148,7 +148,7 @@ export default function TermsOfServicePage() {
 
             {/* Disclaimer */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Disclaimer</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">10. Disclaimer</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 The information on this website is provided on an &quot;as is&quot; basis. To the fullest extent permitted by law, this Company excludes all representations, warranties, conditions and terms.
               </p>
@@ -159,7 +159,7 @@ export default function TermsOfServicePage() {
 
             {/* Limitation of Liability */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">11. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">11. Limitation of Liability</h2>
               <p className="text-gray-700 leading-relaxed">
                 In no event shall BBN Nutrition or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on BBN Nutrition&apos;s website.
               </p>
@@ -167,7 +167,7 @@ export default function TermsOfServicePage() {
 
             {/* Governing Law */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">12. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">12. Governing Law</h2>
               <p className="text-gray-700 leading-relaxed">
                 These terms and conditions are governed by and construed in accordance with the laws of India and you irrevocably submit to the exclusive jurisdiction of the courts in Mumbai, Maharashtra.
               </p>
@@ -175,7 +175,7 @@ export default function TermsOfServicePage() {
 
             {/* Changes to Terms */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">13. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">13. Changes to Terms</h2>
               <p className="text-gray-700 leading-relaxed">
                 We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days notice prior to any new terms taking effect.
               </p>
@@ -183,7 +183,7 @@ export default function TermsOfServicePage() {
 
             {/* Contact Information */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">14. Contact Information</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">14. Contact Information</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 If you have any questions about these Terms of Service, please contact us:
               </p>

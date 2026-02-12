@@ -8,7 +8,7 @@ export default function Hero() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black hero-section" data-hero>
       {/* Video Background */}
       <div className="absolute inset-0">
         <video
@@ -24,30 +24,33 @@ export default function Hero() {
         >
           <source src="/videos/_video__202508281216.mp4" type="video/mp4" />
         </video>
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        {/* Enhanced overlay with gradient for better visual appeal */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
       </div>
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           {/* Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full">
-                <Zap className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Premium Quality Supplements</span>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="inline-flex items-center space-x-2 bg-green-500/20 border border-green-400/30 px-4 py-2 rounded-full backdrop-blur-sm">
+                <Zap className="w-4 h-4 text-green-400" />
+                <span className="text-sm font-medium text-green-300">#1 Trusted Supplement Store</span>
               </div>
               
-              <h1 className="text-4xl lg:text-6xl font-bold leading-tight text-white">
-                Fuel Your
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">
-                  Performance
+              <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                <span className="text-gray-100 drop-shadow-2xl">
+                  Transform Your Body,
+                </span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
+                  Elevate Your Life
                 </span>
               </h1>
               
-              <p className="text-lg text-gray-200 leading-relaxed max-w-lg">
-                Discover premium supplements designed for athletes and fitness enthusiasts. 
-                Quality ingredients, proven results, and unbeatable performance.
+              <p className="text-xl text-gray-200 leading-relaxed max-w-2xl">
+                Unlock your potential with scientifically-backed supplements trusted by over 10,000+ athletes worldwide. 
+                <span className="text-green-300 font-semibold">Premium quality, proven results, uncompromising purity.</span>
               </p>
             </div>
 
@@ -55,44 +58,51 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link 
                 href="/shop" 
-                className="inline-flex items-center justify-center px-6 py-3 energetic-cta rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm font-semibold"
+                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 text-base group"
               >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                Shop Now
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ShoppingBag className="w-5 h-5 mr-2 text-white group-hover:animate-pulse" />
+                <span className="text-white">Start Your Journey</span>
+                <ArrowRight className="w-5 h-5 ml-2 text-white group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
               <button 
                 onClick={() => setIsVideoPlaying(true)}
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg border-2 border-gray-200 hover:border-green-300 transition-all duration-200 shadow-md hover:shadow-lg text-sm"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl text-base group"
               >
-                <Play className="w-4 h-4 mr-2" />
-                Watch Demo
+                <Play className="w-5 h-5 mr-2 text-white group-hover:scale-110 transition-transform duration-300" />
+                <span className="text-white">See Results</span>
               </button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex items-center space-x-6 pt-4">
+            {/* Enhanced Trust Indicators */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6 pt-4">
               <div className="flex items-center space-x-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                 ))}
-                <span className="ml-2 text-sm text-gray-200 font-medium">4.9/5 from 2,500+ reviews</span>
+                <span className="ml-2 text-sm text-gray-200 font-medium">4.9/5 from 2,500+ verified reviews</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span className="text-sm text-green-300 font-medium">Lab-Tested & Certified</span>
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-300">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">10K+</div>
-                <div className="text-sm text-gray-200 font-medium">Happy Customers</div>
+            {/* Enhanced Stats */}
+            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-600/50">
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-white group-hover:text-green-400 transition-colors duration-300">10K+</div>
+                <div className="text-sm text-gray-300 font-medium">Satisfied Athletes</div>
+                <div className="text-xs text-gray-400 mt-1">Worldwide</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">50+</div>
-                <div className="text-sm text-gray-200 font-medium">Premium Products</div>
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-white group-hover:text-green-400 transition-colors duration-300">100+</div>
+                <div className="text-sm text-gray-300 font-medium">Premium Products</div>
+                <div className="text-xs text-gray-400 mt-1">Lab-Tested</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">99%</div>
-                <div className="text-sm text-gray-200 font-medium">Satisfaction Rate</div>
+              <div className="text-center group">
+                <div className="text-3xl font-bold text-white group-hover:text-green-400 transition-colors duration-300">99.8%</div>
+                <div className="text-sm text-gray-300 font-medium">Success Rate</div>
+                <div className="text-xs text-gray-400 mt-1">Customer Goals</div>
               </div>
             </div>
           </div>
@@ -100,23 +110,43 @@ export default function Hero() {
 
         </div>
 
-        {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-8 mt-16 pt-8 border-t border-gray-300">
-          <div className="flex items-center space-x-2">
-            <Truck className="w-5 h-5 text-green-400" />
-            <span className="text-sm text-gray-200 font-medium">Free Shipping</span>
+        {/* Enhanced Trust Badges */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-12 pt-8 border-t border-gray-600/50">
+          <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 hover:bg-white/10 transition-colors duration-300">
+            <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+              <Truck className="w-4 h-4 text-green-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Free Shipping</div>
+              <div className="text-xs text-gray-400">Orders above ₹999</div>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Shield className="w-5 h-5 text-blue-400" />
-            <span className="text-sm text-gray-200 font-medium">30-Day Returns</span>
+          <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 hover:bg-white/10 transition-colors duration-300">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+              <Shield className="w-4 h-4 text-blue-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Money Back</div>
+              <div className="text-xs text-gray-400">30-Day Guarantee</div>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-purple-400" />
-            <span className="text-sm text-gray-200 font-medium">Quality Guaranteed</span>
+          <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 hover:bg-white/10 transition-colors duration-300">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-purple-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Lab Certified</div>
+              <div className="text-xs text-gray-400">Third-Party Tested</div>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Star className="w-5 h-5 text-yellow-400" />
-            <span className="text-sm text-gray-200 font-medium">Premium Support</span>
+          <div className="flex items-center space-x-3 bg-white/5 backdrop-blur-sm rounded-lg p-3 hover:bg-white/10 transition-colors duration-300">
+            <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
+              <Star className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">Expert Support</div>
+              <div className="text-xs text-gray-400">24/7 Available</div>
+            </div>
           </div>
         </div>
       </div>

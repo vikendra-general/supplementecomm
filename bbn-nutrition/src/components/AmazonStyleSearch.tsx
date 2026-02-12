@@ -2,21 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Clock, TrendingUp, X, Filter, ChevronDown } from 'lucide-react';
+import { Search, Clock, TrendingUp, Filter } from 'lucide-react';
 import { Product } from '@/types';
 import { apiService } from '@/utils/api';
-// Simple debounce function
-const debounce = <T extends unknown[]>(func: (...args: T) => void, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: T) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
 
 interface SearchSuggestion {
   id: string;
@@ -70,71 +58,75 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
 
   // Debounced search function
   const debouncedSearch = useCallback(
-    debounce(async (query: string) => {
-      if (query.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        // Fetch products for suggestions
-        const response = await apiService.getProducts({ limit: 100 });
-        if (response.success && response.data) {
-          const products = response.data;
-          const searchTerm = query.toLowerCase();
-          
-          // Product suggestions
-          const productSuggestions: SearchSuggestion[] = products
-            .filter((product: Product) => 
-              product.name.toLowerCase().includes(searchTerm) ||
-              product.description.toLowerCase().includes(searchTerm) ||
-              product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-            )
-            .slice(0, 5)
-            .map((product: Product) => ({
-              id: `product-${product.id}`,
-              text: product.name,
-              type: 'product' as const,
-              product
-            }));
-
-          // Category suggestions (removed - using sidebar filter instead)
-
-          // Brand suggestions
-          const brands = [...new Set(products.map((p: Product) => p.brand))];
-          const brandSuggestions: SearchSuggestion[] = brands
-            .filter(brand => brand.toLowerCase().includes(searchTerm))
-            .slice(0, 2)
-            .map(brand => ({
-              id: `brand-${brand}`,
-              text: `${brand} products`,
-              type: 'brand' as const,
-              count: products.filter((p: Product) => p.brand === brand).length
-            }));
-
-          // Trending suggestions
-          const trendingSuggestions: SearchSuggestion[] = trendingSearches
-            .filter(trend => trend.toLowerCase().includes(searchTerm))
-            .slice(0, 3)
-            .map(trend => ({
-              id: `trending-${trend}`,
-              text: trend,
-              type: 'trending' as const
-            }));
-
-          setSuggestions([
-            ...productSuggestions,
-            ...brandSuggestions,
-            ...trendingSuggestions
-          ]);
+    (query: string) => {
+      const timeoutId = setTimeout(async () => {
+        if (query.length < 2) {
+          setSuggestions([]);
+          return;
         }
-      } catch (error) {
-        console.error('Search suggestions error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300),
+
+        setIsLoading(true);
+        try {
+          // Fetch products for suggestions
+          const response = await apiService.getProducts({ limit: 100 });
+          if (response.success && response.data) {
+            const products = response.data;
+            const searchTerm = query.toLowerCase();
+            
+            // Product suggestions
+            const productSuggestions: SearchSuggestion[] = products
+              .filter((product: Product) => 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.description.toLowerCase().includes(searchTerm) ||
+                product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+              )
+              .slice(0, 5)
+              .map((product: Product) => ({
+                id: `product-${product.id}`,
+                text: product.name,
+                type: 'product' as const,
+                product
+              }));
+
+            // Category suggestions (removed - using sidebar filter instead)
+
+            // Brand suggestions
+            const brands = [...new Set(products.map((p: Product) => p.brand))];
+            const brandSuggestions: SearchSuggestion[] = brands
+              .filter(brand => brand.toLowerCase().includes(searchTerm))
+              .slice(0, 2)
+              .map(brand => ({
+                id: `brand-${brand}`,
+                text: `${brand} products`,
+                type: 'brand' as const,
+                count: products.filter((p: Product) => p.brand === brand).length
+              }));
+
+            // Trending suggestions
+            const trendingSuggestions: SearchSuggestion[] = trendingSearches
+              .filter(trend => trend.toLowerCase().includes(searchTerm))
+              .slice(0, 3)
+              .map(trend => ({
+                id: `trending-${trend}`,
+                text: trend,
+                type: 'trending' as const
+              }));
+
+            setSuggestions([
+              ...productSuggestions,
+              ...brandSuggestions,
+              ...trendingSuggestions
+            ]);
+          }
+        } catch (error) {
+          console.error('Search suggestions error:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    },
     [trendingSearches]
   );
 
@@ -244,9 +236,9 @@ export default function AmazonStyleSearch({ onClose, className = '' }: AmazonSty
         {/* Search Button */}
         <button 
           onClick={() => handleSearch()}
-          className="h-9 px-4 bg-orange-400 hover:bg-orange-500 transition-colors flex items-center justify-center rounded-r-md"
+          className="h-9 px-4 bg-green-500 hover:bg-green-600 transition-colors flex items-center justify-center rounded-r-md"
         >
-          <Search className="w-4 h-4 text-gray-900" />
+          <Search className="w-4 h-4 text-white" />
         </button>
       </div>
 

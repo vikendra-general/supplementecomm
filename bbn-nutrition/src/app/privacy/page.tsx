@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
               <Shield className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
+              <h1 className="text-3xl font-bold text-black">Privacy Policy</h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
           <div className="p-8 space-y-8">
             {/* Introduction */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">1. Introduction</h2>
               <p className="text-gray-700 leading-relaxed">
                 BBN Nutrition Private Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website bbn-nutrition.com and use our services.
               </p>
@@ -51,10 +51,10 @@ export default function PrivacyPolicyPage() {
             <section>
               <div className="flex items-center space-x-2 mb-4">
                 <Database className="w-5 h-5 text-blue-600" />
-                <h2 className="text-2xl font-semibold text-gray-900">2. Information We Collect</h2>
+                <h2 className="text-2xl font-semibold text-black">2. Information We Collect</h2>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Personal Information</h3>
+              <h3 className="text-lg font-semibold text-black mb-3">Personal Information</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We may collect personal information that you voluntarily provide to us when you:
               </p>
@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
                 <li>Account credentials (username, password)</li>
               </ul>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Automatically Collected Information</h3>
+              <h3 className="text-lg font-semibold text-black mb-3">Automatically Collected Information</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
                 When you visit our website, we may automatically collect certain information about your device and usage patterns:
               </p>
